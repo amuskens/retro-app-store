@@ -87,7 +87,7 @@ OSErr Net_Open(NetConnection *conn, ip_addr remoteHost, tcp_port remotePort,
 
     err = DoControlCall(&conn->pb, giveTime, cancel);
     if (err != noErr) {
-        Net_Abort(conn);
+        Net_Abort(conn, giveTime);
         return err;
     }
     return noErr;
@@ -162,7 +162,26 @@ OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime, Boolean *cancel)
     return err;
 }
 
-void Net_Abort(NetConnection *conn)
+/* Like DoControlCall, but never bails out early on cancel: pb is a
+   stack local here (not the persistent conn->pb the rest of this file
+   uses), so letting it go out of scope while MacTCP still thinks it owns
+   the address would mean a completion write into freed stack space
+   later. cancel is irrelevant to a call whose entire job is "the user
+   already canceled, now clean up" - giveTime is what actually matters,
+   so the UI keeps redrawing/responding while this finishes rather than
+   freezing. */
+static void DoAbortCall(TCPiopb *pb, GiveTimeProc giveTime)
+{
+    pb->ioCompletion = NULL;
+    pb->ioResult = inProgress;
+    PBControlAsync((ParmBlkPtr)pb);
+
+    while (pb->ioResult == inProgress) {
+        if (giveTime != NULL) giveTime();
+    }
+}
+
+void Net_Abort(NetConnection *conn, GiveTimeProc giveTime)
 {
     TCPiopb pb;
 
@@ -171,13 +190,13 @@ void Net_Abort(NetConnection *conn)
         pb.ioCRefNum = gDriverRefNum;
         pb.csCode = TCPAbort;
         pb.tcpStream = conn->stream;
-        PBControlSync((ParmBlkPtr)&pb);
+        DoAbortCall(&pb, giveTime);
 
         memset(&pb, 0, sizeof(pb));
         pb.ioCRefNum = gDriverRefNum;
         pb.csCode = TCPRelease;
         pb.tcpStream = conn->stream;
-        PBControlSync((ParmBlkPtr)&pb);
+        DoAbortCall(&pb, giveTime);
     }
 
     if (conn->rcvBuffer != NULL) {

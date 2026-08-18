@@ -110,25 +110,25 @@ OSErr FTP_Connect(FtpSession *s, const char *hostName, tcp_port port,
     LineReader_Init(&s->controlReader, &s->control);
 
     err = ReadReply(s, &code, NULL, 0, giveTime, cancel); /* 220 welcome */
-    if (err != noErr) { Net_Abort(&s->control); return err; }
-    if (code != 220) { Net_Abort(&s->control); return openFailed; }
+    if (err != noErr) { Net_Abort(&s->control, giveTime); return err; }
+    if (code != 220) { Net_Abort(&s->control, giveTime); return openFailed; }
 
     sprintf(cmd, "USER %.250s", user);
     err = SendCommand(s, cmd, giveTime, cancel);
     if (err == noErr) err = ReadReply(s, &code, NULL, 0, giveTime, cancel);
-    if (err != noErr) { Net_Abort(&s->control); return err; }
+    if (err != noErr) { Net_Abort(&s->control, giveTime); return err; }
 
     if (code == 331) {
         sprintf(cmd, "PASS %.250s", pass);
         err = SendCommand(s, cmd, giveTime, cancel);
         if (err == noErr) err = ReadReply(s, &code, NULL, 0, giveTime, cancel);
-        if (err != noErr) { Net_Abort(&s->control); return err; }
+        if (err != noErr) { Net_Abort(&s->control, giveTime); return err; }
     }
-    if (code != 230) { Net_Abort(&s->control); return openFailed; }
+    if (code != 230) { Net_Abort(&s->control, giveTime); return openFailed; }
 
     err = SendCommand(s, "TYPE I", giveTime, cancel);
     if (err == noErr) err = ReadReply(s, &code, NULL, 0, giveTime, cancel);
-    if (err != noErr) { Net_Abort(&s->control); return err; }
+    if (err != noErr) { Net_Abort(&s->control, giveTime); return err; }
 
     s->connected = true;
     return noErr;
@@ -178,10 +178,10 @@ short FTP_ListNames(FtpSession *s, const char *remotePath, char outNames[][64], 
         strcpy(cmd, "NLST");
 
     err = SendCommand(s, cmd, giveTime, cancel);
-    if (err != noErr) { Net_Abort(&data); return 0; }
+    if (err != noErr) { Net_Abort(&data, giveTime); return 0; }
 
     err = ReadReply(s, &code, NULL, 0, giveTime, cancel);
-    if (err != noErr || (code != 150 && code != 125)) { Net_Abort(&data); return 0; }
+    if (err != noErr || (code != 150 && code != 125)) { Net_Abort(&data, giveTime); return 0; }
 
     LineReader_Init(&lr, &data);
     while (LineReader_Next(&lr, line, sizeof(line), giveTime, cancel)) {
@@ -212,17 +212,17 @@ OSErr FTP_Retrieve(FtpSession *s, const char *remotePath, FtpChunkProc onChunk, 
 
     sprintf(cmd, "RETR %.290s", remotePath);
     err = SendCommand(s, cmd, giveTime, cancel);
-    if (err != noErr) { Net_Abort(&data); return err; }
+    if (err != noErr) { Net_Abort(&data, giveTime); return err; }
 
     err = ReadReply(s, &code, NULL, 0, giveTime, cancel);
-    if (err != noErr) { Net_Abort(&data); return err; }
-    if (code != 150 && code != 125) { Net_Abort(&data); return openFailed; }
+    if (err != noErr) { Net_Abort(&data, giveTime); return err; }
+    if (code != 150 && code != 125) { Net_Abort(&data, giveTime); return openFailed; }
 
     for (;;) {
         unsigned short got;
         err = Net_Receive(&data, buf, sizeof(buf), &got, giveTime, cancel);
         if (err == connectionClosing || err == connectionDoesntExist) { err = noErr; break; }
-        if (err != noErr) { Net_Abort(&data); return err; }
+        if (err != noErr) { Net_Abort(&data, giveTime); return err; }
         if (got > 0 && onChunk != NULL) onChunk(userData, buf, got);
     }
 

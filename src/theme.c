@@ -60,7 +60,15 @@ void Theme_DrawDivider(short x1, short y1, short x2, short y2)
 
 void Theme_HighlightRow(const Rect *r)
 {
-    InvertRect(r);
+    PenState saved;
+    GetPenState(&saved);
+    PenMode(hilite); /* Color QuickDraw's own selection-highlight transfer
+                         mode - blends using the user's Color control panel
+                         choice (LMGetHiliteRGB) on a color display, and
+                         degrades to plain invert automatically on a 1-bit
+                         one, same as every stock-highlighted Mac list. */
+    PaintRect(r);
+    SetPenState(&saved);
 }
 
 void Theme_DrawStatusLED(const Rect *r, Boolean connected)

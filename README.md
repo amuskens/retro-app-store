@@ -16,7 +16,11 @@ part of it is drawing from live data.
 
 - Custom-drawn browser window: toolbar (search), left sidebar (8 categories
   + Live FTP Browse), paginated results list (10/page), status bar
-  (connection LED + page indicator).
+  (connection LED + page indicator). Row selection (sidebar and results
+  list alike) uses Color QuickDraw's `hilite` pen mode, so it picks up
+  whatever highlight color the user has set in the Color control panel on
+  a color display, and degrades automatically to plain invert on a 1-bit
+  one - not a hand-picked app color either way.
 - Search across the bundled catalog by title/description.
 - Real FTP client over real MacTCP: connect, log in, `PASV`, `NLST`, `SIZE`,
   `RETR`, all through an async-PBControl-plus-poll pattern so the UI never
@@ -229,10 +233,58 @@ tools/set_bundle_bit.py    MacBinary Finder-flags fixup (see below)
   screenshot taken while building this showed no color at all, which is
   also why `results_view.c`'s row selection was already written to use
   plain invert instead. `sidebar.c` just hadn't followed that same
-  reasoning through. Fixed by switching the sidebar to `Theme_HighlightRow`
-  (invert), same as the results list, and removing the now-unused
-  `Theme_FillSelectAccent` helper entirely rather than leaving a
-  second, worse selection style around to accidentally pick up again.
+  reasoning through. First fixed by switching the sidebar to plain invert
+  too, then upgraded (see below) to use the real system highlight color
+  instead of either hand-picked option.
+- **Selection highlighting now uses the real OS highlight color, not a
+  hand-picked one.** Requested after the plain-invert fix above: color
+  displays should show *the user's own* Color-control-panel highlight
+  color, the same way the Finder and every other well-behaved color-aware
+  Mac app does, not an app-chosen tint (and not just invert). Color
+  QuickDraw has a purpose-built mechanism for exactly this that this
+  toolchain's headers confirm are real and present (cross-checked in
+  `Multiverse.h` rather than assumed from memory, same discipline as the
+  MacTCP work): the `hilite` transfer mode (enum value 50) reads the
+  low-memory global at $0DA0 (`LMGetHiliteRGB`/`HiliteRGB`, set by the
+  Color control panel) and blends the destination through it - and,
+  critically, falls back to plain bit-inversion automatically on a 1-bit
+  display, with no depth-checking needed on this app's part.
+  `Theme_HighlightRow` (shared by the sidebar and the results list) is now
+  `GetPenState` / `PenMode(hilite)` / `PaintRect` / `SetPenState` - save
+  and restore around it rather than a bare `PenMode` call, since (unlike
+  `InvertRect`) this path actually touches the port's pen state and
+  shouldn't leave it changed for whatever draws next. Verified in the
+  emulator with the guest actually in color mode this time (earlier
+  sessions happened to always be in B&W): selecting a row now shows a
+  real yellow tint (the test system's configured highlight color) with
+  the row's text/icon still legible on top, not a solid overpaint.
+- **A hung Connect couldn't be canceled - "Stop" appeared to do nothing.**
+  Reported after real use, and reproduced for real (not just read into
+  existence): pointing Preferences at a real but unresponsive address
+  (`192.0.2.1`, a documented non-routed test address - silently dropped
+  rather than refused, unlike a real closed port which fails fast with a
+  clean error) reliably reproduces "Downloading... Connecting..." stuck
+  indefinitely, matching the report exactly. Root cause: every actual
+  network wait in this codebase polls MacTCP asynchronously and checks
+  the cancel flag every iteration (`net.c`'s `DoControlCall`) - except
+  `Net_Abort`, which used `PBControlSync` for its `TCPAbort`/`TCPRelease`
+  cleanup calls. `PBControlSync` blocks the entire event loop with no
+  yielding at all until MacTCP completes it - so the *cancel check itself*
+  always worked fine, but the cleanup that runs immediately afterward
+  (`Net_Open` calls `Net_Abort` on any failure, including
+  `userCanceledErr`) then froze the whole UI a second time, solid, with
+  zero visual feedback and no way to interrupt it - indistinguishable
+  from Stop having done nothing at all. Fixed by giving `Net_Abort` the
+  same `PBControlAsync`-plus-poll shape as everything else, but
+  deliberately *not* cancel-aware the way `DoControlCall` is: its
+  `TCPiopb` is stack-allocated, so bailing out early while MacTCP still
+  holds that address would mean a completion write into a freed stack
+  frame later. It still takes and calls `giveTime` though, so the UI
+  keeps redrawing and responding while cleanup finishes rather than
+  freezing - the actual point of the fix, since the wait itself is
+  normally near-instant. All 12 call sites (`net.c` plus 11 in `ftp.c`)
+  updated to pass `giveTime` through. Verified against the same forced
+  hang: Stop now dismisses the dialog within about a second, every time.
 
 ## Known limitations
 
@@ -320,8 +372,17 @@ Confirmed working end-to-end:
    correctly; the menu item is enabled/disabled based on current depth.
 5. A real download (a live file inside `apps`) completed and landed in a
    "Garden Downloads" folder, auto-created next to the app.
+6. Selection highlighting renders in real color (confirmed with the guest
+   actually running in color mode, using the system's configured
+   highlight color) with text/icons still legible on top, and falls back
+   to plain invert in B&W - see the `hilite` Gotchas entry.
+7. A deliberately unreachable host (`192.0.2.1`, silently dropped rather
+   than refused) reproduces a genuine hung Connect, and Stop now
+   dismisses it within about a second - see the `Net_Abort` Gotchas entry.
+   Preferences editing (host/port, both text and numeric fields) confirmed
+   working as part of setting this up.
 
 Not yet exercised in the emulator: the bundled catalog's placeholder
-download paths (expected to fail - see "What's real vs. sample data"),
-Preferences editing/persistence, and a full 200+-item live directory's
-higher page numbers (only page 1 of the `apps` listing was paged through).
+download paths (expected to fail - see "What's real vs. sample data"), and
+a full 200+-item live directory's higher page numbers (only page 1 of the
+`apps` listing was paged through).

@@ -46,10 +46,21 @@ OSErr Net_Receive(NetConnection *conn, void *buf, unsigned short bufLen, unsigne
    the buffer leaks until the driver itself is torn down. */
 OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime, Boolean *cancel);
 
-/* Forceful TCPAbort + TCPRelease, synchronous best-effort with no
-   yielding - for error/cancel cleanup paths, where the point is to tear
-   the stream down quickly rather than wait on a graceful FIN exchange. */
-void Net_Abort(NetConnection *conn);
+/* Forceful TCPAbort + TCPRelease, for error/cancel cleanup paths, where
+   the point is to tear the stream down without waiting on a graceful FIN
+   exchange. Async + polling giveTime, same as every other call here - NOT
+   PBControlSync, even though this only ever runs after something has
+   already gone wrong: a synchronous call blocks the whole event loop with
+   no way to redraw or respond to input until MacTCP completes it, so if a
+   cancel arrives while mid-connect, the user would watch the app freeze
+   solid a second time, right as it's supposedly cleaning up - confirmed
+   as the actual cause of a real "Stop button does nothing" report, not
+   the cancel check itself (every wait loop already checked *cancel
+   correctly - this cleanup call just wasn't one of them, and unlike
+   those, it's not itself cancel-aware: pb is stack-allocated, so it has
+   to run to completion rather than bail out from under a still-pending
+   async request). */
+void Net_Abort(NetConnection *conn, GiveTimeProc giveTime);
 
 /* Buffers Net_Receive output and splits it into CRLF- or LF-terminated
    text lines - FTP is a line-oriented protocol on both its control
