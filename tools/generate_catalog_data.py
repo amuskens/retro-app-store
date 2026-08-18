@@ -86,10 +86,23 @@ def c_string(s):
             out.append('\\\\')
         elif ch == '"':
             out.append('\\"')
+        elif ch == '\r':
+            out.append('\\r')  # classic Mac line break - see full_description()
+        elif ch == '\n':
+            out.append('\\n')
         else:
             out.append(ch)
     out.append('"')
     return "".join(out)
+
+
+def full_description(e):
+    """Same combining rule as build_catalog.py's full_description - see
+    its docstring. Kept in sync by hand since these are two small,
+    independent scripts rather than a shared module."""
+    desc = e["description"]
+    note = e.get("hwNote", "")
+    return f"{desc}\r{note}" if note else desc
 
 
 def build(entries):
@@ -104,7 +117,7 @@ def build(entries):
         min_system = int(e.get("minSystem", 0))
         lines.append(
             f"    {{ {cat_enum}, {int(e['year'])}, {arch_enum}, {min_system}, "
-            f"{c_string(e['title'])}, {c_string(e['description'])}, "
+            f"{c_string(e['title'])}, {c_string(full_description(e))}, "
             f"{c_string(e['remotePath'])}, {int(e['sizeBytes'])} }},"
         )
     return "\n".join(lines) + "\n"

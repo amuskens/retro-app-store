@@ -127,12 +127,16 @@ static void CreateMainWindow(void)
     Rect bounds;
     Rect tb, sb, rs, st;
 
-    SetRect(&bounds, 40, 60, 40 + 560, 60 + 380);
+    /* Height bumped 380->460 along with kResultRowHeight's 40->52 (see
+       theme.h) - keeps roughly the same number of result rows visible by
+       default now that rows are taller (fitting an optional second
+       description line) rather than showing noticeably fewer at launch. */
+    SetRect(&bounds, 40, 60, 40 + 560, 60 + 460);
     gWindow = NewWindow(NULL, &bounds, "\pMacintosh Garden", true,
                          kZoomDocProc, (WindowPtr)-1L, true, 0);
     SetPort(gWindow);
 
-    SetRect(&gSizeLimits, 420, 260, 900, 700);
+    SetRect(&gSizeLimits, 420, 260, 900, 780);
 
     Toolbar_Init(gWindow);
     LayoutBrowser(gWindow, &tb, &sb, &rs, &st);

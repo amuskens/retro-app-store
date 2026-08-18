@@ -23,9 +23,14 @@ part of it is drawing from live data.
   whatever highlight color the user has set in the Color control panel on
   a color display, and degrades automatically to plain invert on a 1-bit
   one - not a hand-picked app color either way.
-- **367-entry bundled catalog**, loadable from an external file so it can
+- **396-entry bundled catalog**, loadable from an external file so it can
   be updated without recompiling the app - see "The loadable catalog"
   below.
+- Results rows can show an optional **second description line** - a short
+  hardware/CPU requirement note (e.g. "Requires a 68030 or better"), shown
+  in italic under the regular description whenever the catalog has real,
+  source-stated data for it. Most entries don't have one and just show the
+  usual single line.
 - Search across the catalog by title/description, plus **Year**, **CPU**,
   and **System** filter pills at the bottom of the sidebar (release-year
   buckets; 68k/PPC/Fat, with "68k" and "PPC" each including Fat entries
@@ -63,13 +68,19 @@ connecting - see Gotchas below, which also covers where the older
 "unsorted flat dump" assumption this section used to lead with came from
 and why it turned out to be only half right).
 
-- **`catalog_data.c`'s 367 entries are real historical Mac software, and
+- **`catalog_data.c`'s 396 entries are real historical Mac software, and
   (as of this catalog's last update) every entry's `remotePath`/size were
   cross-checked against a real, full directory listing of the live
   server** - fetched directly over FTP from the host shell (`curl
   ftp://...`), not guessed, and verified to exist *verbatim* in that
   listing before being written into the catalog (a small script checked
-  all of them programmatically - zero typos reached the actual file).
+  all of them programmatically - zero typos reached the actual file). A
+  later pass added 30 of these specifically to cover early/classic
+  versions of major creative and productivity titles (Adobe Photoshop
+  0.63 through 5.02, SuperPaint, Aldus/Adobe PageMaker, MORE, Microsoft
+  Word, Excel, and PowerPoint) - see the Gotchas entry on real per-file
+  hardware notes for how their `hwNote` data was sourced and sanity-
+  checked.
   `year`/`arch` are curatorial best-effort (release year, 68k/PPC/Fat
   support) rather than independently verified per entry the way the
   download path is - treat those two fields as a useful guide for the
@@ -77,8 +88,8 @@ and why it turned out to be only half right).
   filter's data) is a step more rigorous than year/arch, though still not
   in the same league as `remotePath`: it's scraped from Macintosh Garden's
   own per-title pages (the "For System X.x - Y.y" line each download
-  lists), not estimated from release year or genre. **321 of 367 entries
-  (87%) have a real, page-sourced value; the other 46 are honestly left at
+  lists), not estimated from release year or genre. **344 of 396 entries
+  (87%) have a real, page-sourced value; the other 52 are honestly left at
   0/"unknown"** where no confidently-matching page or no stated
   requirement could be found - not guessed to fill the gap, same "leave it
   honestly blank rather than invent a plausible-sounding value" policy as
@@ -111,13 +122,13 @@ and why it turned out to be only half right).
 
 ## The loadable catalog
 
-`catalog_data.c`'s 367 entries are compiled in, but they're a **fallback**,
+`catalog_data.c`'s 396 entries are compiled in, but they're a **fallback**,
 not the only source - Garden looks for a file named exactly `Garden
 Catalog` next to the application at startup (`catalog_load.c`, found the
 same way `download.c` finds where to put "Garden Downloads": the Process
 Manager, not a hardcoded path) and loads its entries from there instead
 if it exists and passes validation. `make` builds and ships one by
-default (from `tools/catalog_source.json`, the same 367 entries as the
+default (from `tools/catalog_source.json`, the same 396 entries as the
 compiled-in fallback, so day-one behavior is identical either way) - the
 point isn't that the file is normally different, it's that **updating the
 catalog doesn't require rebuilding the app at all**:
@@ -149,7 +160,7 @@ bumped 1->2 when `minSystem` was added, so an old-format file gets
 rejected cleanly (falls back to the compiled-in catalog) instead of being
 misread field-by-field.
 
-**JSON source format** (see `tools/catalog_source.json` for 367 real
+**JSON source format** (see `tools/catalog_source.json` for 396 real
 examples): a `version` field plus an `entries` array of objects with
 `category` (one of the 8 real category names, spelled exactly as in the
 sidebar), `title`, `year`, `arch` (`"68k"`, `"ppc"`, or `"fat"`),
@@ -166,7 +177,7 @@ are updatable without one.
 **`catalog_data.c` (the compiled-in fallback) is generated, not hand-
 written** - `tools/generate_catalog_data.py` reads the same
 `catalog_source.json` and emits the C struct literals, so the two catalog
-paths can't quietly drift apart the way hand-transcribing 367 entries
+paths can't quietly drift apart the way hand-transcribing 396 entries
 into C would risk. Editing the catalog now means: edit the JSON, run
 `generate_catalog_data.py` (recompiled-in path) and/or `build_catalog.py`
 (loadable-file path), depending on which you're updating.
@@ -244,7 +255,7 @@ src/
   prefs_dlg.c/h            Preferences dialog + prefs file load/save
   catalog.c/h              filter/search over the active catalog,
                             year/CPU/System filter state
-  catalog_data.c            compiled-in fallback catalog (367 entries) -
+  catalog_data.c            compiled-in fallback catalog (396 entries) -
                               generated, not hand-written, see
                               tools/generate_catalog_data.py
   catalog_load.c             loads "Garden Catalog" next to the app if
@@ -534,7 +545,9 @@ dist/
   commercial compressor that's much less likely to actually be
   installed), MacBinary (`.bin`) and `.zip` the same, DiskCopy images
   `rohd`/`ddsk` (not the historically-documented `dCpy` - see the DC42
-  Gotchas entry below for why). `.dmg` and `.pdf` downloads are called out
+  Gotchas entry below for why) - `.image` is treated the same as `.img`/
+  `.dsk` here too, an older and less common alias for the same raw-disk-
+  image category rather than a distinct format. `.dmg` and `.pdf` downloads are called out
   explicitly as *not* fixable this way - `.dmg` is a Mac OS 9/X-era format
   with no
   mounting tool on System 7 at all (not the same thing as classic
@@ -665,8 +678,37 @@ dist/
   switching on hardware (needs the user's own real Mac to exercise) - if
   switching away still feels sluggish after this, that's the next thing
   to look at.
-
-## Known limitations
+- **Real hwNote data caught two data-quality issues worth documenting,
+  not just individual facts.** While researching per-file hardware notes
+  for the 30 new Photoshop/PageMaker/Word/Excel/etc. entries:
+  - Macintosh Garden's own page for **Adobe PageMaker 6.0** states a
+    "Year released" of 1997, but every well-established external source
+    (Adobe's own release history, Wikipedia) places it in 1995 - kept the
+    well-documented real date rather than trusting one field on one page
+    that contradicts easily-verified external facts.
+  - **Microsoft Excel 5.0 and Excel 1.01** both came back with an
+    identical, implausible "For System 1 - 5 - System 7.0 - 7.6" - a
+    9-year gap between releases sharing bit-for-bit the same requirement
+    text was the tell. Root cause: some Macintosh Garden pages bundle
+    *every* version of a product together (a generic "Microsoft Excel"
+    page listing 1.01 through 5.0 downloads) and show one shared
+    compatibility badge for the whole page rather than a per-file one -
+    unlike the dedicated single-title pages (the large majority of this
+    catalog) which do show accurate per-file ranges. Both entries'
+    `minSystem` were reverted to 0/unknown rather than kept wrong.
+  - One flagged localization catch: the German version of PageMaker 5.0
+    was the only match initially found - swapped for a plain English
+    5.0a release once one turned up in the real FTP listing. Excel 1.01
+    had no English copy anywhere on the mirror at all - labeled "(French)"
+    in the title rather than silently presenting it as English.
+- **Description rows grew a second line for an optional hardware/CPU
+  note** (e.g. "Requires a 68030 or better"), stored as its own `hwNote`
+  JSON field for readability but merged into the single on-disk
+  `description` string with a `\r` (classic Mac's own line-break
+  convention) at build time - see `full_description()` in both
+  `build_catalog.py` and `generate_catalog_data.py`. `kResultRowHeight`
+  grew 40->52 and the default window height 380->460 to fit it without
+  the app needing a CatalogEntry struct field or a binary format bump.
 
 - **Doesn't handle the Quit Apple Event**, so it can't cooperate with a
   system-wide Special > Shut Down / Restart (found during real emulator

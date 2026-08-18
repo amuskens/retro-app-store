@@ -2563,20 +2563,10 @@
     },
     {
       "category": "Productivity",
-      "title": "Microsoft Excel 4.0 Demo",
-      "year": 1992,
+      "title": "Microsoft Word 1.05",
+      "year": 1986,
       "arch": "68k",
-      "description": "Classic spreadsheet application, demo edition.",
-      "remotePath": "/apps/Microsoft_Excel_4.0_French.zip",
-      "sizeBytes": 5496700,
-      "minSystem": 60
-    },
-    {
-      "category": "Productivity",
-      "title": "Microsoft Word 5.1 Demo",
-      "year": 1992,
-      "arch": "68k",
-      "description": "The dominant word processor of the early 90s, demo edition.",
+      "description": "An early Mac release of Word, before the 4.0/5.x era most remember.",
       "remotePath": "/apps/Microsoft_Word_1.05.zip",
       "sizeBytes": 5152089,
       "minSystem": 60
@@ -3670,6 +3660,319 @@
       "remotePath": "/apps/WebMap.sit",
       "sizeBytes": 125110,
       "minSystem": 60
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 0.63 (beta)",
+      "year": 1988,
+      "arch": "68k",
+      "description": "A pre-1.0 beta of Thomas Knoll's original image editor.",
+      "remotePath": "/apps/Photoshop_0.63b.sit",
+      "sizeBytes": 241117,
+      "minSystem": 0
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 1.0",
+      "year": 1990,
+      "arch": "68k",
+      "description": "The first public release of the image editor that became an industry standard.",
+      "remotePath": "/apps/Adobe_Photoshop1.sit",
+      "sizeBytes": 443832,
+      "minSystem": 60,
+      "hwNote": "Requires 2MB RAM and hard disk"
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 1.0.7",
+      "year": 1990,
+      "arch": "68k",
+      "description": "A later 1.x point release, before the 2.0 rewrite.",
+      "remotePath": "/apps/Photoshop_1.0.7_CLEAN.sit",
+      "sizeBytes": 882773,
+      "minSystem": 60,
+      "hwNote": "Requires 2MB RAM and hard disk"
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 2.0.1",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Added paths, CMYK editing, and the first plug-in filter architecture.",
+      "remotePath": "/apps/Adobe_Photoshopr_2.0.1_0.sit",
+      "sizeBytes": 1618156,
+      "minSystem": 60,
+      "hwNote": "Minimum Mac SE, 2MB RAM, hard drive"
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 2.5.1",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Added 16-bit and 32-bit color support.",
+      "remotePath": "/apps/Photoshop_2.5.1.sit",
+      "sizeBytes": 9776924,
+      "minSystem": 60,
+      "hwNote": "Requires 68020 CPU or newer"
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 3.0.5",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Introduced Layers, still one of Photoshop's defining features.",
+      "remotePath": "/apps/Adobe_Photoshop_3.0.5.sit",
+      "sizeBytes": 9593334,
+      "minSystem": 70,
+      "hwNote": "Requires 68020+ CPU or Power Mac"
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 4.0",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Introduced Adjustment Layers and the now-familiar single-window UI.",
+      "remotePath": "/apps/Photoshop_4.0.sit",
+      "sizeBytes": 30386476,
+      "minSystem": 71,
+      "hwNote": "Requires 68030+ CPU, 16MB RAM"
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop 5.02",
+      "year": 1999,
+      "arch": "fat",
+      "description": "Added editable type layers, History, and multiple undo.",
+      "remotePath": "/apps/adobe_photoshopr_5.02.sit",
+      "sizeBytes": 17480724,
+      "minSystem": 0
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "SuperPaint 2.0",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Silicon Beach's combined bitmap/object paint-and-draw program.",
+      "remotePath": "/apps/SuperPaint2.0.sit",
+      "sizeBytes": 408314,
+      "minSystem": 60
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Aldus SuperPaint 3.0",
+      "year": 1991,
+      "arch": "68k",
+      "description": "SuperPaint under Aldus after acquiring it from Silicon Beach.",
+      "remotePath": "/apps/Aldus_SuperPaint_3.0.sit",
+      "sizeBytes": 2152552,
+      "minSystem": 60,
+      "hwNote": "Requires 2MB RAM (4MB recommended for color)"
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Aldus SuperPaint 3.5",
+      "year": 1993,
+      "arch": "68k",
+      "description": "A later refinement of the combined bitmap/object paint program.",
+      "remotePath": "/apps/aldussuperpaint3.5.sit",
+      "sizeBytes": 2331238,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "Aldus PageMaker 2.0",
+      "year": 1987,
+      "arch": "68k",
+      "description": "An early release of the desktop publishing pioneer.",
+      "remotePath": "/apps/pagemaker_2_0a.zip",
+      "sizeBytes": 5863716,
+      "minSystem": 21,
+      "hwNote": "Requires 512K RAM"
+    },
+    {
+      "category": "Productivity",
+      "title": "Aldus PageMaker 3.0.1",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Added style sheets and long-document support.",
+      "remotePath": "/apps/alduspagemaker301.sit",
+      "sizeBytes": 1009896,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "Aldus PageMaker 3.5",
+      "year": 1990,
+      "arch": "68k",
+      "description": "A refinement of the 3.x line, widely used through the early 90s.",
+      "remotePath": "/apps/aldus_pagemaker_3.5.sit",
+      "sizeBytes": 1448723,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "Aldus PageMaker 5.0a",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Added a library palette and multi-page pasteboard editing.",
+      "remotePath": "/apps/Aldus_PageMaker_5.0a.sit",
+      "sizeBytes": 10011236,
+      "minSystem": 60,
+      "hwNote": "Requires 68020 CPU, 5MB RAM, 40MB HD"
+    },
+    {
+      "category": "Productivity",
+      "title": "Adobe PageMaker 6.0",
+      "year": 1995,
+      "arch": "fat",
+      "description": "The first PageMaker released after Adobe's acquisition of Aldus.",
+      "remotePath": "/apps/adobepagemaker60.sit",
+      "sizeBytes": 20441720,
+      "minSystem": 70
+    },
+    {
+      "category": "Productivity",
+      "title": "MORE 1.0",
+      "year": 1987,
+      "arch": "68k",
+      "description": "Living Videotext's outline processor, a landmark presentation/idea tool.",
+      "remotePath": "/apps/MORE_1.0_.sit",
+      "sizeBytes": 201978,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "MORE 1.1",
+      "year": 1987,
+      "arch": "68k",
+      "description": "A refinement of the original outline processor.",
+      "remotePath": "/apps/MORE_1.1.hqx",
+      "sizeBytes": 798724,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "MORE 3.0",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Under Symantec after their acquisition of Living Videotext.",
+      "remotePath": "/apps/more_3.0.sit",
+      "sizeBytes": 1303624,
+      "minSystem": 60,
+      "hwNote": "Requires 1MB RAM"
+    },
+    {
+      "category": "Productivity",
+      "title": "MORE 3.1",
+      "year": 1991,
+      "arch": "68k",
+      "description": "The final release of the MORE outline processor line.",
+      "remotePath": "/apps/More_3.1.cpt",
+      "sizeBytes": 1848618,
+      "minSystem": 60,
+      "hwNote": "Requires 1MB RAM"
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Word 1.0",
+      "year": 1985,
+      "arch": "68k",
+      "description": "The first Mac release of Word, a launch title for the original Macintosh era.",
+      "remotePath": "/apps/Microsoft_Word1.0F.image_.sit",
+      "sizeBytes": 238874,
+      "minSystem": 0
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Word 3.0",
+      "year": 1987,
+      "arch": "68k",
+      "description": "A significant early rewrite, notoriously buggy at launch.",
+      "remotePath": "/apps/Microsoft_Word_3.0.bin",
+      "sizeBytes": 32896,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Word 4.0",
+      "year": 1989,
+      "arch": "68k",
+      "description": "A stable, widely-used release through the late 80s.",
+      "remotePath": "/apps/MS_Word_4.0.sit",
+      "sizeBytes": 1150101,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Word 5.0",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Widely regarded as one of the best classic Mac word processors.",
+      "remotePath": "/apps/Word_5.0.sit",
+      "sizeBytes": 3739421,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Word 5.1",
+      "year": 1992,
+      "arch": "68k",
+      "description": "A refinement of the well-regarded 5.0 release.",
+      "remotePath": "/apps/Word_5.1_EN-US.sit",
+      "sizeBytes": 4223974,
+      "minSystem": 60,
+      "hwNote": "Requires 1MB RAM (2MB for grammar check)"
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Word 6.0",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Shared a rewrite with Windows Word - slower and heavier than 5.1.",
+      "remotePath": "/apps/Word6.sit",
+      "sizeBytes": 17803034,
+      "minSystem": 70,
+      "hwNote": "Requires 68030, 4MB RAM (8MB recommended)"
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Excel 1.01 (French)",
+      "year": 1985,
+      "arch": "68k",
+      "description": "Excel launched on the Mac two years before Windows had a version.",
+      "remotePath": "/apps/Microsoft_Excel_1.01F.sit",
+      "sizeBytes": 306958,
+      "minSystem": 0
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Excel 4.0",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Added AutoFill, workbooks, and toolbar customization.",
+      "remotePath": "/apps/Excel_4.0.sit",
+      "sizeBytes": 4830440,
+      "minSystem": 60
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Excel 5.0",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Introduced Visual Basic for Applications macros.",
+      "remotePath": "/apps/Excel_5.0_English.sit",
+      "sizeBytes": 17179026,
+      "minSystem": 0
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft PowerPoint 2.0",
+      "year": 1990,
+      "arch": "68k",
+      "description": "An early release of the presentation software, before Microsoft acquired it fully into Office.",
+      "remotePath": "/apps/PowerPoint_2.0.zip",
+      "sizeBytes": 884797,
+      "minSystem": 0
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 /* Compiled-in fallback catalog - used whenever no loadable "Garden
    Catalog" file is found next to the app, or one is found but fails
-   validation (see catalog_load.c). 367 entries, each cross-checked
+   validation (see catalog_load.c). 396 entries, each cross-checked
    against a real, full directory listing of the live server's
    apps/manuals/games (fetched directly over FTP, not guessed) - remotePath
    and sizeBytes are real. year/arch/minSystem are historical best-effort
@@ -305,8 +305,7 @@ const CatalogEntry gDefaultCatalogEntries[] = {
     { kCatProductivity, 1989, kArch68k, 60, "MacWrite II", "Claris's classic word processor, sequel to the original MacWrite.", "/apps/macwrite.dmg", 6519390 },
     { kCatProductivity, 1990, kArch68k, 60, "Mariah", "Financial spreadsheet modeling application.", "/apps/Mariah.sit", 736502 },
     { kCatProductivity, 1993, kArch68k, 60, "Meeting Maker", "Networked group scheduling and calendaring software.", "/apps/Meeting_Maker_1.5.sit", 512616 },
-    { kCatProductivity, 1992, kArch68k, 60, "Microsoft Excel 4.0 Demo", "Classic spreadsheet application, demo edition.", "/apps/Microsoft_Excel_4.0_French.zip", 5496700 },
-    { kCatProductivity, 1992, kArch68k, 60, "Microsoft Word 5.1 Demo", "The dominant word processor of the early 90s, demo edition.", "/apps/Microsoft_Word_1.05.zip", 5152089 },
+    { kCatProductivity, 1986, kArch68k, 60, "Microsoft Word 1.05", "An early Mac release of Word, before the 4.0/5.x era most remember.", "/apps/Microsoft_Word_1.05.zip", 5152089 },
     { kCatProductivity, 1988, kArch68k, 0, "More", "Symantec's classic outlining and presentation tool.", "/apps/MORE.sit", 251324 },
     { kCatProductivity, 1994, kArch68k, 60, "Nisus Compact", "Lightweight edition of the Nisus word processor.", "/apps/nisuscompact.sea_.hqx", 1664811 },
     { kCatProductivity, 1993, kArch68k, 70, "Nisus Writer Demo", "Word processor known for multilingual and macro support.", "/apps/Nisus_Writer_4.03.sit", 4443476 },
@@ -419,5 +418,37 @@ const CatalogEntry gDefaultCatalogEntries[] = {
     { kCatDevTools, 1993, kArch68k, 0, "ThinkReference", "Electronic Inside Macintosh API reference tool.", "/apps/ThinkReference1.0.sit", 1656318 },
     { kCatDevTools, 1988, kArch68k, 70, "True BASIC", "Structured BASIC programming language environment.", "/apps/truebasic2.5.sit", 307667 },
     { kCatDevTools, 1995, kArch68k, 60, "WebMap", "Tool for creating clickable HTML image maps.", "/apps/WebMap.sit", 125110 },
+    /* -- Graphics & Sound -- */
+    { kCatGraphicsSound, 1988, kArch68k, 0, "Adobe Photoshop 0.63 (beta)", "A pre-1.0 beta of Thomas Knoll's original image editor.", "/apps/Photoshop_0.63b.sit", 241117 },
+    { kCatGraphicsSound, 1990, kArch68k, 60, "Adobe Photoshop 1.0", "The first public release of the image editor that became an industry standard.\rRequires 2MB RAM and hard disk", "/apps/Adobe_Photoshop1.sit", 443832 },
+    { kCatGraphicsSound, 1990, kArch68k, 60, "Adobe Photoshop 1.0.7", "A later 1.x point release, before the 2.0 rewrite.\rRequires 2MB RAM and hard disk", "/apps/Photoshop_1.0.7_CLEAN.sit", 882773 },
+    { kCatGraphicsSound, 1991, kArch68k, 60, "Adobe Photoshop 2.0.1", "Added paths, CMYK editing, and the first plug-in filter architecture.\rMinimum Mac SE, 2MB RAM, hard drive", "/apps/Adobe_Photoshopr_2.0.1_0.sit", 1618156 },
+    { kCatGraphicsSound, 1993, kArch68k, 60, "Adobe Photoshop 2.5.1", "Added 16-bit and 32-bit color support.\rRequires 68020 CPU or newer", "/apps/Photoshop_2.5.1.sit", 9776924 },
+    { kCatGraphicsSound, 1994, kArchFat, 70, "Adobe Photoshop 3.0.5", "Introduced Layers, still one of Photoshop's defining features.\rRequires 68020+ CPU or Power Mac", "/apps/Adobe_Photoshop_3.0.5.sit", 9593334 },
+    { kCatGraphicsSound, 1996, kArchFat, 71, "Adobe Photoshop 4.0", "Introduced Adjustment Layers and the now-familiar single-window UI.\rRequires 68030+ CPU, 16MB RAM", "/apps/Photoshop_4.0.sit", 30386476 },
+    { kCatGraphicsSound, 1999, kArchFat, 0, "Adobe Photoshop 5.02", "Added editable type layers, History, and multiple undo.", "/apps/adobe_photoshopr_5.02.sit", 17480724 },
+    { kCatGraphicsSound, 1988, kArch68k, 60, "SuperPaint 2.0", "Silicon Beach's combined bitmap/object paint-and-draw program.", "/apps/SuperPaint2.0.sit", 408314 },
+    { kCatGraphicsSound, 1991, kArch68k, 60, "Aldus SuperPaint 3.0", "SuperPaint under Aldus after acquiring it from Silicon Beach.\rRequires 2MB RAM (4MB recommended for color)", "/apps/Aldus_SuperPaint_3.0.sit", 2152552 },
+    { kCatGraphicsSound, 1993, kArch68k, 60, "Aldus SuperPaint 3.5", "A later refinement of the combined bitmap/object paint program.", "/apps/aldussuperpaint3.5.sit", 2331238 },
+    /* -- Productivity -- */
+    { kCatProductivity, 1987, kArch68k, 21, "Aldus PageMaker 2.0", "An early release of the desktop publishing pioneer.\rRequires 512K RAM", "/apps/pagemaker_2_0a.zip", 5863716 },
+    { kCatProductivity, 1988, kArch68k, 60, "Aldus PageMaker 3.0.1", "Added style sheets and long-document support.", "/apps/alduspagemaker301.sit", 1009896 },
+    { kCatProductivity, 1990, kArch68k, 60, "Aldus PageMaker 3.5", "A refinement of the 3.x line, widely used through the early 90s.", "/apps/aldus_pagemaker_3.5.sit", 1448723 },
+    { kCatProductivity, 1993, kArch68k, 60, "Aldus PageMaker 5.0a", "Added a library palette and multi-page pasteboard editing.\rRequires 68020 CPU, 5MB RAM, 40MB HD", "/apps/Aldus_PageMaker_5.0a.sit", 10011236 },
+    { kCatProductivity, 1995, kArchFat, 70, "Adobe PageMaker 6.0", "The first PageMaker released after Adobe's acquisition of Aldus.", "/apps/adobepagemaker60.sit", 20441720 },
+    { kCatProductivity, 1987, kArch68k, 60, "MORE 1.0", "Living Videotext's outline processor, a landmark presentation/idea tool.", "/apps/MORE_1.0_.sit", 201978 },
+    { kCatProductivity, 1987, kArch68k, 60, "MORE 1.1", "A refinement of the original outline processor.", "/apps/MORE_1.1.hqx", 798724 },
+    { kCatProductivity, 1990, kArch68k, 60, "MORE 3.0", "Under Symantec after their acquisition of Living Videotext.\rRequires 1MB RAM", "/apps/more_3.0.sit", 1303624 },
+    { kCatProductivity, 1991, kArch68k, 60, "MORE 3.1", "The final release of the MORE outline processor line.\rRequires 1MB RAM", "/apps/More_3.1.cpt", 1848618 },
+    { kCatProductivity, 1985, kArch68k, 0, "Microsoft Word 1.0", "The first Mac release of Word, a launch title for the original Macintosh era.", "/apps/Microsoft_Word1.0F.image_.sit", 238874 },
+    { kCatProductivity, 1987, kArch68k, 60, "Microsoft Word 3.0", "A significant early rewrite, notoriously buggy at launch.", "/apps/Microsoft_Word_3.0.bin", 32896 },
+    { kCatProductivity, 1989, kArch68k, 60, "Microsoft Word 4.0", "A stable, widely-used release through the late 80s.", "/apps/MS_Word_4.0.sit", 1150101 },
+    { kCatProductivity, 1991, kArch68k, 60, "Microsoft Word 5.0", "Widely regarded as one of the best classic Mac word processors.", "/apps/Word_5.0.sit", 3739421 },
+    { kCatProductivity, 1992, kArch68k, 60, "Microsoft Word 5.1", "A refinement of the well-regarded 5.0 release.\rRequires 1MB RAM (2MB for grammar check)", "/apps/Word_5.1_EN-US.sit", 4223974 },
+    { kCatProductivity, 1994, kArchFat, 70, "Microsoft Word 6.0", "Shared a rewrite with Windows Word - slower and heavier than 5.1.\rRequires 68030, 4MB RAM (8MB recommended)", "/apps/Word6.sit", 17803034 },
+    { kCatProductivity, 1985, kArch68k, 0, "Microsoft Excel 1.01 (French)", "Excel launched on the Mac two years before Windows had a version.", "/apps/Microsoft_Excel_1.01F.sit", 306958 },
+    { kCatProductivity, 1992, kArch68k, 60, "Microsoft Excel 4.0", "Added AutoFill, workbooks, and toolbar customization.", "/apps/Excel_4.0.sit", 4830440 },
+    { kCatProductivity, 1993, kArch68k, 0, "Microsoft Excel 5.0", "Introduced Visual Basic for Applications macros.", "/apps/Excel_5.0_English.sit", 17179026 },
+    { kCatProductivity, 1990, kArch68k, 0, "Microsoft PowerPoint 2.0", "An early release of the presentation software, before Microsoft acquired it fully into Office.", "/apps/PowerPoint_2.0.zip", 884797 },
 };
 const short kDefaultCatalogEntryCount = sizeof(gDefaultCatalogEntries) / sizeof(gDefaultCatalogEntries[0]);

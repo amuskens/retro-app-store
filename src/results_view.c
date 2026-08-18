@@ -90,13 +90,42 @@ static void DrawFileGlyph(const Rect *area)
     LineTo(area->right, (short)(area->top + fold));
 }
 
+/* Descriptions may carry an optional second line (a hardware requirement
+   note, e.g. "Requires a 68030 or better") after a '\r' - classic Mac's
+   own line-break convention, same as every STR#/DITL string in this app.
+   Splitting here rather than storing it as a separate CatalogEntry field
+   keeps the on-disk catalog format untouched: it's still just one
+   description string, TruncateCStringToWidth-safe once split, with
+   *outLine2 left empty (not touched further by the caller) when there's
+   no second line. */
+static void SplitDescription(const char *desc, char *line1, short line1Size,
+                              char *line2, short line2Size)
+{
+    const char *br = strchr(desc, '\r');
+    if (br == NULL) {
+        strncpy(line1, desc, line1Size - 1);
+        line1[line1Size - 1] = 0;
+        line2[0] = 0;
+        return;
+    }
+    {
+        short n = (short)(br - desc);
+        if (n > line1Size - 1) n = (short)(line1Size - 1);
+        BlockMove((Ptr)desc, line1, n);
+        line1[n] = 0;
+    }
+    strncpy(line2, br + 1, line2Size - 1);
+    line2[line2Size - 1] = 0;
+}
+
 static void DrawItemRow(const Rect *bounds, short rowSlot, short absIndex, Boolean selected)
 {
-    Rect row, iconR, getBtn, sizeR, titleR, descR;
+    Rect row, iconR, getBtn, sizeR, titleR, descR, descR2;
     const char *title, *desc, *remotePath;
     unsigned long size;
     Boolean sizeKnown;
     char sizeStr[24];
+    char descLine1[220], descLine2[220];
 
     RowRect(bounds, rowSlot, &row);
     GetItem(absIndex, &title, &desc, &size, &sizeKnown, &remotePath);
@@ -127,6 +156,8 @@ static void DrawItemRow(const Rect *bounds, short rowSlot, short absIndex, Boole
         DrawCStringInRect(buf, &titleR);
     }
 
+    SplitDescription(desc, descLine1, sizeof(descLine1), descLine2, sizeof(descLine2));
+
     descR = row;
     descR.left = (short)(row.left + 38);
     descR.right = sizeR.left;
@@ -136,10 +167,26 @@ static void DrawItemRow(const Rect *bounds, short rowSlot, short absIndex, Boole
     Theme_SetDescColor();
     {
         char buf[220];
-        TruncateCStringToWidth(desc, buf, sizeof(buf), (short)(descR.right - descR.left));
+        TruncateCStringToWidth(descLine1, buf, sizeof(buf), (short)(descR.right - descR.left));
         DrawCStringInRect(buf, &descR);
     }
     Theme_SetBlack();
+
+    if (descLine2[0] != 0) {
+        descR2 = row;
+        descR2.left = (short)(row.left + 38);
+        descR2.right = sizeR.left;
+        descR2.top = (short)(row.top + 31);
+        descR2.bottom = (short)(row.top + 43);
+        Theme_SetGeneva(9, italic);
+        Theme_SetDescColor();
+        {
+            char buf[220];
+            TruncateCStringToWidth(descLine2, buf, sizeof(buf), (short)(descR2.right - descR2.left));
+            DrawCStringInRect(buf, &descR2);
+        }
+        Theme_SetBlack();
+    }
 
     Theme_SetGeneva(9, normal);
     Theme_SetDescColor();

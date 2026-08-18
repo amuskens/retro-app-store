@@ -19,7 +19,10 @@ extern const RGBColor kThemeDescGray;     /* secondary/description text */
 #define kToolbarHeight    36
 #define kSidebarWidth     132
 #define kStatusBarHeight  20
-#define kResultRowHeight  40
+/* 52, not 40 - grown to fit an optional second description line (hardware
+   requirement note, e.g. "Requires a 68030 or better") below the regular
+   one-line description. See results_view.c's DrawItemRow. */
+#define kResultRowHeight  52
 
 void Theme_SetChicago(short size);
 void Theme_SetGeneva(short size, Style face);

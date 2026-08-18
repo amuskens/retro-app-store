@@ -35,6 +35,15 @@ minimum classic Mac OS System version the title needs, as major*10+minor
 - e.g. 60 for System 6.0, 70 for System 7.0, 75 for System 7.5, 80 for
 Mac OS 8.0. Powers the System filter pill; only the lower bound matters
 there (older software keeps running on newer systems).
+
+hwNote (optional per entry, defaults to "" if omitted): a short hardware/
+CPU requirement beyond the basic arch field, e.g. "Requires a 68030 or
+better" or "PowerPC 100MHz or faster recommended" - only include this
+when a real source actually states it, never a guess. Kept as its own
+field for readability rather than hand-embedded in description text;
+shown in the app as an optional second line under the description (see
+full_description() below) - keep it short, under ~60 characters, since
+it has to fit the same row width as the description itself.
 """
 import json
 import struct
@@ -56,6 +65,20 @@ MAX_ENTRIES = 600  # kMaxCatalogEntries in catalog.h
 
 MAGIC = b"GCAT"
 VERSION = 2  # bumped from 1 when minSystem was added - see catalog_load.c
+
+
+def full_description(e):
+    """Combines the human-readable description with an optional hwNote
+    (a short hardware/CPU requirement beyond the basic arch field, e.g.
+    "Requires a 68030 or better" - kept as its own JSON field for
+    readability rather than hand-embedded in description text) into the
+    single string the C side actually stores. '\\r' is classic Mac's own
+    line-break convention (same as every STR#/DITL string in this app) -
+    results_view.c's DrawItemRow splits on it to draw hwNote as an
+    optional second line below the regular description."""
+    desc = e["description"]
+    note = e.get("hwNote", "")
+    return f"{desc}\r{note}" if note else desc
 
 
 def pack_fixed_string(s, size, field_name, entry_desc):
@@ -99,7 +122,7 @@ def build(entries):
         out += struct.pack(">HHBH", cat_index, int(e["year"]), arch_code,
                             int(e.get("minSystem", 0)))
         out += pack_fixed_string(e["title"], TITLE_SIZE, "title", desc)
-        out += pack_fixed_string(e["description"], DESC_SIZE, "description", desc)
+        out += pack_fixed_string(full_description(e), DESC_SIZE, "description", desc)
         out += pack_fixed_string(e["remotePath"], PATH_SIZE, "remotePath", desc)
         out += struct.pack(">I", int(e["sizeBytes"]))
 
