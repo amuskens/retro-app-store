@@ -7,7 +7,34 @@
 #define kRowHeight    24
 #define kTotalRows    (kCategoryCount + 1) /* +1 for the trailing Live FTP Browse row */
 
+/* Year/CPU filter pills, pinned to the bottom of the sidebar rather than
+   flowing after the row list - a fixed footer, same idea as the toolbar/
+   status bar being pinned to the window's top/bottom edges, so they stay
+   in the same reachable spot regardless of how many categories there are
+   or how tall the window is. Originally these lived in a second toolbar
+   row instead; moved here since two pill buttons crammed alongside the
+   search field read as cluttered, and they're conceptually "narrow the
+   list I'm already looking at", closer in spirit to category selection
+   than to search. */
+#define kFilterFooterHeight 60
+#define kFilterPillHeight   18
+
 static short gSelected = 0;
+
+static void FilterRects(const Rect *bounds, Rect *outYear, Rect *outArch)
+{
+    short footerTop = (short)(bounds->bottom - kFilterFooterHeight);
+
+    outYear->left = (short)(bounds->left + 10);
+    outYear->right = (short)(bounds->right - 10);
+    outYear->top = (short)(footerTop + 10);
+    outYear->bottom = (short)(outYear->top + kFilterPillHeight);
+
+    outArch->left = outYear->left;
+    outArch->right = outYear->right;
+    outArch->top = (short)(outYear->bottom + 8);
+    outArch->bottom = (short)(outArch->top + kFilterPillHeight);
+}
 
 static void RowRect(const Rect *bounds, short index, Rect *out)
 {
@@ -90,7 +117,39 @@ void Sidebar_Draw(const Rect *bounds)
     for (i = 0; i < kTotalRows; i++)
         DrawRow(bounds, i);
 
+    {
+        Rect yearR, archR;
+        short footerTop = (short)(bounds->bottom - kFilterFooterHeight);
+        FilterRects(bounds, &yearR, &archR);
+
+        Theme_DrawDivider(bounds->left, footerTop, bounds->right, footerTop);
+        Theme_DrawPillButton(&yearR, Catalog_YearFilterLabel(Catalog_GetYearFilter()), false);
+        Theme_DrawPillButton(&archR, Catalog_ArchFilterLabel(Catalog_GetArchFilter()), false);
+    }
+
     Theme_DrawDivider(bounds->right - 1, bounds->top, bounds->right - 1, bounds->bottom);
+}
+
+Boolean Sidebar_ClickFilter(const Rect *bounds, Point pt, Boolean *outIsYear)
+{
+    Rect yearR, archR;
+    FilterRects(bounds, &yearR, &archR);
+
+    if (PtInRect(pt, &yearR)) { *outIsYear = true; return true; }
+    if (PtInRect(pt, &archR)) { *outIsYear = false; return true; }
+    return false;
+}
+
+void Sidebar_GetYearFilterRect(const Rect *bounds, Rect *out)
+{
+    Rect archR;
+    FilterRects(bounds, out, &archR);
+}
+
+void Sidebar_GetArchFilterRect(const Rect *bounds, Rect *out)
+{
+    Rect yearR;
+    FilterRects(bounds, &yearR, out);
 }
 
 short Sidebar_Click(const Rect *bounds, Point pt)

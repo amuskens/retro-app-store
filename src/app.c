@@ -63,6 +63,8 @@ static void RedrawStatusOnly(void);
 static void ShowMessage(const char *msg);
 static void HandleContentClick(WindowPtr w, Point local, unsigned long when);
 static void PerformSearch(void);
+static void ShowYearFilterMenu(const Rect *anchor);
+static void ShowArchFilterMenu(const Rect *anchor);
 static void OnCategorySelected(short sel);
 static void BeginDownload(const DownloadRequest *req);
 static void DoConnect(void);
@@ -208,6 +210,75 @@ static void PerformSearch(void)
     Toolbar_GetSearchText(query, sizeof(query));
     ResultsView_ShowSearch(query);
     RedrawResultsAndStatus();
+}
+
+/* Both filter menus are built fresh on every click rather than kept as
+   real MENU resources - the item text is generated (Catalog_*FilterLabel)
+   and there's no need for these to exist except while actually open, the
+   same reasoning a real "pop-up button" Control would use internally.
+   Menu IDs 200/201 are otherwise unused by this app's real (Rez-defined)
+   menus, which top out at 132. anchor is the sidebar pill's rect
+   (window-local - see Sidebar_Get*FilterRect), converted to global here
+   since that's a window/event-loop concern, not a sidebar-drawing one. */
+static void ShowYearFilterMenu(const Rect *anchor)
+{
+    Rect r = *anchor;
+    MenuHandle m;
+    Point tl;
+    long result;
+    short item;
+
+    tl.h = r.left;
+    tl.v = r.bottom;
+    SetPort(gWindow);
+    LocalToGlobal(&tl);
+
+    m = NewMenu(200, "\pYear");
+    AppendMenu(m, "\pAny Year;Before 1990;1990-1993;1994-1996;1997 or later");
+    InsertMenu(m, -1);
+
+    result = PopUpMenuSelect(m, tl.v, tl.h, (short)(Catalog_GetYearFilter() + 1));
+    item = LoWord(result);
+    if (item != 0) {
+        Catalog_SetYearFilter((CatalogYearFilter)(item - 1));
+        ResultsView_RefreshFilter();
+        RelayoutAndRedraw(gWindow); /* not just RedrawResultsAndStatus - the
+                                        pill button's own label (drawn as
+                                        part of the sidebar) needs to
+                                        change too, not just the list */
+    }
+
+    DeleteMenu(200);
+    DisposeMenu(m);
+}
+
+static void ShowArchFilterMenu(const Rect *anchor)
+{
+    Rect r = *anchor;
+    MenuHandle m;
+    Point tl;
+    long result;
+    short item;
+
+    tl.h = r.left;
+    tl.v = r.bottom;
+    SetPort(gWindow);
+    LocalToGlobal(&tl);
+
+    m = NewMenu(201, "\pCPU");
+    AppendMenu(m, "\pAny CPU;68k;PPC");
+    InsertMenu(m, -1);
+
+    result = PopUpMenuSelect(m, tl.v, tl.h, (short)(Catalog_GetArchFilter() + 1));
+    item = LoWord(result);
+    if (item != 0) {
+        Catalog_SetArchFilter((CatalogArchFilter)(item - 1));
+        ResultsView_RefreshFilter();
+        RelayoutAndRedraw(gWindow);
+    }
+
+    DeleteMenu(201);
+    DisposeMenu(m);
 }
 
 static void OnCategorySelected(short sel)
@@ -404,7 +475,15 @@ static void HandleContentClick(WindowPtr w, Point local, unsigned long when)
         return;
     }
     if (PtInRect(local, &sb)) {
-        short sel = Sidebar_Click(&sb, local);
+        Boolean isYear;
+        short sel;
+        if (Sidebar_ClickFilter(&sb, local, &isYear)) {
+            Rect r;
+            if (isYear) { Sidebar_GetYearFilterRect(&sb, &r); ShowYearFilterMenu(&r); }
+            else        { Sidebar_GetArchFilterRect(&sb, &r); ShowArchFilterMenu(&r); }
+            return;
+        }
+        sel = Sidebar_Click(&sb, local);
         if (sel >= 0) OnCategorySelected(sel);
         return;
     }
@@ -537,6 +616,8 @@ void RunApp(void)
 
     ToolboxInit();
     Prefs_Load(&gPrefs);
+    if (Catalog_Load() == kCatalogLoadRejected)
+        ShowMessage("The \xd2Garden Catalog\xd3 file next to this application couldn\xd5t be read, so the built-in catalog is being used instead. Check that it wasn\xd5t corrupted in transfer, or remove it to use the built-in catalog on purpose.");
     SetupMenus();
     CreateMainWindow();
     DrawContent(gWindow);
@@ -557,9 +638,28 @@ void RunApp(void)
                         case inSysWindow:
                             SystemClick(&event, which);
                             break;
-                        case inDrag:
-                            DragWindow(which, event.where, NULL);
+                        case inDrag: {
+                            /* A NULL boundsRect here technically compiles
+                               (DragWindow's third param is just a const
+                               Rect*), but real Mac apps always pass a real
+                               constraint rect - this ROM's DragWindow
+                               doesn't appear to null-check it, so a NULL
+                               silently produces a zero-size drag region
+                               rather than an error, which looks exactly
+                               like "dragging does nothing" (confirmed:
+                               this was the actual bug behind that report,
+                               not a hit-testing issue - inDrag was already
+                               being detected and DragWindow was already
+                               being called correctly). qd.screenBits.bounds
+                               inset by the title bar height keeps the
+                               title bar itself always draggable back into
+                               view rather than letting the whole window
+                               go off-screen. */
+                            Rect dragBounds = qd.screenBits.bounds;
+                            InsetRect(&dragBounds, 4, 4);
+                            DragWindow(which, event.where, &dragBounds);
                             break;
+                        }
                         case inGoAway:
                             if (TrackGoAway(which, event.where)) {
                                 if (gConnected) DoDisconnect();

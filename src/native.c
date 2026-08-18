@@ -1,5 +1,7 @@
 #include <string.h>
 #include <Fonts.h>
+#include <Files.h>
+#include <Processes.h>
 
 #include "native.h"
 
@@ -78,4 +80,26 @@ void TruncateCStringToWidth(const char *src, char *buf, short bufSize, short max
         buf[0] = 0;
         strncat(buf, "...", (size_t)(bufSize - 1));
     }
+}
+
+OSErr Native_GetAppFolder(short *outVRefNum, long *outDirID)
+{
+    ProcessSerialNumber psn;
+    ProcessInfoRec info;
+    FSSpec appSpec;
+    OSErr err;
+
+    err = GetCurrentProcess(&psn);
+    if (err != noErr) return err;
+
+    memset(&info, 0, sizeof(info));
+    info.processInfoLength = sizeof(info);
+    info.processName = NULL;
+    info.processAppSpec = &appSpec;
+    err = GetProcessInformation(&psn, &info);
+    if (err != noErr) return err;
+
+    *outVRefNum = appSpec.vRefNum;
+    *outDirID = appSpec.parID;
+    return noErr;
 }

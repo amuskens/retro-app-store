@@ -1,0 +1,3308 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "category": "Featured",
+      "title": "Glider 4.0",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Fly a paper airplane through a hazard-filled house.",
+      "remotePath": "/games/Glider4.02.sit",
+      "sizeBytes": 589837
+    },
+    {
+      "category": "Featured",
+      "title": "KidPix 1.0",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Playful paint program for kids, with sound effects for every tool.",
+      "remotePath": "/apps/KidPix.sit",
+      "sizeBytes": 45728
+    },
+    {
+      "category": "Featured",
+      "title": "StuffIt Expander 4.0.1",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Decompresses .sit, .hqx, and .zip archives. Essential utility.",
+      "remotePath": "/apps/stuffit_expander_4.0.2.sea_.bin",
+      "sizeBytes": 138368
+    },
+    {
+      "category": "Featured",
+      "title": "ResEdit 2.1.3",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Apple's own resource editor - edit menus, dialogs, icons, and more.",
+      "remotePath": "/apps/resedit_2.1.3.sea_.bin",
+      "sizeBytes": 475904
+    },
+    {
+      "category": "Featured",
+      "title": "After Dark 3.0",
+      "year": 1993,
+      "arch": "68k",
+      "description": "The screensaver that made flying toasters famous.",
+      "remotePath": "/apps/after_dark_3.0.sit",
+      "sizeBytes": 2847793
+    },
+    {
+      "category": "Featured",
+      "title": "HyperCard 2.4.1",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Build interactive stacks with HyperTalk.",
+      "remotePath": "/apps/HyperCard241.img",
+      "sizeBytes": 47220224
+    },
+    {
+      "category": "Featured",
+      "title": "Fetch 3.0.3",
+      "year": 1995,
+      "arch": "68k",
+      "description": "The classic drag-and-drop FTP client for the Mac.",
+      "remotePath": "/apps/fetch_3.0.sit",
+      "sizeBytes": 252166
+    },
+    {
+      "category": "Featured",
+      "title": "Dark Castle",
+      "year": 1986,
+      "arch": "68k",
+      "description": "Gothic platformer classic from Silicon Beach Software.",
+      "remotePath": "/games/dark_castle_color.sit",
+      "sizeBytes": 1984007
+    },
+    {
+      "category": "Featured",
+      "title": "Disinfectant 3.7",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Free, beloved antivirus utility for classic Mac OS.",
+      "remotePath": "/apps/Disinfectant371.bin",
+      "sizeBytes": 354816
+    },
+    {
+      "category": "Featured",
+      "title": "GraphicConverter 2.6",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Views and converts nearly every image format under the sun.",
+      "remotePath": "/apps/GraphicConverter-2.0.6.sit",
+      "sizeBytes": 392869
+    },
+    {
+      "category": "Featured",
+      "title": "Marathon",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Bungie's landmark sci-fi first-person shooter.",
+      "remotePath": "/games/marathon.sit",
+      "sizeBytes": 5627676
+    },
+    {
+      "category": "Featured",
+      "title": "SimCity 2000",
+      "year": 1994,
+      "arch": "fat",
+      "description": "The acclaimed sequel with a new isometric view.",
+      "remotePath": "/games/simcity2000.sit",
+      "sizeBytes": 9196457
+    },
+    {
+      "category": "Featured",
+      "title": "Myst",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Cyan's landmark surreal exploration adventure game.",
+      "remotePath": "/games/MYSTy_1.0.sit",
+      "sizeBytes": 3292147
+    },
+    {
+      "category": "Featured",
+      "title": "ClarisWorks 4.0 Demo",
+      "year": 1995,
+      "arch": "fat",
+      "description": "All-in-one word processor, spreadsheet, and database, demo.",
+      "remotePath": "/apps/ClarisWorks_4.0.sit",
+      "sizeBytes": 7861143
+    },
+    {
+      "category": "Featured",
+      "title": "Netscape Navigator 2.02",
+      "year": 1996,
+      "arch": "fat",
+      "description": "The web browser that defined the mid-90s internet.",
+      "remotePath": "/apps/netscape-2.02-de.hqx",
+      "sizeBytes": 2894598
+    },
+    {
+      "category": "Featured",
+      "title": "THINK C 5.0",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Symantec's popular C IDE for classic Mac development.",
+      "remotePath": "/apps/think_c_5-0-2.zip",
+      "sizeBytes": 2657019
+    },
+    {
+      "category": "Featured",
+      "title": "QuickTime 2.5",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Apple's multimedia extension for movies and sound.",
+      "remotePath": "/apps/QuickTime_2.5_Installer.sit",
+      "sizeBytes": 2041510
+    },
+    {
+      "category": "Featured",
+      "title": "Maelstrom",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Asteroids reborn, with color graphics and a killer soundtrack.",
+      "remotePath": "/games/Maelstrom_1.3.2.sit",
+      "sizeBytes": 672743
+    },
+    {
+      "category": "Games",
+      "title": "Airborne!",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Overhead paratrooper action game, popular shareware title.",
+      "remotePath": "/games/Airborne.zip",
+      "sizeBytes": 250786
+    },
+    {
+      "category": "Games",
+      "title": "Avara",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Networked 3D arena combat by Ambrosia Software.",
+      "remotePath": "/games/Avarazines.sit",
+      "sizeBytes": 2035223
+    },
+    {
+      "category": "Games",
+      "title": "Barrack",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Overhead tank strategy/action shareware game.",
+      "remotePath": "/games/barrack-103.hqx",
+      "sizeBytes": 4020150
+    },
+    {
+      "category": "Games",
+      "title": "Beyond Dark Castle",
+      "year": 1987,
+      "arch": "68k",
+      "description": "The sequel - bigger castle, tougher trolls.",
+      "remotePath": "/games/beyond_darkcastle.zip",
+      "sizeBytes": 2615910
+    },
+    {
+      "category": "Games",
+      "title": "Bolo",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Networked tank combat game, a pioneer of Mac multiplayer.",
+      "remotePath": "/games/bolo-0997.hqx",
+      "sizeBytes": 835727
+    },
+    {
+      "category": "Games",
+      "title": "Brickles",
+      "year": 1985,
+      "arch": "68k",
+      "description": "Simple, addictive breakout-style brick game.",
+      "remotePath": "/games/Brickles_0.sit",
+      "sizeBytes": 161566
+    },
+    {
+      "category": "Games",
+      "title": "Bubble Trouble",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Underwater bubble-popping puzzle-arcade game.",
+      "remotePath": "/games/Bubble_Trouble_Fusion.sit",
+      "sizeBytes": 693534
+    },
+    {
+      "category": "Games",
+      "title": "Bugdom",
+      "year": 1999,
+      "arch": "ppc",
+      "description": "Pangea Software's whimsical bug-world 3D platformer.",
+      "remotePath": "/games/Bugdom.dmg",
+      "sizeBytes": 50313726
+    },
+    {
+      "category": "Games",
+      "title": "Casino",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Collection of classic casino card and table games.",
+      "remotePath": "/games/MacCasino.SIT",
+      "sizeBytes": 74826
+    },
+    {
+      "category": "Games",
+      "title": "Centipede",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Classic arcade bug-shooting action port.",
+      "remotePath": "/games/centipede.sit",
+      "sizeBytes": 40285
+    },
+    {
+      "category": "Games",
+      "title": "Clockwerx",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Rotating gear and track puzzle-strategy game.",
+      "remotePath": "/games/ClockWerx.SIT",
+      "sizeBytes": 2214421
+    },
+    {
+      "category": "Games",
+      "title": "Continuum",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Multiplayer 2D space combat, forerunner of SubSpace.",
+      "remotePath": "/games/Continuum.sit",
+      "sizeBytes": 97136
+    },
+    {
+      "category": "Games",
+      "title": "Crystal Caliburn",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Pinball simulation with a fantasy theme.",
+      "remotePath": "/games/crystal-caliburn-103.zip",
+      "sizeBytes": 8844595
+    },
+    {
+      "category": "Games",
+      "title": "Crystal Quest",
+      "year": 1987,
+      "arch": "68k",
+      "description": "Fast-paced arcade shooter with dozens of levels.",
+      "remotePath": "/games/crystalquest_2_2_5m.zip",
+      "sizeBytes": 922884
+    },
+    {
+      "category": "Games",
+      "title": "Cythera",
+      "year": 1997,
+      "arch": "68k",
+      "description": "Story-driven action role-playing game.",
+      "remotePath": "/games/Cythera_Installer.sit",
+      "sizeBytes": 7056096
+    },
+    {
+      "category": "Games",
+      "title": "Dark Castle",
+      "year": 1986,
+      "arch": "68k",
+      "description": "Gothic platformer classic from Silicon Beach Software.",
+      "remotePath": "/games/dark_castle_color.sit",
+      "sizeBytes": 1984007
+    },
+    {
+      "category": "Games",
+      "title": "Dark Forces",
+      "year": 1996,
+      "arch": "ppc",
+      "description": "Star Wars first-person shooter, PowerPC Mac port.",
+      "remotePath": "/apps/Dark_Forces_FAQ.sit",
+      "sizeBytes": 85598
+    },
+    {
+      "category": "Games",
+      "title": "Defender of the Crown",
+      "year": 1987,
+      "arch": "68k",
+      "description": "Medieval knight-and-castle action strategy game.",
+      "remotePath": "/games/defender_of_the_crown.sit",
+      "sizeBytes": 358146
+    },
+    {
+      "category": "Games",
+      "title": "Deimos Rising",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Mars-set 3D shareware shooter.",
+      "remotePath": "/games/win_deimosrising.zip",
+      "sizeBytes": 35239852
+    },
+    {
+      "category": "Games",
+      "title": "Deja Vu",
+      "year": 1985,
+      "arch": "68k",
+      "description": "Film-noir graphic adventure classic.",
+      "remotePath": "/games/Deja_Vu.SIT",
+      "sizeBytes": 497953
+    },
+    {
+      "category": "Games",
+      "title": "Dungeon of Doom",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Roguelike dungeon crawler for classic Mac.",
+      "remotePath": "/games/Dungeon-of-Doom.zip",
+      "sizeBytes": 284783
+    },
+    {
+      "category": "Games",
+      "title": "Dungeon of Doom II",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Sequel roguelike dungeon crawler.",
+      "remotePath": "/games/Dungeon-of-Doom.zip",
+      "sizeBytes": 284783
+    },
+    {
+      "category": "Games",
+      "title": "Empire",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Turn-based strategic wargame of global conquest.",
+      "remotePath": "/games/MedEmpires.sit",
+      "sizeBytes": 157335
+    },
+    {
+      "category": "Games",
+      "title": "Enchanted Scepters",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Point-and-click fantasy graphic adventure.",
+      "remotePath": "/games/Enchanted_Scepters.img_.sit",
+      "sizeBytes": 247956
+    },
+    {
+      "category": "Games",
+      "title": "Enigma",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Puzzle game of navigating a marble through mazes.",
+      "remotePath": "/games/ENIGMA.HQX",
+      "sizeBytes": 16042
+    },
+    {
+      "category": "Games",
+      "title": "Eric's Ultimate Solitaire",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Popular shareware solitaire card game collection.",
+      "remotePath": "/games/erics_ultimate_solitaire_cd.sit",
+      "sizeBytes": 7822337
+    },
+    {
+      "category": "Games",
+      "title": "Escape Velocity",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Open-ended space trading and combat, an Ambrosia classic.",
+      "remotePath": "/games/Escape_Velocity_OS_X.dmg",
+      "sizeBytes": 31361759
+    },
+    {
+      "category": "Games",
+      "title": "Ferazel's Wand",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Colorful side-scrolling platform-puzzle adventure.",
+      "remotePath": "/games/ferazelswand.sit",
+      "sizeBytes": 22675042
+    },
+    {
+      "category": "Games",
+      "title": "Flight Simulator",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Microsoft's classic Mac flight simulator.",
+      "remotePath": "/games/Flight_Simulator_1.SIT",
+      "sizeBytes": 231298
+    },
+    {
+      "category": "Games",
+      "title": "Frenzy",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Overhead shoot-em-up with cooperative play.",
+      "remotePath": "/games/Frenzyao.hqx",
+      "sizeBytes": 27519
+    },
+    {
+      "category": "Games",
+      "title": "Glider 4.0",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Fly a paper airplane through a hazard-filled house.",
+      "remotePath": "/games/Glider4.02.sit",
+      "sizeBytes": 589837
+    },
+    {
+      "category": "Games",
+      "title": "Glider PRO",
+      "year": 1994,
+      "arch": "68k",
+      "description": "The definitive, editable sequel to Glider.",
+      "remotePath": "/games/Glider_42.SIT",
+      "sizeBytes": 1380520
+    },
+    {
+      "category": "Games",
+      "title": "GoMoku",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Classic five-in-a-row strategy board game.",
+      "remotePath": "/games/GoMoku._v1.0.sit",
+      "sizeBytes": 9567
+    },
+    {
+      "category": "Games",
+      "title": "Hardball",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Baseball sports simulation game.",
+      "remotePath": "/games/hardball.sit",
+      "sizeBytes": 177015
+    },
+    {
+      "category": "Games",
+      "title": "Harpoon",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Naval warfare strategy simulation.",
+      "remotePath": "/games/Harpoon1.52.sit",
+      "sizeBytes": 451644
+    },
+    {
+      "category": "Games",
+      "title": "Hellcats over the Pacific",
+      "year": 1993,
+      "arch": "68k",
+      "description": "WWII naval combat flight simulator.",
+      "remotePath": "/games/hellcatsoverthepacific.zip",
+      "sizeBytes": 61249212
+    },
+    {
+      "category": "Games",
+      "title": "Hidden Agenda",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Political simulation of running a fictional country.",
+      "remotePath": "/games/hidden_agenda.sit",
+      "sizeBytes": 461448
+    },
+    {
+      "category": "Games",
+      "title": "Iron Helix",
+      "year": 1993,
+      "arch": "68k",
+      "description": "3D real-time strategy set aboard a derelict starship.",
+      "remotePath": "/games/IronHelix_Demo.sit",
+      "sizeBytes": 1654447
+    },
+    {
+      "category": "Games",
+      "title": "Jewel Box",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Match-three gem puzzle game.",
+      "remotePath": "/games/jewelbox_10_202.sit",
+      "sizeBytes": 1054580
+    },
+    {
+      "category": "Games",
+      "title": "Kaboom!",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Catch falling bombs in this Activision arcade port.",
+      "remotePath": "/apps/kaboom.zip",
+      "sizeBytes": 42171991
+    },
+    {
+      "category": "Games",
+      "title": "Lexicross",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Word-based crossword puzzle game show.",
+      "remotePath": "/games/lexicross.zip",
+      "sizeBytes": 11393120
+    },
+    {
+      "category": "Games",
+      "title": "Lode Runner",
+      "year": 1984,
+      "arch": "68k",
+      "description": "Dig, trap, and outrun enemies in this puzzle-platformer classic.",
+      "remotePath": "/games/lode_runner.zip",
+      "sizeBytes": 244985
+    },
+    {
+      "category": "Games",
+      "title": "MacGolf Classic",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Simple, popular shareware golf simulation.",
+      "remotePath": "/games/macgolf23.zip",
+      "sizeBytes": 9574427
+    },
+    {
+      "category": "Games",
+      "title": "Maelstrom",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Asteroids reborn, with color graphics and a killer soundtrack.",
+      "remotePath": "/games/Maelstrom_1.3.2.sit",
+      "sizeBytes": 672743
+    },
+    {
+      "category": "Games",
+      "title": "Mah-Jongg",
+      "year": 1986,
+      "arch": "68k",
+      "description": "Classic tile-matching solitaire game.",
+      "remotePath": "/games/Mahjongg.dmg",
+      "sizeBytes": 27330821
+    },
+    {
+      "category": "Games",
+      "title": "Manhole",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Cyan's whimsical explorable children's adventure, precursor to Myst.",
+      "remotePath": "/games/Manhole.SIT",
+      "sizeBytes": 2383562
+    },
+    {
+      "category": "Games",
+      "title": "Marathon",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Bungie's landmark sci-fi first-person shooter.",
+      "remotePath": "/games/marathon.sit",
+      "sizeBytes": 5627676
+    },
+    {
+      "category": "Games",
+      "title": "Marathon Infinity",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Third entry in Bungie's Marathon trilogy, with Forge/Anvil editors.",
+      "remotePath": "/games/marathon_infinity.sit",
+      "sizeBytes": 37309889
+    },
+    {
+      "category": "Games",
+      "title": "Missile Command",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Defend your cities in this arcade shoot-em-up port.",
+      "remotePath": "/games/MissileCommand.img_.sit",
+      "sizeBytes": 7120
+    },
+    {
+      "category": "Games",
+      "title": "Mixed-Up Mother Goose",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Nursery-rhyme themed children's adventure game.",
+      "remotePath": "/games/mixed_up_mother_goose.sit",
+      "sizeBytes": 426039
+    },
+    {
+      "category": "Games",
+      "title": "Moria",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Classic roguelike dungeon-crawl RPG.",
+      "remotePath": "/games/Moria.SIT",
+      "sizeBytes": 267113
+    },
+    {
+      "category": "Games",
+      "title": "Myst",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Cyan's landmark surreal exploration adventure game.",
+      "remotePath": "/games/MYSTy_1.0.sit",
+      "sizeBytes": 3292147
+    },
+    {
+      "category": "Games",
+      "title": "Oxyd",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Atmospheric puzzle game of stones, switches, and marbles.",
+      "remotePath": "/games/oxyd.sit",
+      "sizeBytes": 684341
+    },
+    {
+      "category": "Games",
+      "title": "Pararena 2",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Fast overhead multiplayer paddle-ball arena game.",
+      "remotePath": "/games/Pararena2.SIT",
+      "sizeBytes": 607440
+    },
+    {
+      "category": "Games",
+      "title": "Pathways Into Darkness",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Bungie's atmospheric first-person horror-adventure.",
+      "remotePath": "/games/pathwaysintodarkness.zip",
+      "sizeBytes": 28087901
+    },
+    {
+      "category": "Games",
+      "title": "Pegleg",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Pirate-themed arcade action game.",
+      "remotePath": "/games/PegLeg.img_.sit",
+      "sizeBytes": 994548
+    },
+    {
+      "category": "Games",
+      "title": "Pipe Dream",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Puzzle game of connecting pipes before the flow starts.",
+      "remotePath": "/games/pipe_dream.sit",
+      "sizeBytes": 459570
+    },
+    {
+      "category": "Games",
+      "title": "Pirates! Gold",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Swashbuckling open-world pirate adventure game.",
+      "remotePath": "/games/Pirates-Gold-CD-iso.sit",
+      "sizeBytes": 29879513
+    },
+    {
+      "category": "Games",
+      "title": "Populous",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Godlike real-time strategy, shape land and lead followers.",
+      "remotePath": "/games/MacPopulous.sit",
+      "sizeBytes": 989592
+    },
+    {
+      "category": "Games",
+      "title": "Prince of Persia",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Swashbuckling platformer - rescue the princess in 60 minutes.",
+      "remotePath": "/games/Prince-of-Persia_Optimized.sit",
+      "sizeBytes": 1452977
+    },
+    {
+      "category": "Games",
+      "title": "Prince of Persia 2",
+      "year": 1994,
+      "arch": "68k",
+      "description": "The Shadow and the Flame - the direct sequel.",
+      "remotePath": "/games/Prince_Of_Persia2.SIT",
+      "sizeBytes": 7716607
+    },
+    {
+      "category": "Games",
+      "title": "Railroad Tycoon",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Business and strategy simulation of building railroads.",
+      "remotePath": "/games/railroad_tycoon.sit",
+      "sizeBytes": 1710976
+    },
+    {
+      "category": "Games",
+      "title": "Realmz",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Deep fantasy role-playing game with scenario editor.",
+      "remotePath": "/games/Realmz-25.sit",
+      "sizeBytes": 2814348
+    },
+    {
+      "category": "Games",
+      "title": "Rise of the Triad",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Fast-paced 90s first-person shooter.",
+      "remotePath": "/games/Rise_of_the_Triad_RottExpr_Intel.dmg",
+      "sizeBytes": 12584183
+    },
+    {
+      "category": "Games",
+      "title": "Risk",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Computer adaptation of the classic conquest board game.",
+      "remotePath": "/games/Risk.sit",
+      "sizeBytes": 62667
+    },
+    {
+      "category": "Games",
+      "title": "Scarab of Ra",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Egyptian-themed match tile puzzle game.",
+      "remotePath": "/games/scarab_of_ra.sit",
+      "sizeBytes": 91881
+    },
+    {
+      "category": "Games",
+      "title": "Scrabble Deluxe",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Enhanced computer edition of the classic word game.",
+      "remotePath": "/games/Deluxe_Scrabble_1.0_disks.hqx",
+      "sizeBytes": 2531933
+    },
+    {
+      "category": "Games",
+      "title": "Scrabble for Macintosh",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Official computer version of the word game.",
+      "remotePath": "/games/Scrabble.dmg",
+      "sizeBytes": 14658980
+    },
+    {
+      "category": "Games",
+      "title": "Shufflepuck Cafe",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Air-hockey against a cast of alien characters.",
+      "remotePath": "/games/shufflepuck_cafe.sit",
+      "sizeBytes": 442325
+    },
+    {
+      "category": "Games",
+      "title": "Sim City Classic",
+      "year": 1989,
+      "arch": "68k",
+      "description": "The original city-building simulation game.",
+      "remotePath": "/games/SimCity1.0.sit",
+      "sizeBytes": 205737
+    },
+    {
+      "category": "Games",
+      "title": "Sim Life Classic",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Genetic ecosystem simulation from Maxis.",
+      "remotePath": "/games/SimLifeDemo.sit",
+      "sizeBytes": 518419
+    },
+    {
+      "category": "Games",
+      "title": "SimAnt",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Simulate and control a colony of ants.",
+      "remotePath": "/games/Simant.sit",
+      "sizeBytes": 1157776
+    },
+    {
+      "category": "Games",
+      "title": "SimCity 2000",
+      "year": 1994,
+      "arch": "fat",
+      "description": "The acclaimed sequel with a new isometric view.",
+      "remotePath": "/games/simcity2000.sit",
+      "sizeBytes": 9196457
+    },
+    {
+      "category": "Games",
+      "title": "SimEarth",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Planetary ecosystem and evolution simulation.",
+      "remotePath": "/games/SimEarth.zip",
+      "sizeBytes": 717031
+    },
+    {
+      "category": "Games",
+      "title": "SimLife",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Genetic engineering and ecosystem simulation game.",
+      "remotePath": "/games/SimLifeDemo.sit",
+      "sizeBytes": 518419
+    },
+    {
+      "category": "Games",
+      "title": "Sky Shadow",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Side-scrolling helicopter combat game.",
+      "remotePath": "/games/SkyShadow_demo.sit",
+      "sizeBytes": 525569
+    },
+    {
+      "category": "Games",
+      "title": "Solarian II",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Vertical-scrolling space shooter with striking vector graphics.",
+      "remotePath": "/games/Solarian_II_1.1.dmg",
+      "sizeBytes": 860750
+    },
+    {
+      "category": "Games",
+      "title": "Spaceward Ho!",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Turn-based galactic conquest strategy game.",
+      "remotePath": "/games/Spaceward_Ho_v2.01.zip",
+      "sizeBytes": 711805
+    },
+    {
+      "category": "Games",
+      "title": "Spectre",
+      "year": 1991,
+      "arch": "68k",
+      "description": "3D networked tank battles rendered in QuickDraw 3D.",
+      "remotePath": "/games/Spectre_1.1.sit",
+      "sizeBytes": 784179
+    },
+    {
+      "category": "Games",
+      "title": "Spectre Supreme",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Enhanced edition of the 3D tank battle game Spectre.",
+      "remotePath": "/games/spectre_supreme.zip",
+      "sizeBytes": 9046645
+    },
+    {
+      "category": "Games",
+      "title": "Star Trek: 25th Anniversary",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Point-and-click adventure based on the original series.",
+      "remotePath": "/games/star_trek_25th_anniversary.sit",
+      "sizeBytes": 5895842
+    },
+    {
+      "category": "Games",
+      "title": "Stone Age",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Prehistoric-themed puzzle-platform game.",
+      "remotePath": "/apps/The_Flintstones_image.sit",
+      "sizeBytes": 1226964
+    },
+    {
+      "category": "Games",
+      "title": "Strategic Conquest",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Turn-based war strategy game, a Mac classic.",
+      "remotePath": "/games/StrategicConquest.sit",
+      "sizeBytes": 347900
+    },
+    {
+      "category": "Games",
+      "title": "Stunt Copter",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Side-scrolling helicopter stunt-flying game.",
+      "remotePath": "/games/StuntCopter1.2.sit",
+      "sizeBytes": 15136
+    },
+    {
+      "category": "Games",
+      "title": "Taskmaker",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Fantasy role-playing dungeon-crawl adventure.",
+      "remotePath": "/games/TaskMaker101.sit",
+      "sizeBytes": 1320832
+    },
+    {
+      "category": "Games",
+      "title": "Tetris",
+      "year": 1988,
+      "arch": "68k",
+      "description": "The classic falling-block puzzle game.",
+      "remotePath": "/games/Tetris_DA.zip",
+      "sizeBytes": 608565
+    },
+    {
+      "category": "Games",
+      "title": "Tetris Max",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Popular shareware Tetris clone with color graphics.",
+      "remotePath": "/games/TetrisMax2.1.sit",
+      "sizeBytes": 603421
+    },
+    {
+      "category": "Games",
+      "title": "The Ancient Art of War",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Real-time medieval strategy and tactics game.",
+      "remotePath": "/games/Ancient_Art_of_War.sit",
+      "sizeBytes": 225623
+    },
+    {
+      "category": "Games",
+      "title": "The Journeyman Project",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Time-travel science-fiction adventure game.",
+      "remotePath": "/games/JourneymanProject_Preview.sit",
+      "sizeBytes": 5583501
+    },
+    {
+      "category": "Games",
+      "title": "Ultima V",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Classic Origin computer role-playing game.",
+      "remotePath": "/games/Ultima_IV_Goodies.zip",
+      "sizeBytes": 38841292
+    },
+    {
+      "category": "Games",
+      "title": "Uninvited",
+      "year": 1986,
+      "arch": "68k",
+      "description": "Icom Simulations haunted-house graphic adventure.",
+      "remotePath": "/games/uninvited.zip",
+      "sizeBytes": 4355260
+    },
+    {
+      "category": "Games",
+      "title": "Warlords",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Turn-based fantasy conquest strategy game.",
+      "remotePath": "/games/Warlords2.sit",
+      "sizeBytes": 5511340
+    },
+    {
+      "category": "Games",
+      "title": "Wing Commander",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Space combat simulation with cinematic story missions.",
+      "remotePath": "/games/WingCommanderIV_Demo.sit",
+      "sizeBytes": 43191247
+    },
+    {
+      "category": "Games",
+      "title": "Wizardry",
+      "year": 1987,
+      "arch": "68k",
+      "description": "Classic dungeon-crawling role-playing game series.",
+      "remotePath": "/games/wizardry_i.zip",
+      "sizeBytes": 10853506
+    },
+    {
+      "category": "Games",
+      "title": "Wolfenstein 3D Mac",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Classic Mac port of id Software's pioneering FPS.",
+      "remotePath": "/games/wolfenstein3d_1_0_2.zip",
+      "sizeBytes": 19180465
+    },
+    {
+      "category": "Games",
+      "title": "Word Munchers",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Educational word-recognition arcade game.",
+      "remotePath": "/games/Word_Munchers.img_.sit",
+      "sizeBytes": 810532
+    },
+    {
+      "category": "Games",
+      "title": "You Don't Know Jack",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Irreverent trivia game show, Berkeley Systems.",
+      "remotePath": "/games/You_Dont_Know_Jack_2.sit",
+      "sizeBytes": 24347747
+    },
+    {
+      "category": "Games",
+      "title": "Zip! Zap!",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Fast-paced puzzle-action game.",
+      "remotePath": "/games/Zapdos.iso_.zip",
+      "sizeBytes": 25290113
+    },
+    {
+      "category": "Games",
+      "title": "Zone Raiders",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Isometric arena combat action game.",
+      "remotePath": "/games/Zone_Raiders_Demo.sit_.hqx",
+      "sizeBytes": 10698099
+    },
+    {
+      "category": "Games",
+      "title": "Zoop",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Fast-paced puzzle game of shooting colored shapes.",
+      "remotePath": "/games/Zoop.img_.sit",
+      "sizeBytes": 1353396
+    },
+    {
+      "category": "Utilities",
+      "title": "Aaron 1.1",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Gives System 7 a Mac OS 8 Platinum-style appearance.",
+      "remotePath": "/apps/aaron-151.hqx",
+      "sizeBytes": 205138
+    },
+    {
+      "category": "Utilities",
+      "title": "Alarming Events",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Reminders and alarms control panel.",
+      "remotePath": "/apps/Alarming_Events_dc42.sit",
+      "sizeBytes": 400674
+    },
+    {
+      "category": "Utilities",
+      "title": "AppDisk",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Creates a RAM disk from an application without a control panel.",
+      "remotePath": "/apps/AppDisk1.5.sit",
+      "sizeBytes": 16656
+    },
+    {
+      "category": "Utilities",
+      "title": "Apple HD SC Setup",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Apple's own hard disk formatting utility.",
+      "remotePath": "/apps/AppleHDSCSetup.hqx",
+      "sizeBytes": 36711
+    },
+    {
+      "category": "Utilities",
+      "title": "Apple System Profiler",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Reports detailed system configuration information.",
+      "remotePath": "/apps/Apple_System_Profiler_1.0.1.sea_.bin",
+      "sizeBytes": 311936
+    },
+    {
+      "category": "Utilities",
+      "title": "Apple Video Player",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Software for viewing video-in on AV Macintosh models.",
+      "remotePath": "/apps/Apple_Video_Player_1.7.2.sit",
+      "sizeBytes": 498153
+    },
+    {
+      "category": "Utilities",
+      "title": "AppleShare Client",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Client software for connecting to AppleShare file servers.",
+      "remotePath": "/apps/AppleShare_Client383.sit",
+      "sizeBytes": 5122947
+    },
+    {
+      "category": "Utilities",
+      "title": "AutoDoubler",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Transparent on-the-fly file compression utility.",
+      "remotePath": "/apps/Autodoubler_2.0.sit",
+      "sizeBytes": 399478
+    },
+    {
+      "category": "Utilities",
+      "title": "BeHierarchic",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Adds hierarchical folder menus to the Apple menu.",
+      "remotePath": "/apps/BeHierarchic4.2.sit",
+      "sizeBytes": 237504
+    },
+    {
+      "category": "Utilities",
+      "title": "CanOpener",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Extracts text, sound, and pictures from any file.",
+      "remotePath": "/apps/CanOpener.zip",
+      "sizeBytes": 122066
+    },
+    {
+      "category": "Utilities",
+      "title": "ClickChange",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Customizes the appearance of Finder icons and windows.",
+      "remotePath": "/apps/click_change_2.sit",
+      "sizeBytes": 1759726
+    },
+    {
+      "category": "Utilities",
+      "title": "Compact Pro 1.51",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Fast, efficient archiving utility, a StuffIt alternative.",
+      "remotePath": "/apps/Compact_Pro_1.51_fr.sit",
+      "sizeBytes": 196834
+    },
+    {
+      "category": "Utilities",
+      "title": "Conflict Catcher",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Manages and troubleshoots INIT/extension conflicts.",
+      "remotePath": "/apps/conflict_catcher9.sit",
+      "sizeBytes": 7513004
+    },
+    {
+      "category": "Utilities",
+      "title": "Convert It",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Unit and currency conversion desk accessory.",
+      "remotePath": "/apps/Convert_1.3.sit",
+      "sizeBytes": 36112
+    },
+    {
+      "category": "Utilities",
+      "title": "Copy Agent",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Automates and schedules file-copy operations.",
+      "remotePath": "/apps/CopyAgent1.0.smi_.sit",
+      "sizeBytes": 1753714
+    },
+    {
+      "category": "Utilities",
+      "title": "CopyDoubler",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Speeds up and queues Finder copy operations.",
+      "remotePath": "/apps/CopyDoubler1.0.hqx",
+      "sizeBytes": 106319
+    },
+    {
+      "category": "Utilities",
+      "title": "Default Folder 2.1",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Remembers folders and adds shortcuts to file dialogs.",
+      "remotePath": "/apps/Default-Folder-2.5.1.sit",
+      "sizeBytes": 121419
+    },
+    {
+      "category": "Utilities",
+      "title": "Disinfectant 3.7",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Free, beloved antivirus utility for classic Mac OS.",
+      "remotePath": "/apps/Disinfectant371.bin",
+      "sizeBytes": 354816
+    },
+    {
+      "category": "Utilities",
+      "title": "Disk First Aid",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Apple's own disk-checking and repair utility.",
+      "remotePath": "/apps/DiskFirstAid.hqx",
+      "sizeBytes": 52956
+    },
+    {
+      "category": "Utilities",
+      "title": "DiskCopy 6.3.3",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Apple's tool for making and restoring disk images.",
+      "remotePath": "/apps/Disk-Copy-633-smi.bin",
+      "sizeBytes": 771584
+    },
+    {
+      "category": "Utilities",
+      "title": "DiskDup+",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Fast floppy disk duplication utility.",
+      "remotePath": "/apps/DiskDupPlus2.1.sit",
+      "sizeBytes": 22112
+    },
+    {
+      "category": "Utilities",
+      "title": "DiskTools",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Small collection of disk-management utilities.",
+      "remotePath": "/apps/disktools_ii.sit",
+      "sizeBytes": 48657
+    },
+    {
+      "category": "Utilities",
+      "title": "DiskWarrior",
+      "year": 1998,
+      "arch": "fat",
+      "description": "Rebuilds and optimizes corrupted disk directories.",
+      "remotePath": "/apps/DiskWarrior_1.0.2.sea",
+      "sizeBytes": 748419
+    },
+    {
+      "category": "Utilities",
+      "title": "DragThing",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Customizable floating application/document launcher.",
+      "remotePath": "/apps/dragthing-29.sit",
+      "sizeBytes": 2290601
+    },
+    {
+      "category": "Utilities",
+      "title": "Easy Envelopes",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Simple utility for printing addressed envelopes.",
+      "remotePath": "/apps/EasyEnvelopes.sit",
+      "sizeBytes": 51653
+    },
+    {
+      "category": "Utilities",
+      "title": "Extensions Manager",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Apple's own control panel for managing startup extensions.",
+      "remotePath": "/apps/Extensions_Manager_200.img_.sit",
+      "sizeBytes": 24482
+    },
+    {
+      "category": "Utilities",
+      "title": "File Buddy",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Swiss-army-knife file and type/creator editing utility.",
+      "remotePath": "/apps/FileBuddy7.sit",
+      "sizeBytes": 995625
+    },
+    {
+      "category": "Utilities",
+      "title": "FinderPop",
+      "year": 1997,
+      "arch": "68k",
+      "description": "Adds a hierarchical contextual menu to the Finder.",
+      "remotePath": "/apps/finderpop.hqx",
+      "sizeBytes": 549879
+    },
+    {
+      "category": "Utilities",
+      "title": "Flash-It 3.0.2",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Screen capture utility with adjustable compression.",
+      "remotePath": "/apps/Flash-It3.0.2.sit",
+      "sizeBytes": 76845
+    },
+    {
+      "category": "Utilities",
+      "title": "Font/DA Mover",
+      "year": 1985,
+      "arch": "68k",
+      "description": "Apple's classic utility for installing fonts and desk accessories.",
+      "remotePath": "/apps/FontDAMover41.hqx",
+      "sizeBytes": 57072
+    },
+    {
+      "category": "Utilities",
+      "title": "FWB Hard Disk Toolkit",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Third-party SCSI hard disk formatting and driver utility.",
+      "remotePath": "/apps/FWB_Hard_Disk_Toolkittm_2.0.sit",
+      "sizeBytes": 3980275
+    },
+    {
+      "category": "Utilities",
+      "title": "GateKeeper",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Early INIT-based virus protection extension.",
+      "remotePath": "/apps/GateKeeper1.1.1.sit",
+      "sizeBytes": 79433
+    },
+    {
+      "category": "Utilities",
+      "title": "Icon Machine",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Simple icon-editing utility.",
+      "remotePath": "/apps/iconmachine2.sit",
+      "sizeBytes": 803180
+    },
+    {
+      "category": "Utilities",
+      "title": "Iconographer",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Advanced Finder icon creation and editing tool.",
+      "remotePath": "/apps/iconographerJ.sit",
+      "sizeBytes": 564125
+    },
+    {
+      "category": "Utilities",
+      "title": "INITPicker",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Manages startup extension load order and conflicts.",
+      "remotePath": "/apps/initpicker_v302.zip",
+      "sizeBytes": 312411
+    },
+    {
+      "category": "Utilities",
+      "title": "Kaleidoscope 1.2.6",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Theming extension for custom window and menu appearances.",
+      "remotePath": "/apps/kaleidoscope16US.sit",
+      "sizeBytes": 497458
+    },
+    {
+      "category": "Utilities",
+      "title": "MacEnvelope",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Envelope and label printing utility.",
+      "remotePath": "/apps/macenvelope_v52.zip",
+      "sizeBytes": 498358
+    },
+    {
+      "category": "Utilities",
+      "title": "MacPGP",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Classic Mac port of Pretty Good Privacy encryption.",
+      "remotePath": "/apps/macpgp-bundle.sit",
+      "sizeBytes": 2981961
+    },
+    {
+      "category": "Utilities",
+      "title": "MacsBug",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Apple's low-level debugger for the classic Mac OS.",
+      "remotePath": "/apps/MacsBug_IV.sit",
+      "sizeBytes": 11413
+    },
+    {
+      "category": "Utilities",
+      "title": "MacTools",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Central Point's disk repair and undelete utility suite.",
+      "remotePath": "/apps/MacTools.hqx",
+      "sizeBytes": 140890
+    },
+    {
+      "category": "Utilities",
+      "title": "MacZap",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Simple utility to zap the PRAM.",
+      "remotePath": "/apps/MacZap42.hqx",
+      "sizeBytes": 155959
+    },
+    {
+      "category": "Utilities",
+      "title": "Norton Utilities for Macintosh",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Symantec's disk repair and optimization suite.",
+      "remotePath": "/apps/nortonutilities321.sit",
+      "sizeBytes": 3837770
+    },
+    {
+      "category": "Utilities",
+      "title": "Now Utilities 6.0",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Menu, folder, and startup-manager enhancements bundle.",
+      "remotePath": "/apps/Now_Utilities_6.0.sit",
+      "sizeBytes": 5386182
+    },
+    {
+      "category": "Utilities",
+      "title": "OnCue",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Application and document launcher menu utility.",
+      "remotePath": "/apps/on_cue_v13.sit",
+      "sizeBytes": 12155
+    },
+    {
+      "category": "Utilities",
+      "title": "PBTool",
+      "year": 1993,
+      "arch": "68k",
+      "description": "PowerBook battery and power-management utility.",
+      "remotePath": "/apps/PBTools10.sit",
+      "sizeBytes": 60361
+    },
+    {
+      "category": "Utilities",
+      "title": "Peek-A-Boo",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Displays running processes and open files, like a task manager.",
+      "remotePath": "/apps/peek-a-boo-15.sit",
+      "sizeBytes": 275765
+    },
+    {
+      "category": "Utilities",
+      "title": "PopChar",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Shows and inserts special characters from any font.",
+      "remotePath": "/apps/popchar.sit",
+      "sizeBytes": 59376
+    },
+    {
+      "category": "Utilities",
+      "title": "PowerMerge",
+      "year": 1996,
+      "arch": "fat",
+      "description": "File synchronization and backup utility.",
+      "remotePath": "/apps/PowerMerge_2.02.sit",
+      "sizeBytes": 348631
+    },
+    {
+      "category": "Utilities",
+      "title": "Public Utilities",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Freeware collection of small Finder and system utilities.",
+      "remotePath": "/apps/Public_Utilities_1.0.sit",
+      "sizeBytes": 677377
+    },
+    {
+      "category": "Utilities",
+      "title": "RAM Charger",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Dynamically manages application memory allocation.",
+      "remotePath": "/apps/ram_charger_3.0.1.sit",
+      "sizeBytes": 622866
+    },
+    {
+      "category": "Utilities",
+      "title": "ResEdit 2.1.3",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Apple's own resource editor - edit menus, dialogs, icons, and more.",
+      "remotePath": "/apps/resedit_2.1.3.sea_.bin",
+      "sizeBytes": 475904
+    },
+    {
+      "category": "Utilities",
+      "title": "ScrapIt Pro",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Enhanced clipboard/scrapbook management utility.",
+      "remotePath": "/apps/ScrapItPro_3.3.sit",
+      "sizeBytes": 100944
+    },
+    {
+      "category": "Utilities",
+      "title": "SCSIProbe 4.3",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Inspect and mount SCSI devices from a control strip module.",
+      "remotePath": "/apps/SCSIProbe_4.0.hqx",
+      "sizeBytes": 15701
+    },
+    {
+      "category": "Utilities",
+      "title": "Silverlining",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Third-party SCSI hard disk driver and formatting utility.",
+      "remotePath": "/apps/silver_lining.sit",
+      "sizeBytes": 147803
+    },
+    {
+      "category": "Utilities",
+      "title": "Snitch",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Displays and edits Finder file information.",
+      "remotePath": "/apps/Snitch_2.1.sit",
+      "sizeBytes": 258819
+    },
+    {
+      "category": "Utilities",
+      "title": "SoftwareFPU",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Software floating-point emulation for FPU-less Macs.",
+      "remotePath": "/apps/softwarefpu201a.sit",
+      "sizeBytes": 46720
+    },
+    {
+      "category": "Utilities",
+      "title": "Speed Copy",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Accelerates Finder file-copy operations.",
+      "remotePath": "/apps/Speed_Copy_8.1D_Server.sit",
+      "sizeBytes": 54781
+    },
+    {
+      "category": "Utilities",
+      "title": "SpeedyFinder7 3.5",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Collection of Finder speed and productivity hacks.",
+      "remotePath": "/apps/speedyfinder7.sit",
+      "sizeBytes": 322598
+    },
+    {
+      "category": "Utilities",
+      "title": "StuffIt Deluxe",
+      "year": 1995,
+      "arch": "fat",
+      "description": "The full commercial StuffIt archiving application.",
+      "remotePath": "/apps/StuffItDeluxe8.sit",
+      "sizeBytes": 13732322
+    },
+    {
+      "category": "Utilities",
+      "title": "StuffIt Expander 4.0.1",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Decompresses .sit, .hqx, and .zip archives. Essential utility.",
+      "remotePath": "/apps/stuffit_expander_4.0.2.sea_.bin",
+      "sizeBytes": 138368
+    },
+    {
+      "category": "Utilities",
+      "title": "StuffIt Lite 3.6",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Compress and archive files, freeware sibling of StuffIt Deluxe.",
+      "remotePath": "/apps/stuffitlite36.img",
+      "sizeBytes": 673792
+    },
+    {
+      "category": "Utilities",
+      "title": "Suitcase",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Font and desk accessory management utility.",
+      "remotePath": "/apps/Suitcasetm_8.sit",
+      "sizeBytes": 2847311
+    },
+    {
+      "category": "Utilities",
+      "title": "SuperClock",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Menu-bar clock and calendar utility.",
+      "remotePath": "/apps/SuperClock.hqx",
+      "sizeBytes": 6059
+    },
+    {
+      "category": "Utilities",
+      "title": "TattleTech 2.05",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Reports detailed hardware and system configuration.",
+      "remotePath": "/apps/TattleTech_2.03.sit",
+      "sizeBytes": 263512
+    },
+    {
+      "category": "Utilities",
+      "title": "TechTool",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Simple utility to zap the PRAM and rebuild the desktop.",
+      "remotePath": "/apps/TechTool_v109.sit",
+      "sizeBytes": 198654
+    },
+    {
+      "category": "Utilities",
+      "title": "TechTool Pro",
+      "year": 1997,
+      "arch": "fat",
+      "description": "Comprehensive hardware and disk diagnostic suite.",
+      "remotePath": "/apps/TechTool_v109.sit",
+      "sizeBytes": 198654
+    },
+    {
+      "category": "Utilities",
+      "title": "Timbuktu",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Remote screen sharing and control over a network.",
+      "remotePath": "/apps/timbuktu4.sit",
+      "sizeBytes": 23501922
+    },
+    {
+      "category": "Utilities",
+      "title": "TypeIt4Me",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Text-expansion typing shortcut utility.",
+      "remotePath": "/apps/TypeIt4Me3.2.sit",
+      "sizeBytes": 18934
+    },
+    {
+      "category": "Utilities",
+      "title": "USB Overdrive",
+      "year": 1998,
+      "arch": "ppc",
+      "description": "Third-party driver for USB mice and joysticks.",
+      "remotePath": "/apps/usb-overdrive-12.sit",
+      "sizeBytes": 219674
+    },
+    {
+      "category": "Utilities",
+      "title": "Vaccine",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Simple, early INIT-based virus protection.",
+      "remotePath": "/apps/vaccine43.hqx",
+      "sizeBytes": 281820
+    },
+    {
+      "category": "Utilities",
+      "title": "Virex",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Datawatch's antivirus utility for classic Mac OS.",
+      "remotePath": "/apps/Virex-D.sit",
+      "sizeBytes": 33835
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Photoshop LE",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Limited edition of Adobe's image editing software.",
+      "remotePath": "/apps/Adobe_Photoshop_5.0_LE.sit",
+      "sizeBytes": 16994871
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Adobe Premiere Demo",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Digital video editing software, demo edition.",
+      "remotePath": "/apps/adobe_premiere4.sit",
+      "sizeBytes": 6645523
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Alchemy",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Early digital sound-editing shareware application.",
+      "remotePath": "/apps/Alchemy26.sit",
+      "sizeBytes": 625111
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Aldus FreeHand",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Vector illustration application, an Illustrator rival.",
+      "remotePath": "/apps/Aldus-FreeHand-4.sit",
+      "sizeBytes": 21630283
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Aldus PageMaker",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Pioneering desktop publishing application.",
+      "remotePath": "/apps/alduspagemaker42.sit",
+      "sizeBytes": 8309140
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Amadeus",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Shareware digital sound editor.",
+      "remotePath": "/apps/amadeus-158-kaleidoscope.sit",
+      "sizeBytes": 137238
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Audioshop",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Digital audio recording and editing application.",
+      "remotePath": "/apps/Audioshop_1.0.zip",
+      "sizeBytes": 961031
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Cameraman 1.5",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Screen recording utility for making QuickTime movies.",
+      "remotePath": "/apps/cameraman30.sit",
+      "sizeBytes": 1504464
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Canvas",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Combined vector illustration and image editing application.",
+      "remotePath": "/apps/canvas_3.sit",
+      "sizeBytes": 3841277
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "ClarisDraw",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Claris's object-based drawing and illustration program.",
+      "remotePath": "/apps/clarisdraw-1-nl.sit",
+      "sizeBytes": 6424426
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Color It! 4.0",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Full-featured image editor and paint program.",
+      "remotePath": "/apps/ColorIt_4_0.img",
+      "sizeBytes": 11488977
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Colorizer",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Adds color tinting effects to black-and-white images.",
+      "remotePath": "/games/Colorizer.sea_.hqx",
+      "sizeBytes": 2685943
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "CU-SeeMe",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Early internet videoconferencing software.",
+      "remotePath": "/apps/CU-SeeMeWin.zip",
+      "sizeBytes": 305491
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Digital Darkroom",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Early black-and-white photo editing application.",
+      "remotePath": "/apps/Digital_Darkroom_1.0.zip",
+      "sizeBytes": 926896
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Dreams",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Early 3D animation and rendering application.",
+      "remotePath": "/apps/Dream.sit",
+      "sizeBytes": 2036447
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "GifBuilder",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Freeware tool for building animated GIFs.",
+      "remotePath": "/apps/GifBuilder_1.0.sit",
+      "sizeBytes": 231220
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "GIFConverter 2.3.7",
+      "year": 1993,
+      "arch": "68k",
+      "description": "One of the first Mac tools for making and viewing GIFs.",
+      "remotePath": "/apps/GIFConverter_2.3.7_f.sit",
+      "sizeBytes": 381559
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "GraphicConverter 2.6",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Views and converts nearly every image format under the sun.",
+      "remotePath": "/apps/GraphicConverter-2.0.6.sit",
+      "sizeBytes": 392869
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Illustrator 88",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Early version of Adobe's vector illustration software.",
+      "remotePath": "/apps/Adobe_Illustrator_88.sit",
+      "sizeBytes": 259407
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "ImageStudio",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Grayscale image scanning and editing application.",
+      "remotePath": "/apps/Image_Studio.sit_.hqx",
+      "sizeBytes": 589298
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Infini-D Demo",
+      "year": 1994,
+      "arch": "fat",
+      "description": "3D modeling, rendering, and animation, demo edition.",
+      "remotePath": "/apps/infini-d_4.5.sit",
+      "sizeBytes": 21696110
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "JPEGView 3.3",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Fast, lightweight JPEG and PICT viewer.",
+      "remotePath": "/apps/JPEGView_3.3.sit",
+      "sizeBytes": 554471
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Kai's Power Tools",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Plug-in filter suite for surreal Photoshop effects.",
+      "remotePath": "/apps/Kais_Power_Tools_3_Floppy_Set.zip",
+      "sizeBytes": 5643650
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "KidPix 1.0",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Playful paint program for kids, with sound effects for every tool.",
+      "remotePath": "/apps/KidPix.sit",
+      "sizeBytes": 45728
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "MacDraw",
+      "year": 1984,
+      "arch": "68k",
+      "description": "Apple's classic object-based drawing application.",
+      "remotePath": "/apps/macdrawii.sit",
+      "sizeBytes": 1399086
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "MacPaint",
+      "year": 1984,
+      "arch": "68k",
+      "description": "Apple's original bitmap paint program.",
+      "remotePath": "/apps/MacPaint.img",
+      "sizeBytes": 402432
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "MacroMind Director",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Multimedia authoring and animation application.",
+      "remotePath": "/apps/MacroMind_Director_2.sit",
+      "sizeBytes": 4406745
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Ofoto",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Simple flatbed scanner control and image-acquire software.",
+      "remotePath": "/apps/ofoto2.sit",
+      "sizeBytes": 633811
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Painter Classic",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Simplified natural-media painting application.",
+      "remotePath": "/apps/painter_5.sit",
+      "sizeBytes": 34728248
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "PhotoFlash",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Simple consumer image-editing application.",
+      "remotePath": "/apps/PhotoFlash_2.img_.sit",
+      "sizeBytes": 3974628
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "PixelPaint Pro Demo",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Color painting and photo retouching, demo edition.",
+      "remotePath": "/apps/PixelPaint_Pro_3.02.sit",
+      "sizeBytes": 7204023
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Poser",
+      "year": 1995,
+      "arch": "fat",
+      "description": "3D human figure posing and rendering application.",
+      "remotePath": "/apps/poser2.sit",
+      "sizeBytes": 22323746
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "QuicKeys",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Macro and automation utility for repetitive tasks.",
+      "remotePath": "/apps/quickeys_2.1.2_0.sit",
+      "sizeBytes": 876954
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Ray Dream Designer",
+      "year": 1991,
+      "arch": "68k",
+      "description": "3D modeling and ray-tracing rendering application.",
+      "remotePath": "/apps/Ray_Dream_Designer_3.sit",
+      "sizeBytes": 5698229
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "SoundApp",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Freeware sound file player and converter.",
+      "remotePath": "/apps/SoundApp_2.3.1.sit",
+      "sizeBytes": 653628
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "SoundEdit 16 Demo",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Digital audio editing and effects, demo edition.",
+      "remotePath": "/apps/soundedit16.sit",
+      "sizeBytes": 4657648
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "SoundMachine 2.0.1",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Plays and converts sound files in many classic formats.",
+      "remotePath": "/apps/soundmachine271.sit",
+      "sizeBytes": 320388
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Sparkle",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Freeware MPEG movie player for classic Mac OS.",
+      "remotePath": "/apps/Sparkle245.sit",
+      "sizeBytes": 763750
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Specular Collage",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Photo compositing and collage application.",
+      "remotePath": "/apps/Specular_Collage_2.0.2.sit",
+      "sizeBytes": 800283
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "StrataVision 3D",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Early 3D modeling and ray-tracing application.",
+      "remotePath": "/apps/StrataVision3d26.sit",
+      "sizeBytes": 5873014
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "SuperPaint",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Hybrid bitmap and object drawing program.",
+      "remotePath": "/apps/SuperPaint.sit",
+      "sizeBytes": 92895
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Swivel 3D Demo",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Interactive 3D modeling and rendering, demo edition.",
+      "remotePath": "/apps/swivel3d.zip",
+      "sizeBytes": 40984429
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "Type Twister",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Applies distortion effects to typeset text.",
+      "remotePath": "/apps/aldus_type_twister.dmg_.zip",
+      "sizeBytes": 675331
+    },
+    {
+      "category": "Graphics & Sound",
+      "title": "VideoShop",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Consumer-level QuickTime video editing application.",
+      "remotePath": "/apps/VideoShop_4_5.sit",
+      "sizeBytes": 4149594
+    },
+    {
+      "category": "Productivity",
+      "title": "4th Dimension",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Powerful relational database development environment.",
+      "remotePath": "/apps/4th_Dimension_6.5.6.sit",
+      "sizeBytes": 3695395
+    },
+    {
+      "category": "Productivity",
+      "title": "Acta Advantage",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Outline processor for organizing notes and ideas.",
+      "remotePath": "/apps/Acta_Advantagetm.img_.sit",
+      "sizeBytes": 436117
+    },
+    {
+      "category": "Productivity",
+      "title": "Address Book 3.0",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Simple freeware contacts manager.",
+      "remotePath": "/apps/AddressBook_3.6.2.sit",
+      "sizeBytes": 257320
+    },
+    {
+      "category": "Productivity",
+      "title": "Business Filevision",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Graphical, map-based database application.",
+      "remotePath": "/apps/Filevisionr_Business_PDS_0.sit",
+      "sizeBytes": 6160212
+    },
+    {
+      "category": "Productivity",
+      "title": "Claris CAD",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Computer-aided design application from Claris.",
+      "remotePath": "/apps/ClarisCad.sit",
+      "sizeBytes": 883839
+    },
+    {
+      "category": "Productivity",
+      "title": "Claris Organizer",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Combined calendar, address book, and to-do manager.",
+      "remotePath": "/apps/ClarisOrganizer2.sit",
+      "sizeBytes": 3739320
+    },
+    {
+      "category": "Productivity",
+      "title": "ClarisWorks 2.0",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Earlier version of Claris's all-in-one office suite.",
+      "remotePath": "/apps/ClarisWorks20Bv1.hqx",
+      "sizeBytes": 3147779
+    },
+    {
+      "category": "Productivity",
+      "title": "ClarisWorks 4.0 Demo",
+      "year": 1995,
+      "arch": "fat",
+      "description": "All-in-one word processor, spreadsheet, and database, demo.",
+      "remotePath": "/apps/ClarisWorks_4.0.sit",
+      "sizeBytes": 7861143
+    },
+    {
+      "category": "Productivity",
+      "title": "DateBook Pro",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Personal calendar and scheduling application.",
+      "remotePath": "/apps/datebook-v1.sit",
+      "sizeBytes": 302496
+    },
+    {
+      "category": "Productivity",
+      "title": "DeltaGraph Pro",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Charting and graphing presentation application.",
+      "remotePath": "/apps/DeltaGraph1.5.sit",
+      "sizeBytes": 427139
+    },
+    {
+      "category": "Productivity",
+      "title": "Dollars and Sense 6.0",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Personal finance and checkbook-balancing software.",
+      "remotePath": "/apps/Dollars_and_Sense.image_.sit",
+      "sizeBytes": 188488
+    },
+    {
+      "category": "Productivity",
+      "title": "Excel 3.0",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Earlier version of Microsoft's spreadsheet application.",
+      "remotePath": "/apps/Excel_3.0.sit",
+      "sizeBytes": 2075144
+    },
+    {
+      "category": "Productivity",
+      "title": "FileMaker Pro 3.0 Demo",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Popular flat-file database, demo edition.",
+      "remotePath": "/apps/FileMaker_Pro_3.0_V2_Fr.sit",
+      "sizeBytes": 4285514
+    },
+    {
+      "category": "Productivity",
+      "title": "Full Impact",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Ashton-Tate's high-end spreadsheet application.",
+      "remotePath": "/apps/Full_Impact.sit",
+      "sizeBytes": 1498562
+    },
+    {
+      "category": "Productivity",
+      "title": "In Control",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Outline-based to-do list and task manager.",
+      "remotePath": "/apps/In_Control_2.sit",
+      "sizeBytes": 705808
+    },
+    {
+      "category": "Productivity",
+      "title": "MacInTax",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Personal income tax preparation software.",
+      "remotePath": "/apps/Macintax_88.zip",
+      "sizeBytes": 341467
+    },
+    {
+      "category": "Productivity",
+      "title": "MacMoney",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Personal finance and budget-tracking software.",
+      "remotePath": "/apps/MacMoney.sit",
+      "sizeBytes": 373229
+    },
+    {
+      "category": "Productivity",
+      "title": "MacProject II Demo",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Project scheduling with Gantt charts, demo edition.",
+      "remotePath": "/apps/macproject_ii.sit",
+      "sizeBytes": 99880
+    },
+    {
+      "category": "Productivity",
+      "title": "MacProject Pro",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Professional project scheduling and management software.",
+      "remotePath": "/apps/MacProject.sit",
+      "sizeBytes": 50443
+    },
+    {
+      "category": "Productivity",
+      "title": "MacSchedule 2.1",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Freeware appointment book and to-do list manager.",
+      "remotePath": "/apps/MacSchedule.zip",
+      "sizeBytes": 61609
+    },
+    {
+      "category": "Productivity",
+      "title": "MacWrite II",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Claris's classic word processor, sequel to the original MacWrite.",
+      "remotePath": "/apps/macwrite.dmg",
+      "sizeBytes": 6519390
+    },
+    {
+      "category": "Productivity",
+      "title": "Mariah",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Financial spreadsheet modeling application.",
+      "remotePath": "/apps/Mariah.sit",
+      "sizeBytes": 736502
+    },
+    {
+      "category": "Productivity",
+      "title": "Meeting Maker",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Networked group scheduling and calendaring software.",
+      "remotePath": "/apps/Meeting_Maker_1.5.sit",
+      "sizeBytes": 512616
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Excel 4.0 Demo",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Classic spreadsheet application, demo edition.",
+      "remotePath": "/apps/Microsoft_Excel_4.0_French.zip",
+      "sizeBytes": 5496700
+    },
+    {
+      "category": "Productivity",
+      "title": "Microsoft Word 5.1 Demo",
+      "year": 1992,
+      "arch": "68k",
+      "description": "The dominant word processor of the early 90s, demo edition.",
+      "remotePath": "/apps/Microsoft_Word_1.05.zip",
+      "sizeBytes": 5152089
+    },
+    {
+      "category": "Productivity",
+      "title": "More",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Symantec's classic outlining and presentation tool.",
+      "remotePath": "/apps/MORE.sit",
+      "sizeBytes": 251324
+    },
+    {
+      "category": "Productivity",
+      "title": "Nisus Compact",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Lightweight edition of the Nisus word processor.",
+      "remotePath": "/apps/nisuscompact.sea_.hqx",
+      "sizeBytes": 1664811
+    },
+    {
+      "category": "Productivity",
+      "title": "Nisus Writer Demo",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Word processor known for multilingual and macro support.",
+      "remotePath": "/apps/Nisus_Writer_4.03.sit",
+      "sizeBytes": 4443476
+    },
+    {
+      "category": "Productivity",
+      "title": "OmniPage",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Optical character recognition (OCR) software.",
+      "remotePath": "/apps/OmniPage2.zip",
+      "sizeBytes": 397152
+    },
+    {
+      "category": "Productivity",
+      "title": "PowerPoint 3.0",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Earlier version of Microsoft's presentation software.",
+      "remotePath": "/apps/powerpoint_3.0_e_1992.sit",
+      "sizeBytes": 6741744
+    },
+    {
+      "category": "Productivity",
+      "title": "Quicken",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Personal finance and checkbook management software.",
+      "remotePath": "/apps/quicken4.sit",
+      "sizeBytes": 750592
+    },
+    {
+      "category": "Productivity",
+      "title": "QuickMail",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Networked electronic mail client and server software.",
+      "remotePath": "/apps/QuickMail_v201.sit",
+      "sizeBytes": 641665
+    },
+    {
+      "category": "Productivity",
+      "title": "Resolve",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Claris's spreadsheet application.",
+      "remotePath": "/apps/Claris_Resolve_1.1.sit",
+      "sizeBytes": 2034667
+    },
+    {
+      "category": "Productivity",
+      "title": "Smart Alarms",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Simple reminder and alarm scheduling utility.",
+      "remotePath": "/apps/smartalarms8_Folder.sit",
+      "sizeBytes": 103352
+    },
+    {
+      "category": "Productivity",
+      "title": "StatView",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Statistical analysis and graphing application.",
+      "remotePath": "/apps/STATVIEW.zip",
+      "sizeBytes": 43006461
+    },
+    {
+      "category": "Productivity",
+      "title": "SuperCard",
+      "year": 1989,
+      "arch": "68k",
+      "description": "HyperCard-like multimedia authoring environment.",
+      "remotePath": "/apps/SuperCard1.5.sit",
+      "sizeBytes": 2979806
+    },
+    {
+      "category": "Productivity",
+      "title": "TouchBase",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Contact management desk accessory companion to DateBook.",
+      "remotePath": "/apps/TouchBase.zip",
+      "sizeBytes": 391987
+    },
+    {
+      "category": "Productivity",
+      "title": "WordPerfect Demo",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Word processor demo, once a major Word competitor.",
+      "remotePath": "/apps/wordperfect.sit",
+      "sizeBytes": 927070
+    },
+    {
+      "category": "Productivity",
+      "title": "WriteNow 4.0",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Fast, lightweight word processor once bundled with NeXT.",
+      "remotePath": "/apps/WriteNow40_UK.zip",
+      "sizeBytes": 1453294
+    },
+    {
+      "category": "System Extensions",
+      "title": "Adobe Type Manager 3.8",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Smooths PostScript fonts on screen at any size.",
+      "remotePath": "/apps/atm_3.8.2.sit",
+      "sizeBytes": 1073618
+    },
+    {
+      "category": "System Extensions",
+      "title": "After Dark 3.0",
+      "year": 1993,
+      "arch": "68k",
+      "description": "The screensaver that made flying toasters famous.",
+      "remotePath": "/apps/after_dark_3.0.sit",
+      "sizeBytes": 2847793
+    },
+    {
+      "category": "System Extensions",
+      "title": "Apple Menu Options",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Adds hierarchical submenus to the Apple menu.",
+      "remotePath": "/apps/AppleMenuOptions.hqx",
+      "sizeBytes": 33912
+    },
+    {
+      "category": "System Extensions",
+      "title": "AppleTalk Remote Access",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Apple's dial-up remote networking software.",
+      "remotePath": "/apps/AppleTalk_Remote_Access.sit",
+      "sizeBytes": 507687
+    },
+    {
+      "category": "System Extensions",
+      "title": "Big Cursor",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Enlarges the mouse cursor for visibility.",
+      "remotePath": "/apps/Big_cursor.sit",
+      "sizeBytes": 1546
+    },
+    {
+      "category": "System Extensions",
+      "title": "ClockSync",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Synchronizes system clock over a network.",
+      "remotePath": "/apps/ClockSync_II_1.3.0.sit",
+      "sizeBytes": 738743
+    },
+    {
+      "category": "System Extensions",
+      "title": "FullWrite Professional",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Advanced word processor with page layout features.",
+      "remotePath": "/apps/FullWriteProfessional1.1.zip",
+      "sizeBytes": 1398356
+    },
+    {
+      "category": "System Extensions",
+      "title": "General Controls",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Apple's control panel for date, time, and desktop pattern.",
+      "remotePath": "/apps/GeneralControls701patch.sit",
+      "sizeBytes": 26367
+    },
+    {
+      "category": "System Extensions",
+      "title": "Greg's Buttons",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Adds custom appearance buttons to windows and scroll bars.",
+      "remotePath": "/apps/GregsButtons_3.4.sit",
+      "sizeBytes": 59215
+    },
+    {
+      "category": "System Extensions",
+      "title": "Labeler",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Adds custom Finder label colors and names.",
+      "remotePath": "/apps/cd-labeler-fp3.hqx",
+      "sizeBytes": 55589
+    },
+    {
+      "category": "System Extensions",
+      "title": "Menu Clock",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Simple menu bar clock extension.",
+      "remotePath": "/apps/MenuClockv.3.0.sit",
+      "sizeBytes": 1128
+    },
+    {
+      "category": "System Extensions",
+      "title": "MenuChoice 1.2",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Adds a searchable menu of open applications.",
+      "remotePath": "/apps/MenuChoice1.6.sit",
+      "sizeBytes": 17351
+    },
+    {
+      "category": "System Extensions",
+      "title": "MountImage",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Extension for automatically mounting disk images at startup.",
+      "remotePath": "/apps/mountimage-11b3.sit",
+      "sizeBytes": 10214
+    },
+    {
+      "category": "System Extensions",
+      "title": "Note Pad",
+      "year": 1984,
+      "arch": "68k",
+      "description": "Apple's original simple text-note desk accessory.",
+      "remotePath": "/apps/inotepad_0.dmg",
+      "sizeBytes": 1990908
+    },
+    {
+      "category": "System Extensions",
+      "title": "PlainTalk",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Apple's speech recognition and synthesis extension.",
+      "remotePath": "/apps/PlainTalk_1.5.sit",
+      "sizeBytes": 8088573
+    },
+    {
+      "category": "System Extensions",
+      "title": "PowerBar 1.0",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Floating palette of one-click system toggles.",
+      "remotePath": "/apps/PowerBar1.1.1.sit",
+      "sizeBytes": 113664
+    },
+    {
+      "category": "System Extensions",
+      "title": "PowerKey",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Extension for controlling a Sophisticated Circuits PowerKey.",
+      "remotePath": "/apps/PowerKey_3-4.sit",
+      "sizeBytes": 1282092
+    },
+    {
+      "category": "System Extensions",
+      "title": "Puzzle",
+      "year": 1984,
+      "arch": "68k",
+      "description": "The classic sliding-tile-puzzle desk accessory.",
+      "remotePath": "/games/101_puzzle.sit",
+      "sizeBytes": 615527
+    },
+    {
+      "category": "System Extensions",
+      "title": "QuickDraw GX",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Apple's advanced graphics and printing architecture extension.",
+      "remotePath": "/apps/QuickDraw_GX_112.sit",
+      "sizeBytes": 15353078
+    },
+    {
+      "category": "System Extensions",
+      "title": "QuickTime 2.5",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Apple's multimedia extension for movies and sound.",
+      "remotePath": "/apps/QuickTime_2.5_Installer.sit",
+      "sizeBytes": 2041510
+    },
+    {
+      "category": "System Extensions",
+      "title": "RAM Doubler",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Connectix's popular memory-compression extension.",
+      "remotePath": "/apps/Ram_Doubler_1.sit",
+      "sizeBytes": 47236
+    },
+    {
+      "category": "System Extensions",
+      "title": "Rebound",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Automatically restarts the Mac after a system crash.",
+      "remotePath": "/apps/Rebound2.0.sit",
+      "sizeBytes": 1837930
+    },
+    {
+      "category": "System Extensions",
+      "title": "SCSI Accelerator",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Extension for improving SCSI transfer performance.",
+      "remotePath": "/apps/scsiaccelerator7.0.cpt_.hqx",
+      "sizeBytes": 16946
+    },
+    {
+      "category": "System Extensions",
+      "title": "ShrinkWrap",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Creates and mounts self-mounting disk image files.",
+      "remotePath": "/apps/ShrinkWraptm.hqx",
+      "sizeBytes": 107709
+    },
+    {
+      "category": "System Extensions",
+      "title": "SoundMaster 1.6.1",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Assigns custom sounds to system events.",
+      "remotePath": "/apps/SoundMaster1.6.5.sit",
+      "sizeBytes": 31825
+    },
+    {
+      "category": "System Extensions",
+      "title": "Speed Doubler 8",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Accelerates file copies and emulated code on PowerPC Macs.",
+      "remotePath": "/apps/speed_doubler_8_0.sit",
+      "sizeBytes": 1834562
+    },
+    {
+      "category": "System Extensions",
+      "title": "Startup Disk",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Apple's own control panel for choosing the boot volume.",
+      "remotePath": "/apps/IIe_Startup_Disk.image_.sit",
+      "sizeBytes": 811161
+    },
+    {
+      "category": "System Extensions",
+      "title": "Stepping Out II",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Extends the desktop beyond the physical screen size.",
+      "remotePath": "/apps/Stepping_Out_II.sit_.hqx",
+      "sizeBytes": 41595
+    },
+    {
+      "category": "System Extensions",
+      "title": "System Picker",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Selects between multiple installed System Folders at startup.",
+      "remotePath": "/apps/system_picker.sit",
+      "sizeBytes": 25472
+    },
+    {
+      "category": "System Extensions",
+      "title": "Thread Manager",
+      "year": 1993,
+      "arch": "68k",
+      "description": "System extension adding cooperative threads to the Toolbox.",
+      "remotePath": "/apps/ThreadManagerSDK.sit",
+      "sizeBytes": 553631
+    },
+    {
+      "category": "System Extensions",
+      "title": "Voice Navigator",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Early third-party voice-command control software.",
+      "remotePath": "/apps/voice_navigator.zip",
+      "sizeBytes": 2943274
+    },
+    {
+      "category": "System Extensions",
+      "title": "WindowShade",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Collapses windows to just their title bar on double-click.",
+      "remotePath": "/apps/WindowShade1.1.sit",
+      "sizeBytes": 5928
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Anarchie 1.5",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Fast FTP client with an Archie search front end.",
+      "remotePath": "/apps/Anarchie-150.sit",
+      "sizeBytes": 505176
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Anarchie Pro",
+      "year": 1997,
+      "arch": "68k",
+      "description": "Later, enhanced commercial version of the Anarchie FTP client.",
+      "remotePath": "/apps/Anarchie-140.sit",
+      "sizeBytes": 360531
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Claris Emailer",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Popular commercial email client with rules and stationery.",
+      "remotePath": "/apps/Claris-Emailer-2x.sit",
+      "sizeBytes": 12636176
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Cyberdog",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Apple's OpenDoc-based internet suite.",
+      "remotePath": "/apps/cyberdog_10.sit",
+      "sizeBytes": 2171075
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Dartnet",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Early campus networking client software.",
+      "remotePath": "/apps/DartNet.sit",
+      "sizeBytes": 91420
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "DNS Expert",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Domain name system lookup and diagnostic utility.",
+      "remotePath": "/apps/dnsexpertprofessional.hqx",
+      "sizeBytes": 1986379
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Eudora Light 3.1",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Beloved freeware email client.",
+      "remotePath": "/apps/Eudora_Light_3.1.sit",
+      "sizeBytes": 2221463
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Fetch 2.1.2",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Earlier version of the classic drag-and-drop FTP client.",
+      "remotePath": "/apps/Fetch2.1.sit",
+      "sizeBytes": 125171
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Fetch 3.0.3",
+      "year": 1995,
+      "arch": "68k",
+      "description": "The classic drag-and-drop FTP client for the Mac.",
+      "remotePath": "/apps/fetch_3.0.sit",
+      "sizeBytes": 252166
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "FirstClass Client",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Client for the popular FirstClass BBS/groupware system.",
+      "remotePath": "/apps/FirstClass_Client_3.51.sit",
+      "sizeBytes": 1093312
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Gopher for Macintosh",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Client for browsing the pre-web Gopher information system.",
+      "remotePath": "/apps/MacGopher.sit_.hqx",
+      "sizeBytes": 395945
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Homer 1.7",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Simple freeware web browser for older Macs.",
+      "remotePath": "/apps/Homer_2.1.sit",
+      "sizeBytes": 390151
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Hotline Client",
+      "year": 1997,
+      "arch": "fat",
+      "description": "Popular file-sharing and chat client of the late 90s.",
+      "remotePath": "/apps/HotlineClient185.sit",
+      "sizeBytes": 4630817
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Internet Config 1.2",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Shared internet preferences used by many classic apps.",
+      "remotePath": "/apps/InternetConfig1.2.sit",
+      "sizeBytes": 107622
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "InterSLIP",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Freeware SLIP networking control panel.",
+      "remotePath": "/apps/InterSLIP-1.0.2d2.sit",
+      "sizeBytes": 105790
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "MacHTTP",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Early shareware web server software for the Mac.",
+      "remotePath": "/apps/machttp26.sea_.hqx",
+      "sizeBytes": 332409
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "MacPPP 2.0.1",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Dial-up PPP networking control panel.",
+      "remotePath": "/apps/MacPPP201.sea_.hqx",
+      "sizeBytes": 58189
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "MacSLIP",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Early SLIP dial-up networking control panel.",
+      "remotePath": "/apps/MacSLIP.sit_.hqx",
+      "sizeBytes": 290683
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "MacTCP 2.0.6",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Apple's original TCP/IP control panel for System 7.",
+      "remotePath": "/apps/MacTCP206.sea_.hqx",
+      "sizeBytes": 194409
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "MacWeb",
+      "year": 1994,
+      "arch": "68k",
+      "description": "One of the earliest graphical web browsers for the Mac.",
+      "remotePath": "/apps/MacWeb.2.0.sit",
+      "sizeBytes": 453553
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "MicroPhone",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Scriptable commercial terminal and communications software.",
+      "remotePath": "/apps/MicroPhone.sit",
+      "sizeBytes": 129652
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Microsoft Internet Explorer 3",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Early Mac release of Microsoft's web browser.",
+      "remotePath": "/apps/Internet_Explorer_3.01.sit",
+      "sizeBytes": 9263303
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "NCSA Telnet 2.6",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Classic freeware Telnet client from NCSA.",
+      "remotePath": "/apps/ncsa-telnet-27b4.hqx",
+      "sizeBytes": 345095
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "NetCloak",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Web server plug-in for dynamic HTML content.",
+      "remotePath": "/apps/NetCloak_2.1.2_free_copy.sit",
+      "sizeBytes": 637393
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "NetPresenz",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Turns a Mac into an FTP and Gopher server.",
+      "remotePath": "/apps/NetPresenz_4.1.sit",
+      "sizeBytes": 744727
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Netscape Navigator 2.02",
+      "year": 1996,
+      "arch": "fat",
+      "description": "The web browser that defined the mid-90s internet.",
+      "remotePath": "/apps/netscape-2.02-de.hqx",
+      "sizeBytes": 2894598
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "NewsWatcher 2.1",
+      "year": 1994,
+      "arch": "68k",
+      "description": "Freeware Usenet newsgroup reader.",
+      "remotePath": "/apps/NewsWatcher2.1.1.hqx",
+      "sizeBytes": 889261
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Now Contact",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Contact management software with internet syncing.",
+      "remotePath": "/apps/Now_Contact_Demo_1.0.sit",
+      "sizeBytes": 859264
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "RealPlayer",
+      "year": 1997,
+      "arch": "fat",
+      "description": "Streaming audio and video playback client.",
+      "remotePath": "/apps/RealPlayerSP.dmg",
+      "sizeBytes": 25375946
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Red Ryder",
+      "year": 1987,
+      "arch": "68k",
+      "description": "Pioneering shareware terminal emulator for the Mac.",
+      "remotePath": "/apps/Red_Ryder_3.sit",
+      "sizeBytes": 68806
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "TCP/Connect II",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Full internet suite - FTP, Telnet, mail, and news in one app.",
+      "remotePath": "/apps/tcp_connect_ii.sit",
+      "sizeBytes": 2794379
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Telefinder",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Popular BBS client and server software.",
+      "remotePath": "/apps/telefinder.sit",
+      "sizeBytes": 13264554
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Timbuktu Pro",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Enhanced version of the remote screen-sharing software.",
+      "remotePath": "/apps/timbuktu4.sit",
+      "sizeBytes": 23501922
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "VersaTerm",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Terminal emulator supporting multiple protocols.",
+      "remotePath": "/apps/VersaTerm-PRO-5-0.3.sit",
+      "sizeBytes": 248628
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "Web Confidential",
+      "year": 1998,
+      "arch": "68k",
+      "description": "Password and confidential information manager.",
+      "remotePath": "/apps/web-confidential.dmg_.bin",
+      "sizeBytes": 2725888
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "WebSTAR",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Popular commercial Macintosh web server software.",
+      "remotePath": "/apps/WEBSTAR.dmg",
+      "sizeBytes": 20703927
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "White Knight",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Long-running terminal emulator, successor to Red Ryder.",
+      "remotePath": "/apps/WhiteKnight.sit_.hqx",
+      "sizeBytes": 296252
+    },
+    {
+      "category": "Internet & Comm",
+      "title": "ZTerm 1.0",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Popular shareware terminal emulator for modem BBSing.",
+      "remotePath": "/apps/ZTerm1.0.1.sit",
+      "sizeBytes": 283914
+    },
+    {
+      "category": "Dev Tools",
+      "title": "AppMaker 1.6",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Generates THINK C project skeletons from resource templates.",
+      "remotePath": "/apps/AppMaker_1.5.4.sit",
+      "sizeBytes": 1285361
+    },
+    {
+      "category": "Dev Tools",
+      "title": "BBEdit Lite 4.1",
+      "year": 1996,
+      "arch": "68k",
+      "description": "The free edition of the legendary Mac text editor.",
+      "remotePath": "/apps/bbedit_lite_4.1.sit",
+      "sizeBytes": 789735
+    },
+    {
+      "category": "Dev Tools",
+      "title": "CodeWarrior Discover Programming",
+      "year": 1996,
+      "arch": "fat",
+      "description": "Educational bundle for learning to program with CodeWarrior.",
+      "remotePath": "/apps/CodeWarrior_Discover_Programming_bundled_books.sit",
+      "sizeBytes": 27177970
+    },
+    {
+      "category": "Dev Tools",
+      "title": "Excalibur",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Icon and cursor resource editing tool.",
+      "remotePath": "/apps/Excalibur_2.6.dmg",
+      "sizeBytes": 2621440
+    },
+    {
+      "category": "Dev Tools",
+      "title": "FutureBasic",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Free/shareware BASIC development environment for the Mac.",
+      "remotePath": "/apps/FutureBASIC_II.sit",
+      "sizeBytes": 3888074
+    },
+    {
+      "category": "Dev Tools",
+      "title": "HyperCard 2.4.1",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Build interactive stacks with HyperTalk.",
+      "remotePath": "/apps/HyperCard241.img",
+      "sizeBytes": 47220224
+    },
+    {
+      "category": "Dev Tools",
+      "title": "HyperTalk Reference",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Reference stack documenting the HyperTalk language.",
+      "remotePath": "/manuals/HyperTalk_Quick_Reference_Card.pdf",
+      "sizeBytes": 2253735
+    },
+    {
+      "category": "Dev Tools",
+      "title": "MacApp",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Apple's object-oriented application framework.",
+      "remotePath": "/apps/macapp1.1.sit",
+      "sizeBytes": 402366
+    },
+    {
+      "category": "Dev Tools",
+      "title": "MacPerl",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Port of the Perl scripting language for classic Mac OS.",
+      "remotePath": "/apps/mac-perl-418.hqx",
+      "sizeBytes": 1755872
+    },
+    {
+      "category": "Dev Tools",
+      "title": "MacsBug Reference",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Reference documentation and tools for the MacsBug debugger.",
+      "remotePath": "/manuals/Macsbug_6.1_Reference_1989.pdf",
+      "sizeBytes": 5846454
+    },
+    {
+      "category": "Dev Tools",
+      "title": "MetroNub",
+      "year": 1996,
+      "arch": "68k",
+      "description": "Debugging extension companion to CodeWarrior.",
+      "remotePath": "/apps/CW_Pro_5.3_MetroNub.sit",
+      "sizeBytes": 103066
+    },
+    {
+      "category": "Dev Tools",
+      "title": "MPW 3.5",
+      "year": 1994,
+      "arch": "fat",
+      "description": "Apple's Macintosh Programmer's Workshop, free from Apple.",
+      "remotePath": "/apps/mpw3-cdrom.zip",
+      "sizeBytes": 5831362
+    },
+    {
+      "category": "Dev Tools",
+      "title": "Object Master",
+      "year": 1993,
+      "arch": "68k",
+      "description": "C/C++ source code browser and class hierarchy tool.",
+      "remotePath": "/apps/Object_Master_3.0.2.sit",
+      "sizeBytes": 2258460
+    },
+    {
+      "category": "Dev Tools",
+      "title": "Oracle for Macintosh",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Client tools for the Oracle relational database.",
+      "remotePath": "/apps/Oracle2.1.0.sit",
+      "sizeBytes": 173865
+    },
+    {
+      "category": "Dev Tools",
+      "title": "PowerPlant",
+      "year": 1995,
+      "arch": "fat",
+      "description": "Metrowerks' C++ application framework for CodeWarrior.",
+      "remotePath": "/apps/open-powerplant-code-git-svned.zip",
+      "sizeBytes": 40976090
+    },
+    {
+      "category": "Dev Tools",
+      "title": "Prograph",
+      "year": 1989,
+      "arch": "68k",
+      "description": "Visual, dataflow-based object-oriented programming environment.",
+      "remotePath": "/apps/PrographCPX.sit",
+      "sizeBytes": 8314906
+    },
+    {
+      "category": "Dev Tools",
+      "title": "REALbasic",
+      "year": 1998,
+      "arch": "ppc",
+      "description": "Visual BASIC-like rapid application development tool.",
+      "remotePath": "/apps/REALbasic2.1.hqx",
+      "sizeBytes": 3909106
+    },
+    {
+      "category": "Dev Tools",
+      "title": "ResCompare",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Compares resource forks between two files.",
+      "remotePath": "/apps/ResCompare-26.sit",
+      "sizeBytes": 177120
+    },
+    {
+      "category": "Dev Tools",
+      "title": "Resorcerer Demo",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Advanced resource editor, demo edition.",
+      "remotePath": "/apps/Resorcerer_2.4.zip",
+      "sizeBytes": 14022015
+    },
+    {
+      "category": "Dev Tools",
+      "title": "Smalltalk-80",
+      "year": 1990,
+      "arch": "68k",
+      "description": "Classic Smalltalk programming environment for Macintosh.",
+      "remotePath": "/apps/Lisa_Smalltalk_80.zip",
+      "sizeBytes": 330073
+    },
+    {
+      "category": "Dev Tools",
+      "title": "THINK C 5.0",
+      "year": 1991,
+      "arch": "68k",
+      "description": "Symantec's popular C IDE for classic Mac development.",
+      "remotePath": "/apps/think_c_5-0-2.zip",
+      "sizeBytes": 2657019
+    },
+    {
+      "category": "Dev Tools",
+      "title": "THINK Pascal 4.0.2",
+      "year": 1992,
+      "arch": "68k",
+      "description": "Symantec's Pascal IDE, a favorite for teaching Mac programming.",
+      "remotePath": "/apps/THINK_Pascal_4.5d4.sit",
+      "sizeBytes": 1600358
+    },
+    {
+      "category": "Dev Tools",
+      "title": "ThinkReference",
+      "year": 1993,
+      "arch": "68k",
+      "description": "Electronic Inside Macintosh API reference tool.",
+      "remotePath": "/apps/ThinkReference1.0.sit",
+      "sizeBytes": 1656318
+    },
+    {
+      "category": "Dev Tools",
+      "title": "True BASIC",
+      "year": 1988,
+      "arch": "68k",
+      "description": "Structured BASIC programming language environment.",
+      "remotePath": "/apps/truebasic2.5.sit",
+      "sizeBytes": 307667
+    },
+    {
+      "category": "Dev Tools",
+      "title": "WebMap",
+      "year": 1995,
+      "arch": "68k",
+      "description": "Tool for creating clickable HTML image maps.",
+      "remotePath": "/apps/WebMap.sit",
+      "sizeBytes": 125110
+    }
+  ]
+}

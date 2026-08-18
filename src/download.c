@@ -43,9 +43,21 @@ static Boolean EqualsCI(const char *a, const char *b)
 }
 
 /* Best-effort only - this app never decodes StuffIt/BinHex/disk-image
-   contents (see the README's Known Limitations), it just labels the raw
-   downloaded bytes plausibly enough that Finder picks a reasonable icon
-   and a real expander app can be double-clicked in to take over. */
+   contents itself (see the README's Known Limitations), it just labels
+   the raw downloaded bytes so Finder routes a double-click to a real
+   expander app to take over, same as any FTP/web download always has.
+   Creator codes cross-checked against real historical references rather
+   than guessed (see README) - SITx (StuffIt Expander) rather than SIT!
+   (the full StuffIt compressor) is the deliberate choice for every
+   compressed/encoded format below: Expander is the ubiquitous free tool
+   that actually auto-detects and unpacks .sit/.hqx/.bin/.sea/.zip alike,
+   where the full StuffIt app usually isn't installed at all. Two real
+   gaps this can't paper over, called out here rather than left silent:
+   .dmg is a Mac OS 9/X-era format with no mounting tool on System 7 at
+   all (not the same thing as classic DiskCopy's .img/.dsk despite the
+   "disk image" family resemblance), and .pdf has no viewer on System 7
+   either - both download fine, neither can actually be opened once
+   there. */
 static void GuessTypeCreator(const char *name, OSType *outType, OSType *outCreator)
 {
     short len = (short)strlen(name);
@@ -57,46 +69,47 @@ static void GuessTypeCreator(const char *name, OSType *outType, OSType *outCreat
     }
 
     if (ext != NULL) {
-        if (EqualsCI(ext, ".sit"))  { *outType = 'SIT!'; *outCreator = 'SIT!'; return; }
+        if (EqualsCI(ext, ".sit"))  { *outType = 'SIT!'; *outCreator = 'SITx'; return; }
         if (EqualsCI(ext, ".hqx"))  { *outType = 'TEXT'; *outCreator = 'SITx'; return; }
+        if (EqualsCI(ext, ".bin"))  { *outType = 'BINA'; *outCreator = 'SITx'; return; } /* MacBinary */
+        if (EqualsCI(ext, ".zip"))  { *outType = 'ZIP ';  *outCreator = 'SITx'; return; } /* Expander 5.5+ */
+        if (EqualsCI(ext, ".sea"))  { *outType = 'APPL'; *outCreator = '????'; return; } /* self-extracting - launches itself */
+        if (EqualsCI(ext, ".cpt"))  { *outType = 'CPCT'; *outCreator = 'CPCT'; return; } /* Compact Pro */
         if (EqualsCI(ext, ".img") || EqualsCI(ext, ".dsk")) { *outType = 'rohd'; *outCreator = 'dCpy'; return; }
         if (EqualsCI(ext, ".txt"))  { *outType = 'TEXT'; *outCreator = 'ttxt'; return; }
     }
+    /* Unrecognized extension (includes .dmg/.pdf, and anything else not
+       listed above): still worth pointing at Expander rather than leaving
+       creator blank - it auto-detects a wide range of formats by content,
+       not just by extension, so this is a real improvement over '????'
+       even when the specific format isn't one of the cases above. */
     *outType = 'BINA';
-    *outCreator = '????';
+    *outCreator = 'SITx';
 }
 
-/* Resolves (creating if needed) a "Garden Downloads" folder in the same
-   directory as the running application, via the Process Manager - the
-   standard System 7+ way for an app to find its own location. */
+/* Resolves (creating if needed) a "Garden Downloads" folder as a sibling
+   of the running application - see Native_GetAppFolder. */
 static OSErr GetOrCreateDownloadsFolder(short *outVRefNum, long *outDirID)
 {
-    ProcessSerialNumber psn;
-    ProcessInfoRec info;
-    FSSpec appSpec, folderSpec;
+    short vRefNum;
+    long parID;
+    FSSpec folderSpec;
     OSErr err;
     long newDirID;
     CInfoPBRec cpb;
     Str255 folderName;
 
-    err = GetCurrentProcess(&psn);
-    if (err != noErr) return err;
-
-    memset(&info, 0, sizeof(info));
-    info.processInfoLength = sizeof(info);
-    info.processName = NULL;
-    info.processAppSpec = &appSpec;
-    err = GetProcessInformation(&psn, &info);
+    err = Native_GetAppFolder(&vRefNum, &parID);
     if (err != noErr) return err;
 
     CToPascal("Garden Downloads", folderName);
 
-    err = FSMakeFSSpec(appSpec.vRefNum, appSpec.parID, folderName, &folderSpec);
+    err = FSMakeFSSpec(vRefNum, parID, folderName, &folderSpec);
     if (err != noErr && err != fnfErr) return err;
 
     err = FSpDirCreate(&folderSpec, smSystemScript, &newDirID);
     if (err == noErr) {
-        *outVRefNum = appSpec.vRefNum;
+        *outVRefNum = vRefNum;
         *outDirID = newDirID;
         return noErr;
     }
@@ -107,13 +120,13 @@ static OSErr GetOrCreateDownloadsFolder(short *outVRefNum, long *outDirID)
        folder's own ID rather than its parent's. */
     memset(&cpb, 0, sizeof(cpb));
     cpb.dirInfo.ioNamePtr = folderName;
-    cpb.dirInfo.ioVRefNum = appSpec.vRefNum;
-    cpb.dirInfo.ioDrDirID = appSpec.parID;
+    cpb.dirInfo.ioVRefNum = vRefNum;
+    cpb.dirInfo.ioDrDirID = parID;
     cpb.dirInfo.ioFDirIndex = 0;
     err = PBGetCatInfoSync(&cpb);
     if (err != noErr) return err;
 
-    *outVRefNum = appSpec.vRefNum;
+    *outVRefNum = vRefNum;
     *outDirID = cpb.dirInfo.ioDrDirID;
     return noErr;
 }

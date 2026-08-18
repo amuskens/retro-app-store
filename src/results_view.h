@@ -19,6 +19,11 @@ typedef struct {
 void ResultsView_ShowCategory(short categoryIndex);
 void ResultsView_ShowSearch(const char *query);
 
+/* Re-applies whatever category or search is currently showing, picking up
+   a Year/CPU filter change made since - see catalog.h. No-op in live
+   mode. */
+void ResultsView_RefreshFilter(void);
+
 /* Populates the Live FTP Browse listing from a just-completed NLST (+
    best-effort SIZE per file). Parallel arrays of length count; copied
    internally, capped at kResultsMaxLiveEntries. */

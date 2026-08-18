@@ -20,8 +20,11 @@ resource 'SIZE' (-1) {
     reserved,
     reserved,
     reserved,
-    1 * 1024 * 1024, /* preferred */
-    384 * 1024        /* minimum */
+    2 * 1024 * 1024, /* preferred */
+    768 * 1024        /* minimum - the catalog's fixed-capacity entry array
+                          (kMaxCatalogEntries in catalog.h) accounts for a
+                          real chunk of this; bumped from 384K/1M when the
+                          bundled catalog grew well past 79 entries */
 };
 
 resource 'MBAR' (128) {

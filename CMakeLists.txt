@@ -8,6 +8,7 @@ add_application(Garden
     src/native.c
     src/catalog.c
     src/catalog_data.c
+    src/catalog_load.c
     src/sidebar.c
     src/results_view.c
     src/toolbar.c

@@ -18,6 +18,7 @@ static short gCategory = 0;
 
 static short gIndices[kMaxFilterResults]; /* catalog.c indices, category/search modes */
 static short gIndexCount = 0;
+static char gLastQuery[256] = ""; /* so ResultsView_RefreshFilter can re-run a search */
 
 static char gLiveNames[kResultsMaxLiveEntries][64];
 static unsigned long gLiveSizes[kResultsMaxLiveEntries];
@@ -166,7 +167,28 @@ void ResultsView_ShowCategory(short categoryIndex)
 void ResultsView_ShowSearch(const char *query)
 {
     gMode = kModeSearch;
+    strncpy(gLastQuery, query, sizeof(gLastQuery) - 1);
+    gLastQuery[sizeof(gLastQuery) - 1] = 0;
     gIndexCount = Catalog_Search(query, gIndices, kMaxFilterResults);
+    gPage = 0;
+    gSelectedRow = -1;
+}
+
+/* Re-runs whichever of category/search is currently active against the
+   catalog, picking up any change to the Year/CPU filters (catalog.c
+   applies those internally to every Catalog_FilterByCategory/Catalog_Search
+   call) without changing what category or search is selected. A no-op in
+   live mode - live entries have no year/arch metadata for those filters
+   to apply to. */
+void ResultsView_RefreshFilter(void)
+{
+    if (gMode == kModeCategory) {
+        gIndexCount = Catalog_FilterByCategory(gCategory, gIndices, kMaxFilterResults);
+    } else if (gMode == kModeSearch) {
+        gIndexCount = Catalog_Search(gLastQuery, gIndices, kMaxFilterResults);
+    } else {
+        return;
+    }
     gPage = 0;
     gSelectedRow = -1;
 }

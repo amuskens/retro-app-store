@@ -1,4 +1,5 @@
 build/
+dist/
 *.img
 .claude/
 .DS_Store

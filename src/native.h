@@ -28,4 +28,12 @@ void DrawCStringInRect(const char *src, const Rect *r);
    the row layout is fixed. Never truncates below "...". */
 void TruncateCStringToWidth(const char *src, char *buf, short bufSize, short maxWidth);
 
+/* Resolves the folder the running application itself lives in, via the
+   Process Manager - the standard System 7+ way for an app to find its own
+   location without relying on a hardcoded path or the current working
+   directory (which the classic Mac OS doesn't really have). Shared by
+   download.c (the "Garden Downloads" folder is a sibling of the app) and
+   catalog_load.c (the loadable "Garden Catalog" file is too). */
+OSErr Native_GetAppFolder(short *outVRefNum, long *outDirID);
+
 #endif

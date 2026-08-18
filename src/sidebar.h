@@ -19,4 +19,15 @@ short Sidebar_GetSelected(void);
 /* Used by the Go menu to jump categories without a click; redraws. */
 void Sidebar_SetSelected(const Rect *bounds, short index);
 
+/* The Year/CPU filter pills pinned to the bottom of the sidebar (see
+   catalog.h for the filter state itself - the sidebar just draws whatever
+   it currently says and reports clicks on the two pills; app.c owns
+   actually changing the filter and re-running it). pt is window-local;
+   returns true and fills *outIsYear if the click landed on one of the two
+   pills (true = Year, false = CPU), false (outIsYear untouched) for
+   everything else in the sidebar, including a plain category click. */
+Boolean Sidebar_ClickFilter(const Rect *bounds, Point pt, Boolean *outIsYear);
+void Sidebar_GetYearFilterRect(const Rect *bounds, Rect *out);
+void Sidebar_GetArchFilterRect(const Rect *bounds, Rect *out);
+
 #endif
