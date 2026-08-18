@@ -230,11 +230,12 @@ static void OnCategorySelected(short sel)
 }
 
 /* Real download: shows the progress window, lets Download_Fetch drive it
-   via ProgressDlg_GiveTime/UpdateProgress, then reports the outcome. The
-   catalog-vs-live distinction in the failure message matters: a catalog
-   entry's remotePath is a best-effort placeholder (see README), so a
-   failure there is expected sometimes and shouldn't read like a bug the
-   same way a Live FTP Browse failure would. */
+   via ProgressDlg_GiveTime/UpdateProgress, then reports the outcome. Most
+   catalog entries now carry a verified remotePath (see catalog_data.c),
+   same as a Live FTP Browse entry, so a failure no longer means "this was
+   probably just a guessed path" the way it used to - a plain error plus a
+   pointer at Live FTP Browse (which always downloads exactly what it just
+   listed, so it's the reliable fallback either way) covers both. */
 static void BeginDownload(const DownloadRequest *req)
 {
     OSErr err;
@@ -253,14 +254,10 @@ static void BeginDownload(const DownloadRequest *req)
         ShowMessage(msg);
     } else if (err == userCanceledErr) {
         /* the user asked to stop - no need to alert them about their own action */
-    } else if (!req->isLiveFile) {
-        char msg[400];
-        sprintf(msg, "Couldn't download \xd2%.150s\xd3 (error %d). This entry's path is a placeholder in the bundled sample catalog, not a verified live one - try Live FTP Browse instead, which downloads exactly what it just listed.",
-                req->title, (int)err);
-        ShowMessage(msg);
     } else {
-        char msg[300];
-        sprintf(msg, "Couldn't download \xd2%.200s\xd3 (error %d).", req->title, (int)err);
+        char msg[400];
+        sprintf(msg, "Couldn't download \xd2%.150s\xd3 (error %d). If this keeps happening, try Live FTP Browse instead, which downloads exactly what it just listed.",
+                req->title, (int)err);
         ShowMessage(msg);
     }
 }

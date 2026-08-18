@@ -14,7 +14,9 @@ typedef struct {
     short category;           /* index into gCategories */
     const char *title;
     const char *description;  /* one line, shown under the title in a row */
-    const char *remotePath;   /* best-effort path for FTP RETR - see README */
+    const char *remotePath;   /* path for FTP RETR, verified against a real
+                                  server listing except where catalog_data.c
+                                  marks an entry UNVERIFIED - see README */
     unsigned long sizeBytes;
 } CatalogEntry;
 

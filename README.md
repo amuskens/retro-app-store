@@ -39,23 +39,30 @@ part of it is drawing from live data.
 
 ## What's real vs. sample data
 
-Macintosh Garden's FTP mirror is, per its own "Public Access File
-Repository" forum thread, an **unsorted flat dump** - there's no
-server-side "Games" or "Utilities" folder to browse, and admins themselves
-warn that listing it can be slow. So there's no live source to pull a
-categorized listing from.
+The 8 categories themselves are still curated by hand, not scraped -
+Macintosh Garden's FTP mirror has no server-side "Games" or "Utilities"
+folder to read a categorized listing from (its real top-level structure
+turned out to be `apps`/`manuals`/`games`, discovered by actually
+connecting - see Gotchas below, which also covers where the older
+"unsorted flat dump" assumption this section used to lead with came from
+and why it turned out to be only half right).
 
-- The 8 categories and their contents (`catalog_data.c`) are a **bundled,
-  curated sample catalog** - real historical Mac software titles and
-  descriptions, so the browsing/search/pagination UI has good content and
-  works fully offline. Each entry's `remotePath` is a **best-effort
-  placeholder** (e.g. `/Glider_4.0.sit`, guessing the mirror is a flat root
-  dump) - not a verified path, since there was no way to browse the live
-  server's actual current contents while building this.
-- **Live FTP Browse** is the real thing: a genuine `NLST` against the
-  configured host/path, showing actual current filenames, and downloading
-  exactly what it just listed. If a catalog entry's placeholder path turns
-  out to be wrong, Live FTP Browse is the reliable fallback.
+- **`catalog_data.c`'s entries are real historical Mac software, and
+  (as of this catalog's last update) their `remotePath`/size were
+  cross-checked against a real, full directory listing of the live
+  server** - fetched directly over FTP from the host shell (`curl
+  ftp://...`), not guessed. 74 of 79 titles matched a real file; the
+  other 5 are marked `UNVERIFIED` right on their line in `catalog_data.c`
+  and still carry an invented placeholder path, because nothing on the
+  live server matched them closely enough to be confident. Verified
+  doesn't mean permanent, though - it's a community mirror, and file
+  layouts drift over time (this repo's own research already turned up
+  more than one historical hostname for the mirror itself) - so this is
+  "confirmed present as of last update," not a standing guarantee.
+- **Live FTP Browse** is still the reliable fallback of record: a genuine
+  `NLST` against the configured host/path, showing actual current
+  filenames, and downloading exactly what it just listed, so it's correct
+  by construction even after the mirror's contents change.
 - Default FTP host/credentials (`ftp.macintosh.garden`, `mirror`/`mirror`)
   come from that same forum thread; community mirror details drift over
   time (this repo's own research already turned up more than one
@@ -285,6 +292,45 @@ tools/set_bundle_bit.py    MacBinary Finder-flags fixup (see below)
   normally near-instant. All 12 call sites (`net.c` plus 11 in `ftp.c`)
   updated to pass `giveTime` through. Verified against the same forced
   hang: Stop now dismisses the dialog within about a second, every time.
+- **The "unsorted flat dump" research was wrong, and the fix for that
+  turned out to double as the fix for catalog downloads never working.**
+  The live server's actual top-level structure is three real directories
+  (`apps`/`manuals`/`games`, ~67,000 files total, discovered by actually
+  connecting - see the navigation Gotchas entry above), not a flat root
+  dump - the original research (a forum thread describing the mirror,
+  not a live directory listing) turned out to describe an older or
+  different layout. Once that was known, the bundled catalog's
+  placeholder paths could be checked for real:
+  `curl ftp://mirror:mirror@ftp.macintosh.garden/apps/` (and `/manuals/`,
+  `/games/`) from the host shell pulled the full real listing in seconds -
+  much faster and more thorough than anything achievable by browsing
+  through the emulator -
+  and a token-based match (product name tokens must all appear in the
+  real filename; version numbers scored higher when they matched exactly)
+  against all 79 catalog titles found a confident real file for 74 of
+  them. Every chosen path was verified to exist **verbatim** in that real
+  listing (a small script cross-checked all 74 before touching
+  `catalog_data.c` - zero typos survived to the actual edit) and its real
+  size pulled from the same listing, replacing the invented placeholder
+  size too. The 5 that didn't match anything are left as they were,
+  marked `UNVERIFIED` inline. Verified in the emulator afterward: a
+  catalog entry's Get button now downloads a real file directly, without
+  ever going through Live FTP Browse first - confirmed for both an
+  `/apps/` path (`KidPix 1.0`) and a `/games/` path (`Dark Castle`).
+  One false alarm along the way worth recording: `Dark Castle` (1.8 MB)
+  first failed with error -34 (`dskFulErr`) - not a bad path or a
+  network problem, just the 1.44 MB test floppy actually being full
+  after several earlier test downloads landed in the same "Garden
+  Downloads" folder next to the app. Copying `Garden` to a real hard disk
+  (hundreds of MB free) and retrying confirmed the path was fine all
+  along. This did catch one real, separate issue: `BeginDownload`'s
+  failure message used to unconditionally tell the user a catalog
+  entry's path was "a placeholder, not verified" - true when it was
+  written, false now that most of them are verified, and actively
+  misleading for something like a disk-full error that has nothing to do
+  with path accuracy. Simplified to one generic failure message for
+  every case (catalog or live) rather than one that guesses wrong about
+  *why* it failed.
 
 ## Known limitations
 
@@ -304,8 +350,10 @@ tools/set_bundle_bit.py    MacBinary Finder-flags fixup (see below)
   raw bytes with a best-effort type/creator guess from the extension
   (`.sit`, `.hqx`, `.img`/`.dsk`, else generic binary) - a real StuffIt
   Expander or similar still needs to take over from there.
-- **Bundled catalog paths are placeholders**, not verified live paths -
-  see "What's real vs. sample data."
+- **5 of 79 bundled catalog titles remain unverified placeholders**
+  (marked inline in `catalog_data.c`) - no confident match was found for
+  them on the live server. The other 74 are verified real - see "What's
+  real vs. sample data."
 - No resumable downloads; a canceled or failed download is deleted rather
   than kept partial.
 - Password field in Preferences isn't masked (plain `EditText` - Dialog
@@ -381,8 +429,14 @@ Confirmed working end-to-end:
    dismisses it within about a second - see the `Net_Abort` Gotchas entry.
    Preferences editing (host/port, both text and numeric fields) confirmed
    working as part of setting this up.
+8. A **catalog** entry's Get button (not Live FTP Browse) downloads a real
+   file directly, for both an `/apps/` path (`KidPix 1.0`) and a
+   `/games/` path (`Dark Castle`) - see the catalog-verification Gotchas
+   entry. Confirmed on a real hard disk with room to spare; the same
+   attempt on the nearly-full 1.44 MB test floppy failed with a plain
+   disk-full error, unrelated to path correctness.
 
-Not yet exercised in the emulator: the bundled catalog's placeholder
-download paths (expected to fail - see "What's real vs. sample data"), and
-a full 200+-item live directory's higher page numbers (only page 1 of the
-`apps` listing was paged through).
+Not yet exercised in the emulator: the 5 still-placeholder catalog entries
+(expected to fail - marked `UNVERIFIED` in `catalog_data.c`), and a full
+200+-item live directory's higher page numbers (only page 1 of the `apps`
+listing was paged through).
