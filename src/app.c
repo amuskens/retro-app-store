@@ -1,0 +1,546 @@
+#include <Quickdraw.h>
+#include <Windows.h>
+#include <Fonts.h>
+#include <Events.h>
+#include <Menus.h>
+#include <Dialogs.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "app.h"
+#include "theme.h"
+#include "native.h"
+#include "catalog.h"
+#include "sidebar.h"
+#include "results_view.h"
+#include "toolbar.h"
+#include "ftp.h"
+#include "download.h"
+#include "progress_dlg.h"
+#include "prefs_dlg.h"
+
+enum { mApple = 128, mFile = 129, mEdit = 130, mGo = 131, mConnection = 132 };
+enum { iAbout = 1 };
+enum { iPreferences = 1, iGetSelected = 2, iShowDownloads = 3, iQuit = 5 };
+enum { iCut = 1, iCopy = 2, iPaste = 3, iClear = 4 };
+/* Items 1..8 are the 8 categories, in the exact order gCategories is
+   defined in catalog_data.c - item text lives in main.r's Go menu and has
+   to be kept in sync by hand if the catalog's category list ever changes,
+   the same constraint mac-system7-c's Style menu documents (Rez text can't
+   be data-driven from the C array). Item 9 is a divider; item 10 is the
+   trailing Live FTP Browse row. */
+#define kGoCategoryFirst 1
+#define kGoLiveBrowse    10
+enum { iConnect = 1, iDisconnect = 2, iRefreshListing = 3 };
+
+#define kZoomDocProc 8 /* zoomDocProc - a Rez-only named constant in this toolchain's headers, not exposed to C */
+#define kInfoAlertID 129
+#define kMaxLiveFetch 200 /* live listing page size cap - see DoRefreshListing */
+
+static WindowPtr gWindow;
+static Boolean gDone = false;
+static Boolean gConnected = false;
+static Boolean gEverFetchedLive = false;
+static char gStatusText[256] = "Not connected - choose Connection > Connect to reach the live server.";
+static Rect gSizeLimits;
+static GardenPrefs gPrefs;
+static FtpSession gBrowseSession;
+
+static void ToolboxInit(void);
+static void SetupMenus(void);
+static void CreateMainWindow(void);
+static void LayoutBrowser(WindowPtr w, Rect *toolbarR, Rect *sidebarR, Rect *resultsR, Rect *statusR);
+static void DrawContent(WindowPtr w);
+static void RelayoutAndRedraw(WindowPtr w);
+static void RedrawStatusOnly(void);
+static void ShowMessage(const char *msg);
+static void HandleContentClick(WindowPtr w, Point local, unsigned long when);
+static void PerformSearch(void);
+static void OnCategorySelected(short sel);
+static void BeginDownload(const DownloadRequest *req);
+static void DoConnect(void);
+static void DoDisconnect(void);
+static void DoRefreshListing(void);
+static void HandleMenuChoice(long menuChoice);
+static void HandleAppleMenu(short item);
+static void HandleFileMenu(short item);
+static void HandleEditMenu(short item);
+static void HandleGoMenu(short item);
+static void HandleConnectionMenu(short item);
+static void AdjustMenus(void);
+
+static void ToolboxInit(void)
+{
+    InitGraf(&qd.thePort);
+    InitFonts();
+    InitWindows();
+    InitMenus();
+    TEInit();
+    InitDialogs(NULL);
+    InitCursor();
+}
+
+static void SetupMenus(void)
+{
+    MenuHandle m;
+
+    m = GetMenu(mApple); InsertMenu(m, 0);
+    m = GetMenu(mFile);  InsertMenu(m, 0);
+    m = GetMenu(mEdit);  InsertMenu(m, 0);
+    m = GetMenu(mGo);    InsertMenu(m, 0);
+    m = GetMenu(mConnection); InsertMenu(m, 0);
+    DrawMenuBar();
+}
+
+static void CreateMainWindow(void)
+{
+    Rect bounds;
+    Rect tb, sb, rs, st;
+
+    SetRect(&bounds, 40, 60, 40 + 560, 60 + 380);
+    gWindow = NewWindow(NULL, &bounds, "\pMacintosh Garden", true,
+                         kZoomDocProc, (WindowPtr)-1L, true, 0);
+    SetPort(gWindow);
+
+    SetRect(&gSizeLimits, 420, 260, 900, 700);
+
+    Toolbar_Init(gWindow);
+    LayoutBrowser(gWindow, &tb, &sb, &rs, &st);
+    Toolbar_Layout(&tb, &st);
+
+    ResultsView_ShowCategory(0);
+}
+
+static void LayoutBrowser(WindowPtr w, Rect *toolbarR, Rect *sidebarR, Rect *resultsR, Rect *statusR)
+{
+    Rect port = w->portRect;
+
+    toolbarR->left = port.left;
+    toolbarR->right = port.right;
+    toolbarR->top = port.top;
+    toolbarR->bottom = (short)(port.top + kToolbarHeight);
+
+    statusR->left = port.left;
+    statusR->right = port.right;
+    statusR->bottom = port.bottom;
+    statusR->top = (short)(port.bottom - kStatusBarHeight);
+
+    sidebarR->left = port.left;
+    sidebarR->right = (short)(port.left + kSidebarWidth);
+    sidebarR->top = toolbarR->bottom;
+    sidebarR->bottom = statusR->top;
+
+    resultsR->left = sidebarR->right;
+    resultsR->right = port.right;
+    resultsR->top = toolbarR->bottom;
+    resultsR->bottom = statusR->top;
+}
+
+static void DrawContent(WindowPtr w)
+{
+    Rect tb, sb, rs, st;
+
+    SetPort(w);
+    LayoutBrowser(w, &tb, &sb, &rs, &st);
+
+    Toolbar_DrawTop(&tb);
+    Sidebar_Draw(&sb);
+    ResultsView_Draw(&rs);
+    Toolbar_DrawStatus(&st, gConnected, gStatusText, ResultsView_CurrentPage(), ResultsView_PageCount());
+
+    DrawControls(w);
+    DrawGrowIcon(w);
+}
+
+static void RelayoutAndRedraw(WindowPtr w)
+{
+    Rect tb, sb, rs, st;
+    SetPort(w);
+    LayoutBrowser(w, &tb, &sb, &rs, &st);
+    Toolbar_Layout(&tb, &st);
+    EraseRect(&w->portRect);
+    DrawContent(w);
+}
+
+static void RedrawStatusOnly(void)
+{
+    Rect tb, sb, rs, st;
+    SetPort(gWindow);
+    LayoutBrowser(gWindow, &tb, &sb, &rs, &st);
+    Toolbar_DrawStatus(&st, gConnected, gStatusText, ResultsView_CurrentPage(), ResultsView_PageCount());
+    DrawControls(gWindow);
+}
+
+static void RedrawResultsAndStatus(void)
+{
+    Rect tb, sb, rs, st;
+    SetPort(gWindow);
+    LayoutBrowser(gWindow, &tb, &sb, &rs, &st);
+    ResultsView_Draw(&rs);
+    Toolbar_DrawStatus(&st, gConnected, gStatusText, ResultsView_CurrentPage(), ResultsView_PageCount());
+    DrawControls(gWindow);
+}
+
+/* Generic message alert - ALRT/DITL 129 in main.r, a single OK button and
+   a "^0"-substituted StaticText, same idiom mac-system7-c's Fail()/Warn()
+   use. */
+static void ShowMessage(const char *msg)
+{
+    Str255 s;
+    CToPascal(msg, s);
+    ParamText(s, "\p", "\p", "\p");
+    StopAlert(kInfoAlertID, NULL);
+}
+
+static void PerformSearch(void)
+{
+    char query[256];
+    Toolbar_GetSearchText(query, sizeof(query));
+    ResultsView_ShowSearch(query);
+    RedrawResultsAndStatus();
+}
+
+static void OnCategorySelected(short sel)
+{
+    Toolbar_ClearSearch();
+
+    if (sel == kLiveBrowseRowIndex) {
+        ResultsView_EnterLiveMode();
+        RedrawResultsAndStatus();
+        if (!gEverFetchedLive) {
+            gEverFetchedLive = true; /* only auto-fetch the first time - Refresh Listing covers the rest */
+            DoRefreshListing();
+        }
+    } else {
+        ResultsView_ShowCategory(sel);
+        RedrawResultsAndStatus();
+    }
+}
+
+/* Real download: shows the progress window, lets Download_Fetch drive it
+   via ProgressDlg_GiveTime/UpdateProgress, then reports the outcome. The
+   catalog-vs-live distinction in the failure message matters: a catalog
+   entry's remotePath is a best-effort placeholder (see README), so a
+   failure there is expected sometimes and shouldn't read like a bug the
+   same way a Live FTP Browse failure would. */
+static void BeginDownload(const DownloadRequest *req)
+{
+    OSErr err;
+    Boolean *cancel;
+
+    ProgressDlg_Show(req->title);
+    cancel = ProgressDlg_CancelFlag();
+    err = Download_Fetch(gPrefs.host, gPrefs.port, gPrefs.user, gPrefs.pass,
+                          req->remotePath, ProgressDlg_UpdateProgress, NULL,
+                          ProgressDlg_GiveTime, cancel);
+    ProgressDlg_Hide();
+
+    if (err == noErr) {
+        char msg[300];
+        sprintf(msg, "\xd2%.200s\xd3 was saved in the Garden Downloads folder, next to the application.", req->title);
+        ShowMessage(msg);
+    } else if (err == userCanceledErr) {
+        /* the user asked to stop - no need to alert them about their own action */
+    } else if (!req->isLiveFile) {
+        char msg[400];
+        sprintf(msg, "Couldn't download \xd2%.150s\xd3 (error %d). This entry's path is a placeholder in the bundled sample catalog, not a verified live one - try Live FTP Browse instead, which downloads exactly what it just listed.",
+                req->title, (int)err);
+        ShowMessage(msg);
+    } else {
+        char msg[300];
+        sprintf(msg, "Couldn't download \xd2%.200s\xd3 (error %d).", req->title, (int)err);
+        ShowMessage(msg);
+    }
+}
+
+static void DoConnect(void)
+{
+    OSErr err;
+    Boolean *cancel;
+
+    if (gConnected) return;
+
+    ProgressDlg_Show("Connecting to Macintosh Garden\xc9");
+    cancel = ProgressDlg_CancelFlag();
+    err = FTP_Connect(&gBrowseSession, gPrefs.host, gPrefs.port, gPrefs.user, gPrefs.pass,
+                       ProgressDlg_GiveTime, cancel);
+    ProgressDlg_Hide();
+
+    if (err == noErr) {
+        gConnected = true;
+        strcpy(gStatusText, "Connected to Macintosh Garden.");
+    } else if (err == userCanceledErr) {
+        strcpy(gStatusText, "Connect canceled.");
+    } else {
+        sprintf(gStatusText, "Connect failed (error %d) - check Preferences.", (int)err);
+    }
+    RedrawStatusOnly();
+}
+
+static void DoDisconnect(void)
+{
+    if (!gConnected) return;
+    FTP_Disconnect(&gBrowseSession, NULL, NULL);
+    gConnected = false;
+    strcpy(gStatusText, "Not connected.");
+    RedrawStatusOnly();
+}
+
+/* Fetches a real, live NLST at gPrefs.basePath into ResultsView's Live FTP
+   Browse listing - names only; sizes are deliberately left unknown here
+   (shown as "unknown" until the user actually downloads something) rather
+   than issuing a SIZE call per listed file, which would turn browsing a
+   big directory into one round trip per entry. */
+static void DoRefreshListing(void)
+{
+    static char names[kMaxLiveFetch][64];
+    static unsigned long sizes[kMaxLiveFetch];
+    static Boolean sizeKnown[kMaxLiveFetch];
+    short count, i;
+    Boolean *cancel;
+
+    if (!gConnected) {
+        DoConnect();
+        if (!gConnected) return;
+    }
+
+    ProgressDlg_Show("Fetching file listing\xc9");
+    cancel = ProgressDlg_CancelFlag();
+    count = FTP_ListNames(&gBrowseSession, gPrefs.basePath, names, kMaxLiveFetch,
+                           ProgressDlg_GiveTime, cancel);
+    ProgressDlg_Hide();
+
+    for (i = 0; i < count; i++) { sizes[i] = 0; sizeKnown[i] = false; }
+    ResultsView_ShowLiveListing(names, sizes, sizeKnown, count);
+
+    if (count > 0)
+        sprintf(gStatusText, "Connected to Macintosh Garden - %d files listed.", count);
+    else
+        strcpy(gStatusText, "Connected, but the listing came back empty - check the base path in Preferences.");
+
+    RedrawResultsAndStatus();
+}
+
+static void HandleContentClick(WindowPtr w, Point local, unsigned long when)
+{
+    Rect tb, sb, rs, st;
+    LayoutBrowser(w, &tb, &sb, &rs, &st);
+
+    if (PtInRect(local, &tb)) {
+        ToolbarHit hit = Toolbar_Click(local);
+        if (hit == kToolbarHitSearchSubmit) PerformSearch();
+        return;
+    }
+    if (PtInRect(local, &st)) {
+        ToolbarHit hit = Toolbar_Click(local);
+        if (hit == kToolbarHitPrevPage) { ResultsView_PrevPage(&rs); RedrawStatusOnly(); }
+        else if (hit == kToolbarHitNextPage) { ResultsView_NextPage(&rs); RedrawStatusOnly(); }
+        return;
+    }
+    if (PtInRect(local, &sb)) {
+        short sel = Sidebar_Click(&sb, local);
+        if (sel >= 0) OnCategorySelected(sel);
+        return;
+    }
+    if (PtInRect(local, &rs)) {
+        DownloadRequest req;
+        if (ResultsView_Click(&rs, local, when, &req))
+            BeginDownload(&req);
+        return;
+    }
+}
+
+static void HandleAppleMenu(short item)
+{
+    if (item == iAbout) StopAlert(128, NULL);
+}
+
+static void HandleFileMenu(short item)
+{
+    DownloadRequest req;
+
+    switch (item) {
+        case iPreferences:
+            PrefsDlg_Run(&gPrefs);
+            break;
+        case iGetSelected:
+            if (ResultsView_GetSelected(&req))
+                BeginDownload(&req);
+            else
+                ShowMessage("Select an item in the list first, then choose Get Selected Item (or just click its Get button).");
+            break;
+        case iShowDownloads:
+            ShowMessage("Downloaded files are saved in a \xd2Garden Downloads\xd3 folder, created next to the application.");
+            break;
+        case iQuit:
+            if (gConnected) DoDisconnect();
+            gDone = true;
+            break;
+    }
+}
+
+static void HandleEditMenu(short item)
+{
+    switch (item) {
+        case iCut:   Toolbar_EditCut();   break;
+        case iCopy:  Toolbar_EditCopy();  break;
+        case iPaste: Toolbar_EditPaste(); break;
+        case iClear: Toolbar_EditClear(); break;
+    }
+}
+
+static void HandleGoMenu(short item)
+{
+    Rect tb, sb, rs, st;
+    short sel;
+
+    LayoutBrowser(gWindow, &tb, &sb, &rs, &st);
+
+    if (item >= kGoCategoryFirst && item < kGoCategoryFirst + kCategoryCount) {
+        sel = (short)(item - kGoCategoryFirst);
+    } else if (item == kGoLiveBrowse) {
+        sel = kLiveBrowseRowIndex;
+    } else {
+        return;
+    }
+
+    Sidebar_SetSelected(&sb, sel);
+    OnCategorySelected(sel);
+}
+
+static void HandleConnectionMenu(short item)
+{
+    switch (item) {
+        case iConnect:        DoConnect(); break;
+        case iDisconnect:     DoDisconnect(); break;
+        case iRefreshListing: DoRefreshListing(); break;
+    }
+}
+
+static void AdjustMenus(void)
+{
+    MenuHandle editMenu = GetMenuHandle(mEdit);
+    MenuHandle connMenu = GetMenuHandle(mConnection);
+    if (editMenu) {
+        EnableItem(editMenu, iCut);
+        EnableItem(editMenu, iCopy);
+        EnableItem(editMenu, iPaste);
+        EnableItem(editMenu, iClear);
+    }
+    if (connMenu) {
+        if (gConnected) {
+            EnableItem(connMenu, iDisconnect);
+            DisableItem(connMenu, iConnect);
+        } else {
+            EnableItem(connMenu, iConnect);
+            DisableItem(connMenu, iDisconnect);
+        }
+    }
+}
+
+static void HandleMenuChoice(long menuChoice)
+{
+    short menuID = (short)(menuChoice >> 16);
+    short item = (short)(menuChoice & 0xFFFF);
+
+    switch (menuID) {
+        case mApple:      HandleAppleMenu(item); break;
+        case mFile:        HandleFileMenu(item); break;
+        case mEdit:        HandleEditMenu(item); break;
+        case mGo:          HandleGoMenu(item); break;
+        case mConnection:  HandleConnectionMenu(item); break;
+    }
+    HiliteMenu(0);
+}
+
+void RunApp(void)
+{
+    EventRecord event;
+
+    ToolboxInit();
+    Prefs_Load(&gPrefs);
+    SetupMenus();
+    CreateMainWindow();
+    DrawContent(gWindow);
+
+    while (!gDone) {
+        AdjustMenus();
+        Toolbar_Idle();
+
+        if (WaitNextEvent(everyEvent, &event, 15, NULL)) {
+            switch (event.what) {
+                case mouseDown: {
+                    WindowPtr which;
+                    short part = FindWindow(event.where, &which);
+                    switch (part) {
+                        case inMenuBar:
+                            HandleMenuChoice(MenuSelect(event.where));
+                            break;
+                        case inSysWindow:
+                            SystemClick(&event, which);
+                            break;
+                        case inDrag:
+                            DragWindow(which, event.where, NULL);
+                            break;
+                        case inGoAway:
+                            if (TrackGoAway(which, event.where)) {
+                                if (gConnected) DoDisconnect();
+                                gDone = true;
+                            }
+                            break;
+                        case inGrow: {
+                            long newSize = GrowWindow(which, event.where, &gSizeLimits);
+                            if (newSize != 0) {
+                                SizeWindow(which, LoWord(newSize), HiWord(newSize), true);
+                                RelayoutAndRedraw(which);
+                            }
+                            break;
+                        }
+                        case inZoomIn:
+                        case inZoomOut:
+                            if (TrackBox(which, event.where, part)) {
+                                SetPort(which);
+                                ZoomWindow(which, part, true);
+                                RelayoutAndRedraw(which);
+                            }
+                            break;
+                        case inContent:
+                            if (which != FrontWindow()) {
+                                SelectWindow(which);
+                            } else {
+                                Point local = event.where;
+                                SetPort(which);
+                                GlobalToLocal(&local);
+                                HandleContentClick(which, local, event.when);
+                            }
+                            break;
+                    }
+                    break;
+                }
+                case keyDown:
+                case autoKey: {
+                    char key = (char)(event.message & charCodeMask);
+                    if (event.modifiers & cmdKey) {
+                        HandleMenuChoice(MenuKey(key));
+                    } else {
+                        if (Toolbar_HandleKey(&event)) PerformSearch();
+                    }
+                    break;
+                }
+                case updateEvt: {
+                    WindowPtr w = (WindowPtr)event.message;
+                    BeginUpdate(w);
+                    DrawContent(w);
+                    EndUpdate(w);
+                    break;
+                }
+                case activateEvt: {
+                    WindowPtr w = (WindowPtr)event.message;
+                    SetPort(w);
+                    DrawGrowIcon(w);
+                    break;
+                }
+            }
+        }
+    }
+}

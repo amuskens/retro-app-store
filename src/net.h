@@ -1,0 +1,74 @@
+#ifndef NET_H
+#define NET_H
+
+#include "mactcp_low.h"
+
+/* A minimal MacTCP session layer: create a stream, open it, send/receive,
+   close it down. Every call that can block on the network issues its
+   MacTCP request with PBControlAsync and then polls ioResult in a loop
+   calling the caller's GiveTimeProc (wire it to SystemTask()) - the same
+   shape antscode/MacTCPHelper's TCPHi.h uses, and the reason nothing here
+   needs an interrupt-time completion routine or stream notifier: this app
+   never gets async notification of anything, it just never blocks the UI
+   while waiting to find out. ftp.c is the only other module that should
+   need to know any of this exists. */
+
+typedef struct {
+    StreamPtr stream;
+    Ptr rcvBuffer;
+    TCPiopb pb;
+} NetConnection;
+
+/* Opens the MacTCP (".IPP") driver. Call once before anything else here;
+   safe to call again (no-ops once already open). */
+OSErr Net_Init(void);
+
+/* Creates a stream and actively opens a connection to remoteHost:
+   remotePort. On any failure, conn is left fully torn down (no partial
+   stream to clean up). */
+OSErr Net_Open(NetConnection *conn, ip_addr remoteHost, tcp_port remotePort,
+               GiveTimeProc giveTime, Boolean *cancel);
+
+OSErr Net_Send(NetConnection *conn, const void *data, unsigned short length,
+               GiveTimeProc giveTime, Boolean *cancel);
+
+/* Reads whatever's available up to bufLen bytes (one TCPRcv, not "fill the
+   whole buffer") into *outLen. connectionClosing/connectionDoesntExist
+   mean the remote side is done sending - that's an expected end-of-stream
+   for ftp.c to check for, not necessarily a failure to report to the
+   user. */
+OSErr Net_Receive(NetConnection *conn, void *buf, unsigned short bufLen, unsigned short *outLen,
+                   GiveTimeProc giveTime, Boolean *cancel);
+
+/* Graceful TCPClose (waits for the remote FIN) then TCPRelease. Releases
+   conn's buffer either way, even if the graceful close times out - a
+   close that failed to be graceful still needs its stream released, or
+   the buffer leaks until the driver itself is torn down. */
+OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime, Boolean *cancel);
+
+/* Forceful TCPAbort + TCPRelease, synchronous best-effort with no
+   yielding - for error/cancel cleanup paths, where the point is to tear
+   the stream down quickly rather than wait on a graceful FIN exchange. */
+void Net_Abort(NetConnection *conn);
+
+/* Buffers Net_Receive output and splits it into CRLF- or LF-terminated
+   text lines - FTP is a line-oriented protocol on both its control
+   connection (multi-line reply parsing) and its NLST data connection (one
+   filename per line), so this is shared rather than duplicated in ftp.c. */
+typedef struct {
+    NetConnection *conn;
+    char buf[512];
+    short len;
+    Boolean eof;
+    OSErr lastErr;
+} LineReader;
+
+void LineReader_Init(LineReader *reader, NetConnection *conn);
+
+/* Fills outLine (NUL-terminated, CR/LF stripped) with the next line and
+   returns true, or returns false once the connection is exhausted (check
+   reader->lastErr to tell clean EOF from a real error). */
+Boolean LineReader_Next(LineReader *reader, char *outLine, short outLineSize,
+                         GiveTimeProc giveTime, Boolean *cancel);
+
+#endif
