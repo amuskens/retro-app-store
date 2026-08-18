@@ -44,16 +44,24 @@ all: configure
 	mkdir -p $(DIST_DIR)
 	cp $(BUILD_DIR)/$(APP_NAME).bin $(DIST_DIR)/$(APP_NAME).bin
 	@# Same idea, but for the whole floppy (app + catalog together) rather
-	@# than just the bare app - a disk image has no resource fork of its
-	@# own to carry, so this can't reuse Rez's MacBinary writer the app
-	@# itself goes through; tools/wrap_macbinary.py builds one from
-	@# scratch instead, verified byte-for-byte round-trip through hcopy -m
-	@# against a real independent MacBinary reader before being trusted
-	@# here. rohd/dCpy (DiskCopy's own type/creator - see download.c's
-	@# GuessTypeCreator) means Finder recognizes the expanded result as a
-	@# real disk image, ready to mount with DiskCopy, not a generic file.
-	python3 tools/wrap_macbinary.py $(IMG) $(DIST_DIR)/$(APP_NAME).img.bin \
-		--type rohd --creator dCpy --name "$(APP_NAME).img"
+	@# than just the bare app. Two wrapping steps, both verified against a
+	@# real DiskCopy in the emulator (Mount Image, not just "Create Image
+	@# from Disk"), not just a host-side round-trip:
+	@#   1. tools/make_diskcopy42.py wraps the raw HFS block dump in a real
+	@#      DiskCopy 4.2 header (checksums included) - DiskCopy's Mount
+	@#      Image expects its own format, not a bare image; feeding it the
+	@#      raw image gets "(-39) unexpected end-of-file", since it's
+	@#      trying to read a header structure that was never there.
+	@#   2. tools/wrap_macbinary.py then wraps THAT for FTP transport, same
+	@#      as the bare app above, but with type/creator dImg/ddsk - the
+	@#      type/creator this environment's installed DiskCopy 6.3.3
+	@#      actually has registered (dCpy, the type/creator historically
+	@#      documented for DC42 files, got "the application program that
+	@#      created it could not be found" here).
+	python3 tools/make_diskcopy42.py $(IMG) $(BUILD_DIR)/$(APP_NAME)_dc42.img \
+		--name "$(APP_NAME)"
+	python3 tools/wrap_macbinary.py $(BUILD_DIR)/$(APP_NAME)_dc42.img $(DIST_DIR)/$(APP_NAME).img.bin \
+		--type dImg --creator ddsk --name "$(APP_NAME).img"
 
 configure:
 	cmake -S . -B $(BUILD_DIR) -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN_FILE)

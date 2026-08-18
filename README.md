@@ -474,8 +474,10 @@ dist/
   (StuffIt *Expander*, the free, ubiquitous decoder - not `SIT!`, the full
   commercial compressor that's much less likely to actually be
   installed), MacBinary (`.bin`) and `.zip` the same, DiskCopy images
-  `rohd`/`dCpy`. `.dmg` and `.pdf` downloads are called out explicitly as
-  *not* fixable this way - `.dmg` is a Mac OS 9/X-era format with no
+  `rohd`/`ddsk` (not the historically-documented `dCpy` - see the DC42
+  Gotchas entry below for why). `.dmg` and `.pdf` downloads are called out
+  explicitly as *not* fixable this way - `.dmg` is a Mac OS 9/X-era format
+  with no
   mounting tool on System 7 at all (not the same thing as classic
   DiskCopy's `.img`/`.dsk` despite the "disk image" family resemblance),
   and there's no PDF viewer on System 7 either; both download fine,
@@ -499,9 +501,52 @@ dist/
   implementation of the same format to go wrong. Verified two ways before
   trusting it: `hcopy -m` (a real, independent MacBinary reader, not
   written by me) decoded a wrapped `Garden.img` back out with the correct
-  `rohd`/`dCpy` type/creator and the exact original size, and a byte-for-
-  byte `cmp` against the original confirmed the extracted data fork
-  matches exactly - not just "the header looks right."
+  type/creator and the exact original size, and a byte-for-byte `cmp`
+  against the original confirmed the extracted data fork matches exactly -
+  not just "the header looks right."
+- **`dist/Garden.img.bin` didn't actually mount in DiskCopy at first, and
+  the bug was two layers deep.** The MacBinary wrapper above is lossless,
+  but it was originally wrapping the *raw* HFS block image `hformat`/
+  `hcopy` produce - the same bytes BasiliskII/Mini vMac mount directly as a
+  virtual floppy, but not what DiskCopy's own "Mount Image" expects, which
+  needs its own header/checksums. Feeding it the raw image got exactly the
+  error a real user hit live: "(-39) An unexpected end-of-file was
+  encountered... which may indicate that it is corrupted or damaged."
+  Fixed by adding `tools/make_diskcopy42.py`, a real DiskCopy 4.2 (DC42)
+  header/checksum implementation (spec cross-checked against two
+  independent real-world tools - `lampmerchant/dsk2dc` and `claunia/
+  IDEFileToDC42`'s `DC42_HEADERSIZE` - not reconstructed from memory), used
+  to wrap the raw image before it goes through `wrap_macbinary.py`. Getting
+  this working end-to-end in the emulator took three real, sequential bugs,
+  each one only visible by actually trying to mount the result rather than
+  trusting the format on paper:
+  1. **Wrong creator code.** `dImg`/`dCpy` (the type/creator generally
+     documented for DC42 files) got "the application program that created
+     it could not be found" - this environment's actually-installed
+     DiskCopy 6.3.3 has creator `ddsk` registered in Finder's desktop
+     database, not `dCpy`. Found by using DiskCopy's own "Create Image from
+     Disk..." on a real mounted floppy and checking what creator code
+     Finder reported for *that* file via Get Info, then using `ddsk`
+     instead. (`download.c`'s `GuessTypeCreator` uses the same corrected
+     `ddsk` for downloaded `.img`/`.dsk` files, for the same reason.)
+  2. **Wrong checksum, from a wrong header size.** With the creator fixed,
+     DiskCopy now recognized and tried to mount the file, but failed with
+     "(130) The checksum of 'Garden.img' is INVALID" - real DiskCopy even
+     showed the expected vs. calculated values. The checksum *algorithm*
+     itself (32-bit accumulator, add each big-endian 16-bit word, rotate
+     right 1 bit, repeat) was right - it matched both reference
+     implementations exactly. The header *size* wasn't: it's 84 bytes, not
+     the commonly-assumed 128. The first version padded it to 128 anyway,
+     which shifted every data byte DiskCopy read by 44 bytes - so its
+     checksum, computed over the wrong window of bytes, could never match
+     one computed over the real data. Fixed by making the header exactly
+     84 bytes with data starting immediately after.
+  3. With both fixed, `dist/Garden.img.bin` (the actual `make`-produced
+     artifact, not a hand-built test copy) was placed on a scratch test
+     disk, downloaded-and-expanded via StuffIt Expander, and the resulting
+     `Garden.img` mounted cleanly via DiskCopy's real "Mount Image..." -
+     the mounted volume opened to show exactly the expected `Garden` app
+     and `Garden Catalog`, and the app launched correctly from it.
 
 ## Known limitations
 
@@ -575,14 +620,17 @@ server for other classic Macs to fetch, in the same MacBinary format
 every real file on the actual Macintosh Garden mirror uses:
 
 - `Garden.bin` - just the app, copied straight from `build/`.
-- `Garden.img.bin` - the **whole floppy** (app + catalog together),
-  MacBinary-wrapped by `tools/wrap_macbinary.py` with DiskCopy's own
-  type/creator (`rohd`/`dCpy`) so Finder recognizes the expanded result as
-  a real disk image, ready to mount with DiskCopy, rather than a generic
-  unopenable file. This is the one to hand someone who wants everything
-  in a single download - see the Gotchas entry on how it's built and
-  verified, since a disk image needs its own from-scratch MacBinary
-  wrapper (it has no resource fork of its own for Rez's writer to carry).
+- `Garden.img.bin` - the **whole floppy** (app + catalog together), first
+  wrapped in a real DiskCopy 4.2 header by `tools/make_diskcopy42.py`
+  (needed for DiskCopy's own "Mount Image" to accept it - a bare raw HFS
+  image isn't enough, see Gotchas), then MacBinary-wrapped by
+  `tools/wrap_macbinary.py` with type/creator `dImg`/`ddsk` so Finder
+  recognizes the expanded result as a real disk image, ready to mount with
+  DiskCopy, rather than a generic unopenable file. This is the one to hand
+  someone who wants everything in a single download - see the Gotchas
+  entry on how it's built and verified, since a disk image needs its own
+  from-scratch MacBinary wrapper (it has no resource fork of its own for
+  Rez's writer to carry).
 
 `make distclean` removes both `build/` and `dist/`.
 
@@ -659,10 +707,17 @@ Confirmed working end-to-end:
     Expander™ document" - a double-click would route to a real installed
     copy of StuffIt Expander in that test environment, not show up as a
     generic unopenable file.
-13. **`dist/Garden.img.bin`** (verified with real host-side tooling rather
-    than in the emulator): `hcopy -m` decoded it back to the exact
-    original `Garden.img` bytes (confirmed with `cmp`), with type/creator
-    correctly read back as `rohd`/`dCpy`.
+13. **`dist/Garden.img.bin`** - both the MacBinary layer and the DC42
+    layer verified. Host-side: `hcopy -m` decoded it back to the exact
+    original bytes (confirmed with `cmp`), with type/creator correctly
+    read back as `dImg`/`ddsk`. In the emulator: the actual `make`-produced
+    file was placed on a scratch test disk, expanded via StuffIt Expander
+    with no error, and the resulting `Garden.img` mounted cleanly through
+    DiskCopy's real "Mount Image..." command - the mounted volume showed
+    exactly the expected `Garden` app and `Garden Catalog`, and the app
+    launched correctly from it. See the DC42 Gotchas entry for the three
+    bugs (wrong creator, then wrong header size/checksum) this caught
+    along the way.
 
 Not yet exercised in the emulator: `Catalog_Load`'s reject-a-corrupt-file
 alert path (see Known Limitations), and a full 200+-item live directory's

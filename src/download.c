@@ -75,7 +75,7 @@ static void GuessTypeCreator(const char *name, OSType *outType, OSType *outCreat
         if (EqualsCI(ext, ".zip"))  { *outType = 'ZIP ';  *outCreator = 'SITx'; return; } /* Expander 5.5+ */
         if (EqualsCI(ext, ".sea"))  { *outType = 'APPL'; *outCreator = '????'; return; } /* self-extracting - launches itself */
         if (EqualsCI(ext, ".cpt"))  { *outType = 'CPCT'; *outCreator = 'CPCT'; return; } /* Compact Pro */
-        if (EqualsCI(ext, ".img") || EqualsCI(ext, ".dsk")) { *outType = 'rohd'; *outCreator = 'dCpy'; return; }
+        if (EqualsCI(ext, ".img") || EqualsCI(ext, ".dsk")) { *outType = 'rohd'; *outCreator = 'ddsk'; return; } /* ddsk, not dCpy - see README Gotchas on Garden.img.bin */
         if (EqualsCI(ext, ".txt"))  { *outType = 'TEXT'; *outCreator = 'ttxt'; return; }
     }
     /* Unrecognized extension (includes .dmg/.pdf, and anything else not
