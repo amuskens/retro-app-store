@@ -7,21 +7,21 @@
 #define kRowHeight    24
 #define kTotalRows    (kCategoryCount + 1) /* +1 for the trailing Live FTP Browse row */
 
-/* Year/CPU filter pills, pinned to the bottom of the sidebar rather than
-   flowing after the row list - a fixed footer, same idea as the toolbar/
-   status bar being pinned to the window's top/bottom edges, so they stay
-   in the same reachable spot regardless of how many categories there are
-   or how tall the window is. Originally these lived in a second toolbar
-   row instead; moved here since two pill buttons crammed alongside the
-   search field read as cluttered, and they're conceptually "narrow the
+/* Year/CPU/System filter pills, pinned to the bottom of the sidebar rather
+   than flowing after the row list - a fixed footer, same idea as the
+   toolbar/status bar being pinned to the window's top/bottom edges, so
+   they stay in the same reachable spot regardless of how many categories
+   there are or how tall the window is. Originally these lived in a second
+   toolbar row instead; moved here since two pill buttons crammed alongside
+   the search field read as cluttered, and they're conceptually "narrow the
    list I'm already looking at", closer in spirit to category selection
    than to search. */
-#define kFilterFooterHeight 60
+#define kFilterFooterHeight 86
 #define kFilterPillHeight   18
 
 static short gSelected = 0;
 
-static void FilterRects(const Rect *bounds, Rect *outYear, Rect *outArch)
+static void FilterRects(const Rect *bounds, Rect *outYear, Rect *outArch, Rect *outSys)
 {
     short footerTop = (short)(bounds->bottom - kFilterFooterHeight);
 
@@ -34,6 +34,11 @@ static void FilterRects(const Rect *bounds, Rect *outYear, Rect *outArch)
     outArch->right = outYear->right;
     outArch->top = (short)(outYear->bottom + 8);
     outArch->bottom = (short)(outArch->top + kFilterPillHeight);
+
+    outSys->left = outYear->left;
+    outSys->right = outYear->right;
+    outSys->top = (short)(outArch->bottom + 8);
+    outSys->bottom = (short)(outSys->top + kFilterPillHeight);
 }
 
 static void RowRect(const Rect *bounds, short index, Rect *out)
@@ -118,38 +123,46 @@ void Sidebar_Draw(const Rect *bounds)
         DrawRow(bounds, i);
 
     {
-        Rect yearR, archR;
+        Rect yearR, archR, sysR;
         short footerTop = (short)(bounds->bottom - kFilterFooterHeight);
-        FilterRects(bounds, &yearR, &archR);
+        FilterRects(bounds, &yearR, &archR, &sysR);
 
         Theme_DrawDivider(bounds->left, footerTop, bounds->right, footerTop);
         Theme_DrawPillButton(&yearR, Catalog_YearFilterLabel(Catalog_GetYearFilter()), false);
         Theme_DrawPillButton(&archR, Catalog_ArchFilterLabel(Catalog_GetArchFilter()), false);
+        Theme_DrawPillButton(&sysR, Catalog_SysFilterLabel(Catalog_GetSysFilter()), false);
     }
 
     Theme_DrawDivider(bounds->right - 1, bounds->top, bounds->right - 1, bounds->bottom);
 }
 
-Boolean Sidebar_ClickFilter(const Rect *bounds, Point pt, Boolean *outIsYear)
+Boolean Sidebar_ClickFilter(const Rect *bounds, Point pt, SidebarFilterKind *outKind)
 {
-    Rect yearR, archR;
-    FilterRects(bounds, &yearR, &archR);
+    Rect yearR, archR, sysR;
+    FilterRects(bounds, &yearR, &archR, &sysR);
 
-    if (PtInRect(pt, &yearR)) { *outIsYear = true; return true; }
-    if (PtInRect(pt, &archR)) { *outIsYear = false; return true; }
+    if (PtInRect(pt, &yearR)) { *outKind = kSidebarFilterYear; return true; }
+    if (PtInRect(pt, &archR)) { *outKind = kSidebarFilterArch; return true; }
+    if (PtInRect(pt, &sysR))  { *outKind = kSidebarFilterSystem; return true; }
     return false;
 }
 
 void Sidebar_GetYearFilterRect(const Rect *bounds, Rect *out)
 {
-    Rect archR;
-    FilterRects(bounds, out, &archR);
+    Rect archR, sysR;
+    FilterRects(bounds, out, &archR, &sysR);
 }
 
 void Sidebar_GetArchFilterRect(const Rect *bounds, Rect *out)
 {
-    Rect yearR;
-    FilterRects(bounds, &yearR, out);
+    Rect yearR, sysR;
+    FilterRects(bounds, &yearR, out, &sysR);
+}
+
+void Sidebar_GetSystemFilterRect(const Rect *bounds, Rect *out)
+{
+    Rect yearR, archR;
+    FilterRects(bounds, &yearR, &archR, out);
 }
 
 short Sidebar_Click(const Rect *bounds, Point pt)

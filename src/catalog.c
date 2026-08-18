@@ -13,11 +13,14 @@ short gCatalogEntryCount = 0;
 
 static CatalogYearFilter gYearFilter = kYearFilterAny;
 static CatalogArchFilter gArchFilter = kArchFilterAny;
+static CatalogSysFilter gSysFilter = kSysFilterAny;
 
 void Catalog_SetYearFilter(CatalogYearFilter f) { gYearFilter = f; }
 void Catalog_SetArchFilter(CatalogArchFilter f) { gArchFilter = f; }
+void Catalog_SetSysFilter(CatalogSysFilter f) { gSysFilter = f; }
 CatalogYearFilter Catalog_GetYearFilter(void) { return gYearFilter; }
 CatalogArchFilter Catalog_GetArchFilter(void) { return gArchFilter; }
+CatalogSysFilter Catalog_GetSysFilter(void) { return gSysFilter; }
 
 const char *Catalog_YearFilterLabel(CatalogYearFilter f)
 {
@@ -39,6 +42,16 @@ const char *Catalog_ArchFilterLabel(CatalogArchFilter f)
     }
 }
 
+const char *Catalog_SysFilterLabel(CatalogSysFilter f)
+{
+    switch (f) {
+        case kSysFilterSystem6:    return "System 6";
+        case kSysFilterSystem7:    return "System 7";
+        case kSysFilterSystem8Plus: return "System 8+";
+        default:                    return "Any System";
+    }
+}
+
 static Boolean PassesYearFilter(short year)
 {
     switch (gYearFilter) {
@@ -56,6 +69,16 @@ static Boolean PassesArchFilter(Byte arch)
         case kArchFilter68k: return (Boolean)(arch == kArch68k || arch == kArchFat);
         case kArchFilterPPC: return (Boolean)(arch == kArchPPC || arch == kArchFat);
         default:              return true;
+    }
+}
+
+static Boolean PassesSysFilter(short minSystem)
+{
+    switch (gSysFilter) {
+        case kSysFilterSystem6:     return (Boolean)(minSystem < 70);
+        case kSysFilterSystem7:     return (Boolean)(minSystem >= 70 && minSystem < 80);
+        case kSysFilterSystem8Plus: return (Boolean)(minSystem >= 80);
+        default:                    return true;
     }
 }
 
@@ -81,7 +104,8 @@ short Catalog_FilterByCategory(short categoryIndex, short *outIndices, short max
     for (i = 0; i < gCatalogEntryCount && count < maxOut; i++) {
         if (gCatalogEntries[i].category == categoryIndex &&
             PassesYearFilter(gCatalogEntries[i].year) &&
-            PassesArchFilter(gCatalogEntries[i].arch))
+            PassesArchFilter(gCatalogEntries[i].arch) &&
+            PassesSysFilter(gCatalogEntries[i].minSystem))
             outIndices[count++] = i;
     }
     return count;
@@ -96,7 +120,8 @@ short Catalog_Search(const char *query, short *outIndices, short maxOut)
         if ((ContainsCI(gCatalogEntries[i].title, query) ||
              ContainsCI(gCatalogEntries[i].description, query)) &&
             PassesYearFilter(gCatalogEntries[i].year) &&
-            PassesArchFilter(gCatalogEntries[i].arch))
+            PassesArchFilter(gCatalogEntries[i].arch) &&
+            PassesSysFilter(gCatalogEntries[i].minSystem))
             outIndices[count++] = i;
     }
     return count;

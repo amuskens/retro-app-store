@@ -12,23 +12,29 @@
 
    header (8 bytes):
      0-3  magic 'GCAT'
-     4-5  format version (UInt16) - currently 1
+     4-5  format version (UInt16) - currently 2
      6-7  entry count (UInt16)
 
    then `entry count` fixed-size records, kEntryDiskSize bytes each:
      0-1                                category index (UInt16)
      2-3                                release year (UInt16)
      4                                  arch: 0=68k, 1=PPC, 2=Fat (1 byte)
-     5..5+kCatTitleLen-1                title, NUL-padded
+     5-6                                minSystem: major*10+minor, 0=unknown (UInt16)
+     7..7+kCatTitleLen-1                title, NUL-padded
      +kCatDescLen                       description, NUL-padded
      +kCatPathLen                       remotePath, NUL-padded
-     +4                                 sizeBytes (UInt32) */
+     +4                                 sizeBytes (UInt32)
+
+   Version bumped 1->2 to add minSystem - the loader below rejects any
+   file whose version doesn't match exactly (see the version check in
+   Catalog_Load), so an old-format file just falls back to the compiled-in
+   default rather than being misread field-by-field. */
 
 #define kCatalogMagic ((unsigned long)0x47434154UL) /* 'GCAT' */
-#define kCatalogVersion 1
+#define kCatalogVersion 2
 #define kCatalogFileName "Garden Catalog"
 #define kHeaderDiskSize 8
-#define kEntryDiskSize (2 + 2 + 1 + kCatTitleLen + kCatDescLen + kCatPathLen + 4)
+#define kEntryDiskSize (2 + 2 + 1 + 2 + kCatTitleLen + kCatDescLen + kCatPathLen + 4)
 
 static void CopyDefaults(void)
 {
@@ -123,11 +129,13 @@ CatalogLoadResult Catalog_Load(void)
 
         e = &gCatalogEntries[i];
         off = 0;
-        e->category = (short)ReadU16(entryBuf + off); off = (short)(off + 2);
-        e->year     = (short)ReadU16(entryBuf + off); off = (short)(off + 2);
-        e->arch     = entryBuf[off];                  off = (short)(off + 1);
+        e->category  = (short)ReadU16(entryBuf + off); off = (short)(off + 2);
+        e->year      = (short)ReadU16(entryBuf + off); off = (short)(off + 2);
+        e->arch      = entryBuf[off];                  off = (short)(off + 1);
+        e->minSystem = (short)ReadU16(entryBuf + off); off = (short)(off + 2);
         if (e->category < 0 || e->category >= kCategoryCount) e->category = 0;
         if (e->arch != kArch68k && e->arch != kArchPPC && e->arch != kArchFat) e->arch = kArch68k;
+        if (e->minSystem < 0) e->minSystem = 0;
 
         CopyFixedField(entryBuf + off, kCatTitleLen, e->title, sizeof(e->title));
         off = (short)(off + kCatTitleLen);

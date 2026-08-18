@@ -32,6 +32,18 @@ typedef struct {
     short category;               /* index into gCategories */
     short year;                   /* release year, for the Year filter */
     Byte arch;                    /* CatalogArch, for the CPU filter */
+    short minSystem;              /* minimum required System version, as
+                                      (major*10 + minor) - e.g. 70 for
+                                      System 7.0, 75 for System 7.5, 80 for
+                                      Mac OS 8.0. 0 means unknown/not
+                                      curated yet. Sourced from Macintosh
+                                      Garden's own per-title pages (the
+                                      "For System X.x - Y.y" line), not
+                                      guessed - see README. For the System
+                                      filter, only the lower bound matters:
+                                      older software keeps running on newer
+                                      systems, so this is "will it run on
+                                      my system", not an exact range. */
     char title[kCatTitleLen];
     char description[kCatDescLen]; /* one line, shown under the title in a row */
     char remotePath[kCatPathLen];  /* path for FTP RETR, verified against a
@@ -93,21 +105,32 @@ typedef enum {
     kArchFilterPPC  /* PPC-capable: kArchPPC or kArchFat entries */
 } CatalogArchFilter;
 
-/* Year/CPU filters apply on top of whatever category or search is active -
-   set once from the toolbar's dropdowns, read back by Catalog_FilterByCategory/
-   Catalog_Search on every call so the results list stays consistent as the
-   user changes categories or searches without having to re-pick a filter. */
+typedef enum {
+    kSysFilterAny = 0,
+    kSysFilterSystem6,    /* minSystem 0 (unknown) or < 70 - runs on System 6.x up */
+    kSysFilterSystem7,    /* minSystem 70-79 - needs System 7 */
+    kSysFilterSystem8Plus /* minSystem >= 80 - needs Mac OS 8 or later */
+} CatalogSysFilter;
+
+/* Year/CPU/System filters apply on top of whatever category or search is
+   active - set once from the sidebar's pill menus, read back by
+   Catalog_FilterByCategory/Catalog_Search on every call so the results
+   list stays consistent as the user changes categories or searches
+   without having to re-pick a filter. */
 void Catalog_SetYearFilter(CatalogYearFilter f);
 void Catalog_SetArchFilter(CatalogArchFilter f);
+void Catalog_SetSysFilter(CatalogSysFilter f);
 CatalogYearFilter Catalog_GetYearFilter(void);
 CatalogArchFilter Catalog_GetArchFilter(void);
+CatalogSysFilter Catalog_GetSysFilter(void);
 const char *Catalog_YearFilterLabel(CatalogYearFilter f);
 const char *Catalog_ArchFilterLabel(CatalogArchFilter f);
+const char *Catalog_SysFilterLabel(CatalogSysFilter f);
 
 /* Both fill outIndices (indices into gCatalogEntries) up to maxOut and
    return the match count. Search matches substrings in title or
-   description, case-insensitively. Both also apply the current year/CPU
-   filters (see above). */
+   description, case-insensitively. Both also apply the current Year/CPU/
+   System filters (see above). */
 short Catalog_FilterByCategory(short categoryIndex, short *outIndices, short maxOut);
 short Catalog_Search(const char *query, short *outIndices, short maxOut);
 

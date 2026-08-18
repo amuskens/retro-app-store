@@ -53,6 +53,23 @@ static FtpSession gBrowseSession;
    never actually reach a downloadable file at all. */
 static char gLivePath[200] = "";
 
+/* See App_InBackground/App_HandleOSEvent in app.h. suspendResumeMessage/
+   resumeFlag aren't in this stripped-down toolchain's Events.h, so they're
+   defined locally - same vendoring precedent as mactcp_low.h for missing
+   MacTCP constants, these are stable, well-documented Toolbox values, not
+   guessed. */
+#define kSuspendResumeMessage 1
+#define kResumeFlag 1
+static Boolean gInBackground = false;
+
+Boolean App_InBackground(void) { return gInBackground; }
+
+void App_HandleOSEvent(const EventRecord *event)
+{
+    if (((event->message >> 24) & 0xFF) == kSuspendResumeMessage)
+        gInBackground = (Boolean)((event->message & kResumeFlag) == 0);
+}
+
 static void ToolboxInit(void);
 static void SetupMenus(void);
 static void CreateMainWindow(void);
@@ -65,6 +82,7 @@ static void HandleContentClick(WindowPtr w, Point local, unsigned long when);
 static void PerformSearch(void);
 static void ShowYearFilterMenu(const Rect *anchor);
 static void ShowArchFilterMenu(const Rect *anchor);
+static void ShowSystemFilterMenu(const Rect *anchor);
 static void OnCategorySelected(short sel);
 static void BeginDownload(const DownloadRequest *req);
 static void DoConnect(void);
@@ -281,6 +299,35 @@ static void ShowArchFilterMenu(const Rect *anchor)
     DisposeMenu(m);
 }
 
+static void ShowSystemFilterMenu(const Rect *anchor)
+{
+    Rect r = *anchor;
+    MenuHandle m;
+    Point tl;
+    long result;
+    short item;
+
+    tl.h = r.left;
+    tl.v = r.bottom;
+    SetPort(gWindow);
+    LocalToGlobal(&tl);
+
+    m = NewMenu(202, "\pSystem");
+    AppendMenu(m, "\pAny System;System 6;System 7;System 8+");
+    InsertMenu(m, -1);
+
+    result = PopUpMenuSelect(m, tl.v, tl.h, (short)(Catalog_GetSysFilter() + 1));
+    item = LoWord(result);
+    if (item != 0) {
+        Catalog_SetSysFilter((CatalogSysFilter)(item - 1));
+        ResultsView_RefreshFilter();
+        RelayoutAndRedraw(gWindow);
+    }
+
+    DeleteMenu(202);
+    DisposeMenu(m);
+}
+
 static void OnCategorySelected(short sel)
 {
     Toolbar_ClearSearch();
@@ -475,12 +522,15 @@ static void HandleContentClick(WindowPtr w, Point local, unsigned long when)
         return;
     }
     if (PtInRect(local, &sb)) {
-        Boolean isYear;
+        SidebarFilterKind kind;
         short sel;
-        if (Sidebar_ClickFilter(&sb, local, &isYear)) {
+        if (Sidebar_ClickFilter(&sb, local, &kind)) {
             Rect r;
-            if (isYear) { Sidebar_GetYearFilterRect(&sb, &r); ShowYearFilterMenu(&r); }
-            else        { Sidebar_GetArchFilterRect(&sb, &r); ShowArchFilterMenu(&r); }
+            switch (kind) {
+                case kSidebarFilterYear:   Sidebar_GetYearFilterRect(&sb, &r);   ShowYearFilterMenu(&r);   break;
+                case kSidebarFilterArch:   Sidebar_GetArchFilterRect(&sb, &r);   ShowArchFilterMenu(&r);   break;
+                case kSidebarFilterSystem: Sidebar_GetSystemFilterRect(&sb, &r); ShowSystemFilterMenu(&r); break;
+            }
             return;
         }
         sel = Sidebar_Click(&sb, local);
@@ -624,7 +674,12 @@ void RunApp(void)
 
     while (!gDone) {
         AdjustMenus();
-        Toolbar_Idle();
+        /* A blinking search-field caret in a window that isn't even
+           frontmost is exactly the kind of thing a well-behaved
+           background app doesn't do - costs the switched-to app some
+           CPU for no visible benefit, since Garden's own window isn't on
+           screen (or isn't the active one) to see it blink anyway. */
+        if (!gInBackground) Toolbar_Idle();
 
         if (WaitNextEvent(everyEvent, &event, 15, NULL)) {
             switch (event.what) {
@@ -718,6 +773,9 @@ void RunApp(void)
                     DrawGrowIcon(w);
                     break;
                 }
+                case osEvt:
+                    App_HandleOSEvent(&event);
+                    break;
             }
         }
     }

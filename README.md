@@ -15,7 +15,7 @@ part of it is drawing from live data.
 ## Features
 
 - Custom-drawn browser window: toolbar (search), left sidebar (8 categories
-  + Live FTP Browse + Year/CPU filter pills), paginated results list
+  + Live FTP Browse + Year/CPU/System filter pills), paginated results list
   (10/page), status bar (connection LED + page indicator). Fully
   draggable and resizable (see Gotchas - dragging in particular didn't
   actually work for a while). Row selection (sidebar and results list
@@ -26,11 +26,13 @@ part of it is drawing from live data.
 - **367-entry bundled catalog**, loadable from an external file so it can
   be updated without recompiling the app - see "The loadable catalog"
   below.
-- Search across the catalog by title/description, plus **Year** and
-  **CPU** filter pills at the bottom of the sidebar (release-year buckets;
-  68k/PPC/Fat, with "68k" and "PPC" each including Fat entries since those
-  run natively on either) - both apply on top of whichever category or
-  search is currently showing.
+- Search across the catalog by title/description, plus **Year**, **CPU**,
+  and **System** filter pills at the bottom of the sidebar (release-year
+  buckets; 68k/PPC/Fat, with "68k" and "PPC" each including Fat entries
+  since those run natively on either; minimum required System version,
+  bucketed as System 6/7/8+ - only the lower bound matters, since older
+  software keeps running on newer systems) - all three apply on top of
+  whichever category or search is currently showing.
 - Real FTP client over real MacTCP: connect, log in, `PASV`, `NLST`, `SIZE`,
   `RETR`, all through an async-PBControl-plus-poll pattern so the UI never
   blocks (see "Networking" below).
@@ -71,7 +73,19 @@ and why it turned out to be only half right).
   `year`/`arch` are curatorial best-effort (release year, 68k/PPC/Fat
   support) rather than independently verified per entry the way the
   download path is - treat those two fields as a useful guide for the
-  Year/CPU filters, not a certified database. An earlier pass over a
+  Year/CPU filters, not a certified database. **`minSystem`** (the System
+  filter's data) is a step more rigorous than year/arch, though still not
+  in the same league as `remotePath`: it's scraped from Macintosh Garden's
+  own per-title pages (the "For System X.x - Y.y" line each download
+  lists), not estimated from release year or genre. **321 of 367 entries
+  (87%) have a real, page-sourced value; the other 46 are honestly left at
+  0/"unknown"** where no confidently-matching page or no stated
+  requirement could be found - not guessed to fill the gap, same "leave it
+  honestly blank rather than invent a plausible-sounding value" policy as
+  the old `UNVERIFIED` marker below. Unknown entries fall into the System
+  filter's "System 6" bucket (0 counts as "< 70" there) rather than a
+  separate "unknown" option - worth knowing if a System 6 search turns up
+  more results than expected. An earlier pass over a
   smaller (79-entry) version of this catalog left 5 titles that couldn't
   be matched marked `UNVERIFIED` with an invented placeholder path rather
   than a real one; the 367-entry catalog replaced that set entirely with
@@ -120,28 +134,42 @@ catalog doesn't require rebuilding the app at all**:
 a handful of fixed-size `FSRead` calls and zero string tokenizing, which
 matters on real 68k hardware in a way it wouldn't on anything modern. The
 format (`catalog_load.c` has the authoritative layout comment) is an
-8-byte header (`GCAT` magic, version, entry count) followed by one
-267-byte fixed record per entry (category index, year, arch byte, then
-NUL-padded title/description/remotePath fields, then a 4-byte size) - all
-integers big-endian, which happens to be 68k's own native byte order, so
-the loader never byte-swaps anything. `tools/build_catalog.py` is the only
-thing that has to agree with this layout on the writing side; both it and
-`catalog_load.c` document the exact field sizes so the two can't silently
-drift apart unnoticed (a size mismatch fails loudly either way - the
-script errors immediately, the app just falls back to its compiled-in
-catalog rather than misreading garbage).
+8-byte header (`GCAT` magic, version - currently 2, entry count) followed
+by one 269-byte fixed record per entry (category index, year, arch byte,
+minSystem, then NUL-padded title/description/remotePath fields, then a
+4-byte size) - all integers big-endian, which happens to be 68k's own
+native byte order, so the loader never byte-swaps anything. `tools/
+build_catalog.py` is the only thing that has to agree with this layout on
+the writing side; both it and `catalog_load.c` document the exact field
+sizes so the two can't silently drift apart unnoticed (a size mismatch
+fails loudly either way - the script errors immediately, the app just
+falls back to its compiled-in catalog rather than misreading garbage).
+The version number exists specifically for this kind of change: it was
+bumped 1->2 when `minSystem` was added, so an old-format file gets
+rejected cleanly (falls back to the compiled-in catalog) instead of being
+misread field-by-field.
 
 **JSON source format** (see `tools/catalog_source.json` for 367 real
 examples): a `version` field plus an `entries` array of objects with
 `category` (one of the 8 real category names, spelled exactly as in the
 sidebar), `title`, `year`, `arch` (`"68k"`, `"ppc"`, or `"fat"`),
-`description`, `remotePath`, and `sizeBytes`. Categories themselves are
-**not** loadable this way - they're tied to compiled UI chrome (the
-sidebar rows and the Go menu's item list both have to match
-`gCategories` in `catalog_data.c` by hand, since Rez can't read a C
-array, let alone an external JSON file), so adding an actual new category
-still needs a recompile. Only the entries within the existing 8 are
-updatable without one.
+`description`, `remotePath`, `sizeBytes`, and `minSystem` (optional,
+defaults to 0/"unknown" - minimum required System version as
+major*10+minor, e.g. 75 for System 7.5; powers the System filter pill).
+Categories themselves are **not** loadable this way - they're tied to
+compiled UI chrome (the sidebar rows and the Go menu's item list both
+have to match `gCategories` in `catalog_data.c` by hand, since Rez can't
+read a C array, let alone an external JSON file), so adding an actual new
+category still needs a recompile. Only the entries within the existing 8
+are updatable without one.
+
+**`catalog_data.c` (the compiled-in fallback) is generated, not hand-
+written** - `tools/generate_catalog_data.py` reads the same
+`catalog_source.json` and emits the C struct literals, so the two catalog
+paths can't quietly drift apart the way hand-transcribing 367 entries
+into C would risk. Editing the catalog now means: edit the JSON, run
+`generate_catalog_data.py` (recompiled-in path) and/or `build_catalog.py`
+(loadable-file path), depending on which you're updating.
 
 **Validation, and what happens when it fails**: `Catalog_Load` rejects a
 file with the wrong magic/version, more entries than
@@ -209,14 +237,16 @@ where to look first.
 src/
   main.c, app.c/h       Toolbox init, event loop, menus, window layout
   theme.c/h              palette, fonts, shared drawing helpers
-  sidebar.c/h             category list + Year/CPU filter pills
+  sidebar.c/h             category list + Year/CPU/System filter pills
   results_view.c/h        paginated results list (catalog or live)
   toolbar.c/h              search field/button, status bar, pagination
   progress_dlg.c/h         modal-feeling download/connect progress window
   prefs_dlg.c/h            Preferences dialog + prefs file load/save
-  catalog.c/h              filter/search over the active catalog, year/CPU
-                            filter state
-  catalog_data.c            compiled-in fallback catalog (367 entries)
+  catalog.c/h              filter/search over the active catalog,
+                            year/CPU/System filter state
+  catalog_data.c            compiled-in fallback catalog (367 entries) -
+                              generated, not hand-written, see
+                              tools/generate_catalog_data.py
   catalog_load.c             loads "Garden Catalog" next to the app if
                               present/valid, else copies catalog_data.c's
                               fallback in - see "The loadable catalog"
@@ -231,11 +261,16 @@ src/
 tools/
   set_bundle_bit.py         MacBinary Finder-flags fixup (see Gotchas)
   build_catalog.py           JSON -> loadable "Garden Catalog" binary
+  generate_catalog_data.py    JSON -> src/catalog_data.c (compiled-in
+                               fallback) - the only thing that should edit
+                               that file's entry table
   catalog_source.json         editable source for the bundled catalog -
                                see "The loadable catalog"
   wrap_macbinary.py           wraps an arbitrary file (the floppy image)
                                in a from-scratch MacBinary header - for
                                things outside Rez's own MacBinary writer
+  make_diskcopy42.py          wraps a raw HFS image in a real DiskCopy 4.2
+                               header - see the DC42 Gotchas entry
 dist/
   Garden.bin                 plain MacBinary copy of the app by itself
   Garden.img.bin              the whole floppy (app + catalog), MacBinary-
@@ -547,6 +582,65 @@ dist/
      `Garden.img` mounted cleanly via DiskCopy's real "Mount Image..." -
      the mounted volume opened to show exactly the expected `Garden` app
      and `Garden Catalog`, and the app launched correctly from it.
+- **Real hardware (a IIcx) surfaced two more things the emulator couldn't
+  catch, since it isn't a stand-in for genuinely different System software
+  and physical RAM constraints:**
+  - The app's custom icon didn't show up at first after mounting
+    `Garden.img.bin`'s expanded image on the IIcx, even though the exact
+    same file's icon displayed correctly in BasiliskII. Very likely a
+    Desktop database quirk, not a Garden bug: the HFS volume is built by
+    `hformat`/`hcopy` (host-side hfsutils), not a real Finder format/copy,
+    so it may never get a proper "Desktop" file the way a volume made by
+    real Finder would - the standard classic Mac fix is holding
+    Command+Option while the volume mounts/the Mac boots to force a
+    Desktop rebuild.
+  - Downloading any catalog entry failed immediately with error **-41**
+    (`mFulErr`, "not enough room in the heap zone" - a File Manager memory
+    error, not disk-full or network) - happening right at `FSpCreate`/
+    `FSpOpenDF` in `download.c`, before any data transfer, on real
+    hardware connected via **Open Transport**. OT's MacTCP-compatibility
+    layer has a real, well-documented heavier memory footprint than native
+    MacTCP; by the time a TCP connection + FTP session buffers were
+    allocated, there wasn't enough heap left to open the destination file.
+    The emulator never hit this - it ran under native MacTCP with a
+    generous 8MB configured. Confirmed fixed live by raising the app's
+    memory partition to 5000K via Finder's Get Info; `main.r`'s `SIZE`
+    resource preferred size is now that same confirmed-working 5000K (up
+    from 2MB), with the minimum also raised to 1536K (from 768K) for some
+    default OT headroom, though the confirmed fix was specifically the
+    preferred size, not the floor.
+- **The download progress dialog flickered distractingly on real
+  hardware** (much more visible there than in the emulator). Root cause:
+  `DrawContent()` did a full `EraseRect` of the *entire* window plus a
+  full `DrawControls` (redrawing the Stop button) on every single call to
+  `ProgressDlg_UpdateProgress` - which fires once per chunk received, so
+  many times a second on a fast download. Fixed by splitting it into a
+  one-time full draw (title, bar, button - for the initial show and real
+  update events) and a lightweight `DrawProgress` used for the frequent
+  ticks, which only touches the progress bar (never needs erasing first -
+  it only ever grows within its own frame) and the byte-count text (which
+  does, since new text is usually a different shape than what it's
+  replacing).
+- **Nothing in the app handled suspend/resume events (`osEvt`) at all** -
+  found while investigating a request to make downloads non-blocking so
+  other apps could be used during one. The actual backgrounding mechanism
+  (`WaitNextEvent`, called on every spin of the network-wait polling loop
+  in `net.c`'s `DoControlCall`) was already in place and should already
+  let other apps get scheduled under System 7's cooperative multitasking -
+  but the app had no idea when it *was* in the background, so
+  `Toolbar_Idle()` kept blinking the search field's caret the whole time
+  regardless, needlessly competing for CPU with whatever app the user
+  switched to. Fixed by tracking background state (`App_InBackground`/
+  `App_HandleOSEvent` in app.h) from both the main event loop and the
+  download progress dialog's own separate event loop (a download can
+  easily outlast a switch away and back), and skipping `Toolbar_Idle()`
+  while backgrounded. `suspendResumeMessage`/`resumeFlag` aren't in this
+  stripped-down toolchain's headers, so they're defined locally as stable,
+  documented Toolbox constants - same vendoring precedent as
+  `mactcp_low.h`. Not independently verified against real multi-app
+  switching on hardware (needs the user's own real Mac to exercise) - if
+  switching away still feels sluggish after this, that's the next thing
+  to look at.
 
 ## Known limitations
 
@@ -718,6 +812,25 @@ Confirmed working end-to-end:
     launched correctly from it. See the DC42 Gotchas entry for the three
     bugs (wrong creator, then wrong header size/checksum) this caught
     along the way.
+14. **Real hardware (IIcx, Open Transport, live macintoshgarden.org
+    connection)**: `dist/Garden.img.bin` mounted successfully via DiskCopy
+    on real hardware, confirming the DC42 fix beyond just the emulator.
+    Connect and FTP browsing worked over Open Transport's MacTCP
+    compatibility layer with no changes needed. Catalog downloads
+    initially failed every time with error -41 (`mFulErr`) until the app's
+    memory partition was raised - see the Gotchas entry above; confirmed
+    fixed live by the person doing the hardware testing.
+15. **System filter pill, with real scraped data**: confirmed in two
+    passes. First with all 367 entries still at the `minSystem` default
+    (0/unknown) - selecting "System 8+" correctly emptied the Featured
+    list ("No items match your search"), confirming the filter mechanism
+    itself. Then again after merging in the real macintoshgarden.org-
+    sourced data (see "What's real vs. sample data") and a full clean
+    rebuild: selecting "System 7" correctly narrowed Featured from 18
+    items down to the 7 whose real minimum requirement is System 7,
+    dropping the System-6-minimum ones (Glider 4.0, KidPix 1.0, ResEdit
+    2.1.3, After Dark 3.0, HyperCard 2.4.1, Fetch 3.0.3) - real filtering
+    against real per-title data, not just an empty-list sanity check.
 
 Not yet exercised in the emulator: `Catalog_Load`'s reject-a-corrupt-file
 alert path (see Known Limitations), and a full 200+-item live directory's

@@ -29,6 +29,12 @@ define this same 8-category list independently and would need updating
 by hand if it ever changed):
     Featured, Games, Utilities, Graphics & Sound, Productivity,
     System Extensions, Internet & Comm, Dev Tools
+
+minSystem (optional per entry, defaults to 0/"unknown" if omitted): the
+minimum classic Mac OS System version the title needs, as major*10+minor
+- e.g. 60 for System 6.0, 70 for System 7.0, 75 for System 7.5, 80 for
+Mac OS 8.0. Powers the System filter pill; only the lower bound matters
+there (older software keeps running on newer systems).
 """
 import json
 import struct
@@ -49,7 +55,7 @@ PATH_SIZE = 100
 MAX_ENTRIES = 600  # kMaxCatalogEntries in catalog.h
 
 MAGIC = b"GCAT"
-VERSION = 1
+VERSION = 2  # bumped from 1 when minSystem was added - see catalog_load.c
 
 
 def pack_fixed_string(s, size, field_name, entry_desc):
@@ -90,7 +96,8 @@ def build(entries):
                 f"{list(ARCH_CODES)} (68k/fat run on a real 68k Mac; ppc does not)"
             )
 
-        out += struct.pack(">HHB", cat_index, int(e["year"]), arch_code)
+        out += struct.pack(">HHBH", cat_index, int(e["year"]), arch_code,
+                            int(e.get("minSystem", 0)))
         out += pack_fixed_string(e["title"], TITLE_SIZE, "title", desc)
         out += pack_fixed_string(e["description"], DESC_SIZE, "description", desc)
         out += pack_fixed_string(e["remotePath"], PATH_SIZE, "remotePath", desc)
