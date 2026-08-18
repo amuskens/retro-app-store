@@ -20,19 +20,14 @@ resource 'SIZE' (-1) {
     reserved,
     reserved,
     reserved,
-    5000 * 1024, /* preferred - bumped from 2MB after real IIcx hardware
-                     hit mFulErr (-41, "not enough room in the heap zone")
-                     on every download attempt while connected via Open
-                     Transport. OT's MacTCP-compatibility layer has a real,
-                     well-known heavier memory footprint than native MacTCP
-                     - by the time a TCP connection + FTP session buffers
-                     were allocated, there wasn't enough heap left for
-                     FSpCreate/FSpOpenDF to open the destination file. The
-                     emulator never caught this: it ran under native MacTCP
-                     with a generous 8MB configured. Confirmed fixed by
-                     manually raising the app's memory partition to 5000K
-                     via Finder's Get Info on the real hardware; 5000K is
-                     that same confirmed-working value, not a guess. */
+    2048 * 1024, /* preferred - NOTE: this was previously bumped to 5000K
+                     after real IIcx hardware hit mFulErr (-41, "not enough
+                     room in the heap zone") on every download while
+                     connected via Open Transport (OT's MacTCP-compat layer
+                     has a real, well-known heavier memory footprint than
+                     native MacTCP). Lowered back to 2048K on request; if
+                     downloads over OT start failing with -41 again on real
+                     hardware, this is the first thing to re-check. */
     1536 * 1024       /* minimum - the catalog's fixed-capacity entry array
                           (kMaxCatalogEntries in catalog.h) accounts for a
                           real chunk of this; also bumped up from 768K for
