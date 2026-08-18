@@ -90,6 +90,7 @@ resource 'MENU' (131, preload) {
     enabled,
     "Go",
     {
+        "All", noIcon, noKey, noMark, plain;
         "Featured", noIcon, noKey, noMark, plain;
         "Games", noIcon, noKey, noMark, plain;
         "Utilities", noIcon, noKey, noMark, plain;

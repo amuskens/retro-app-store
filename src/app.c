@@ -23,14 +23,16 @@ enum { mApple = 128, mFile = 129, mEdit = 130, mGo = 131, mConnection = 132 };
 enum { iAbout = 1 };
 enum { iPreferences = 1, iGetSelected = 2, iShowDownloads = 3, iQuit = 5 };
 enum { iCut = 1, iCopy = 2, iPaste = 3, iClear = 4 };
-/* Items 1..8 are the 8 categories, in the exact order gCategories is
-   defined in catalog_data.c - item text lives in main.r's Go menu and has
-   to be kept in sync by hand if the catalog's category list ever changes,
-   the same constraint mac-system7-c's Style menu documents (Rez text can't
-   be data-driven from the C array). Item 9 is a divider; item 10 is the
-   trailing Live FTP Browse row. */
-#define kGoCategoryFirst 1
-#define kGoLiveBrowse    10
+/* Item 1 is "All" (kAllCategoryIndex). Items 2..9 are the 8 categories, in
+   the exact order gCategories is defined in catalog_data.c - item text
+   lives in main.r's Go menu and has to be kept in sync by hand if the
+   catalog's category list ever changes, the same constraint
+   mac-system7-c's Style menu documents (Rez text can't be data-driven from
+   the C array). Item 10 is a divider; item 11 is the trailing Live FTP
+   Browse row. */
+#define kGoAllItem       1
+#define kGoCategoryFirst 2
+#define kGoLiveBrowse    11
 enum { iConnect = 1, iDisconnect = 2, iRefreshListing = 3, iGoUpLevel = 4 };
 
 #define kZoomDocProc 8 /* zoomDocProc - a Rez-only named constant in this toolchain's headers, not exposed to C */
@@ -538,7 +540,7 @@ static void HandleContentClick(WindowPtr w, Point local, unsigned long when)
             return;
         }
         sel = Sidebar_Click(&sb, local);
-        if (sel >= 0) OnCategorySelected(sel);
+        if (sel >= kAllCategoryIndex) OnCategorySelected(sel); /* kAllCategoryIndex (-1) is a real selection now, not "nothing hit" */
         return;
     }
     if (PtInRect(local, &rs)) {
@@ -604,7 +606,9 @@ static void HandleGoMenu(short item)
 
     LayoutBrowser(gWindow, &tb, &sb, &rs, &st);
 
-    if (item >= kGoCategoryFirst && item < kGoCategoryFirst + kCategoryCount) {
+    if (item == kGoAllItem) {
+        sel = kAllCategoryIndex;
+    } else if (item >= kGoCategoryFirst && item < kGoCategoryFirst + kCategoryCount) {
         sel = (short)(item - kGoCategoryFirst);
     } else if (item == kGoLiveBrowse) {
         sel = kLiveBrowseRowIndex;

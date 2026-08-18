@@ -216,7 +216,7 @@ void ResultsView_ShowSearch(const char *query)
     gMode = kModeSearch;
     strncpy(gLastQuery, query, sizeof(gLastQuery) - 1);
     gLastQuery[sizeof(gLastQuery) - 1] = 0;
-    gIndexCount = Catalog_Search(query, gIndices, kMaxFilterResults);
+    gIndexCount = Catalog_Search(query, gCategory, gIndices, kMaxFilterResults);
     gPage = 0;
     gSelectedRow = -1;
 }
@@ -232,7 +232,7 @@ void ResultsView_RefreshFilter(void)
     if (gMode == kModeCategory) {
         gIndexCount = Catalog_FilterByCategory(gCategory, gIndices, kMaxFilterResults);
     } else if (gMode == kModeSearch) {
-        gIndexCount = Catalog_Search(gLastQuery, gIndices, kMaxFilterResults);
+        gIndexCount = Catalog_Search(gLastQuery, gCategory, gIndices, kMaxFilterResults);
     } else {
         return;
     }

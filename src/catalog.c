@@ -102,7 +102,7 @@ short Catalog_FilterByCategory(short categoryIndex, short *outIndices, short max
 {
     short i, count = 0;
     for (i = 0; i < gCatalogEntryCount && count < maxOut; i++) {
-        if (gCatalogEntries[i].category == categoryIndex &&
+        if ((categoryIndex == kAllCategoryIndex || gCatalogEntries[i].category == categoryIndex) &&
             PassesYearFilter(gCatalogEntries[i].year) &&
             PassesArchFilter(gCatalogEntries[i].arch) &&
             PassesSysFilter(gCatalogEntries[i].minSystem))
@@ -111,13 +111,14 @@ short Catalog_FilterByCategory(short categoryIndex, short *outIndices, short max
     return count;
 }
 
-short Catalog_Search(const char *query, short *outIndices, short maxOut)
+short Catalog_Search(const char *query, short categoryIndex, short *outIndices, short maxOut)
 {
     short i, count = 0;
     if (query[0] == 0)
         return 0;
     for (i = 0; i < gCatalogEntryCount && count < maxOut; i++) {
-        if ((ContainsCI(gCatalogEntries[i].title, query) ||
+        if ((categoryIndex == kAllCategoryIndex || gCatalogEntries[i].category == categoryIndex) &&
+            (ContainsCI(gCatalogEntries[i].title, query) ||
              ContainsCI(gCatalogEntries[i].description, query)) &&
             PassesYearFilter(gCatalogEntries[i].year) &&
             PassesArchFilter(gCatalogEntries[i].arch) &&

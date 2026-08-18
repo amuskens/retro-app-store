@@ -5,7 +5,7 @@
 
 #define kHeaderHeight 22
 #define kRowHeight    24
-#define kTotalRows    (kCategoryCount + 1) /* +1 for the trailing Live FTP Browse row */
+#define kTotalRows    (kCategoryCount + 2) /* +1 leading "All" row, +1 trailing Live FTP Browse row */
 
 /* Year/CPU/System filter pills, pinned to the bottom of the sidebar rather
    than flowing after the row list - a fixed footer, same idea as the
@@ -20,6 +20,26 @@
 #define kFilterPillHeight   18
 
 static short gSelected = 0;
+
+/* gSelected (and everything this module hands back to callers) is the
+   *semantic* selection value - kAllCategoryIndex, a real category index,
+   or kLiveBrowseRowIndex - the same values catalog.c/app.c already work
+   with elsewhere. Row NUMBERS (0..kTotalRows-1, this row's position in
+   the visual list: All, then categories, then Live FTP Browse) only exist
+   inside this file, for layout math. */
+static short RowToSelection(short row)
+{
+    if (row == 0) return kAllCategoryIndex;
+    if (row == kTotalRows - 1) return kLiveBrowseRowIndex;
+    return (short)(row - 1);
+}
+
+static short SelectionToRow(short sel)
+{
+    if (sel == kAllCategoryIndex) return 0;
+    if (sel == kLiveBrowseRowIndex) return (short)(kTotalRows - 1);
+    return (short)(sel + 1);
+}
 
 static void FilterRects(const Rect *bounds, Rect *outYear, Rect *outArch, Rect *outSys)
 {
@@ -69,25 +89,29 @@ static void DrawRowGlyph(const Rect *row, Boolean isLive)
     }
 }
 
-static void DrawRow(const Rect *bounds, short index)
+static void DrawRow(const Rect *bounds, short row)
 {
-    Rect row;
-    Boolean isLive = (Boolean)(index == kLiveBrowseRowIndex);
-    const char *title = isLive ? "Live FTP Browse" : gCategories[index].title;
+    Rect r;
+    Boolean isAll = (Boolean)(row == 0);
+    Boolean isLive = (Boolean)(row == kTotalRows - 1);
+    const char *title = isAll ? "All" : isLive ? "Live FTP Browse" : gCategories[row - 1].title;
 
-    RowRect(bounds, index, &row);
-    EraseRect(&row);
+    RowRect(bounds, row, &r);
+    EraseRect(&r);
 
+    if (isAll) {
+        Theme_DrawDivider(r.left, r.bottom, r.right, r.bottom);
+    }
     if (isLive) {
-        Theme_DrawDivider(row.left, row.top, row.right, row.top);
+        Theme_DrawDivider(r.left, r.top, r.right, r.top);
     }
 
-    DrawRowGlyph(&row, isLive);
+    DrawRowGlyph(&r, isLive);
 
     {
-        Rect textR = row;
-        textR.left = (short)(row.left + 26);
-        textR.right = (short)(row.right - 4);
+        Rect textR = r;
+        textR.left = (short)(r.left + 26);
+        textR.right = (short)(r.right - 4);
         Theme_SetGeneva(10, isLive ? italic : normal);
         DrawCStringInRect(title, &textR);
     }
@@ -99,7 +123,7 @@ static void DrawRow(const Rect *bounds, short index)
        instead of Theme_FillSelectAccent, a distinction this row drawing
        hadn't followed through on. Invert is guaranteed visible at any
        color depth, so it goes last, over everything already drawn. */
-    if (index == gSelected) Theme_HighlightRow(&row);
+    if (RowToSelection(row) == gSelected) Theme_HighlightRow(&r);
 }
 
 void Sidebar_Draw(const Rect *bounds)
@@ -169,22 +193,23 @@ short Sidebar_Click(const Rect *bounds, Point pt)
 {
     short i;
 
-    if (pt.h < bounds->left || pt.h >= bounds->right) return -1;
+    if (pt.h < bounds->left || pt.h >= bounds->right) return kAllCategoryIndex - 1; /* sentinel: no row hit */
 
     for (i = 0; i < kTotalRows; i++) {
         Rect row;
         RowRect(bounds, i, &row);
         if (pt.v >= row.top && pt.v < row.bottom) {
-            if (i != gSelected) {
-                short old = gSelected;
-                gSelected = i;
-                DrawRow(bounds, old);
+            short sel = RowToSelection(i);
+            if (sel != gSelected) {
+                short oldRow = SelectionToRow(gSelected);
+                gSelected = sel;
+                DrawRow(bounds, oldRow);
                 DrawRow(bounds, i);
             }
-            return i;
+            return sel;
         }
     }
-    return -1;
+    return kAllCategoryIndex - 1; /* sentinel: no row hit */
 }
 
 short Sidebar_GetSelected(void)
@@ -192,11 +217,11 @@ short Sidebar_GetSelected(void)
     return gSelected;
 }
 
-void Sidebar_SetSelected(const Rect *bounds, short index)
+void Sidebar_SetSelected(const Rect *bounds, short selection)
 {
     short old = gSelected;
-    if (index == old) return;
-    gSelected = index;
-    DrawRow(bounds, old);
-    DrawRow(bounds, index);
+    if (selection == old) return;
+    gSelected = selection;
+    DrawRow(bounds, SelectionToRow(old));
+    DrawRow(bounds, SelectionToRow(selection));
 }

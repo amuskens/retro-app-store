@@ -14,15 +14,15 @@ part of it is drawing from live data.
 
 ## Features
 
-- Custom-drawn browser window: toolbar (search), left sidebar (8 categories
-  + Live FTP Browse + Year/CPU/System filter pills), paginated results list
-  (10/page), status bar (connection LED + page indicator). Fully
-  draggable and resizable (see Gotchas - dragging in particular didn't
-  actually work for a while). Row selection (sidebar and results list
-  alike) uses Color QuickDraw's `hilite` pen mode, so it picks up
-  whatever highlight color the user has set in the Color control panel on
-  a color display, and degrades automatically to plain invert on a 1-bit
-  one - not a hand-picked app color either way.
+- Custom-drawn browser window: toolbar (search), left sidebar (an **All**
+  row + 8 categories + Live FTP Browse + Year/CPU/System filter pills),
+  paginated results list (10/page), status bar (connection LED + page
+  indicator). Fully draggable and resizable (see Gotchas - dragging in
+  particular didn't actually work for a while). Row selection (sidebar and
+  results list alike) uses Color QuickDraw's `hilite` pen mode, so it picks
+  up whatever highlight color the user has set in the Color control panel
+  on a color display, and degrades automatically to plain invert on a
+  1-bit one - not a hand-picked app color either way.
 - **396-entry bundled catalog**, loadable from an external file so it can
   be updated without recompiling the app - see "The loadable catalog"
   below.
@@ -31,8 +31,11 @@ part of it is drawing from live data.
   in italic under the regular description whenever the catalog has real,
   source-stated data for it. Most entries don't have one and just show the
   usual single line.
-- Search across the catalog by title/description, plus **Year**, **CPU**,
-  and **System** filter pills at the bottom of the sidebar (release-year
+- Search matches substrings anywhere in the title or description (plain
+  case-insensitive `strstr`, not whole-word-only), and is scoped to
+  whichever sidebar row is currently selected - a specific category, or
+  the whole catalog via the **All** row. Plus **Year**, **CPU**, and
+  **System** filter pills at the bottom of the sidebar (release-year
   buckets; 68k/PPC/Fat, with "68k" and "PPC" each including Fat entries
   since those run natively on either; minimum required System version,
   bucketed as System 6/7/8+ - only the lower bound matters, since older

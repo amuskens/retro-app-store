@@ -84,9 +84,13 @@ typedef enum {
    net.c already keep from app.c's error messages. */
 CatalogLoadResult Catalog_Load(void);
 
-/* Sidebar shows the real categories plus one trailing "Live FTP Browse"
-   row, handled specially (backed by a live NLST, not catalog data) rather
-   than as a Category entry - this is that row's sidebar index. */
+/* Sidebar shows an "All" row, then the real categories, then one trailing
+   "Live FTP Browse" row (handled specially - backed by a live NLST, not
+   catalog data - rather than as a Category entry). "All" isn't a real
+   gCategories entry either - it's this sentinel, meaning "don't filter by
+   category" - passed to Catalog_FilterByCategory/Catalog_Search the same
+   way a real category index is. */
+#define kAllCategoryIndex ((short)-1)
 #define kLiveBrowseRowIndex kCategoryCount
 
 #define kMaxFilterResults 256
@@ -128,11 +132,14 @@ const char *Catalog_ArchFilterLabel(CatalogArchFilter f);
 const char *Catalog_SysFilterLabel(CatalogSysFilter f);
 
 /* Both fill outIndices (indices into gCatalogEntries) up to maxOut and
-   return the match count. Search matches substrings in title or
-   description, case-insensitively. Both also apply the current Year/CPU/
-   System filters (see above). */
+   return the match count. Search matches substrings anywhere in the title
+   or description, case-insensitively (plain strstr, not just whole-word)
+   - and, like category browsing, only within categoryIndex unless it's
+   kAllCategoryIndex, in which case the whole catalog is searched. Both
+   also apply the current Year/CPU/System filters (see above) regardless
+   of category. */
 short Catalog_FilterByCategory(short categoryIndex, short *outIndices, short maxOut);
-short Catalog_Search(const char *query, short *outIndices, short maxOut);
+short Catalog_Search(const char *query, short categoryIndex, short *outIndices, short maxOut);
 
 /* Formats bytes as e.g. "340 K" or "1.2 MB" into buf. */
 void Catalog_FormatSize(unsigned long bytes, char *buf, short bufSize);
