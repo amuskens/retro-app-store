@@ -23,7 +23,10 @@ part of it is drawing from live data.
   blocks (see "Networking" below).
 - Live FTP Browse: a real `NLST` listing of the configured server/path,
   paginated the same way as the catalog, downloading exactly the filenames
-  it just listed.
+  it just listed. Real listings are frequently all-folders (the live
+  server's root is `apps`/`manuals`/`games`, no files directly), so entries
+  double-click to navigate into as a folder; Connection > Go Up a Level
+  backs out. Get always attempts a download regardless of depth.
 - Download with a progress dialog (byte counter, Stop button), saving into
   an auto-created "Garden Downloads" folder next to the app - no per-file
   Save dialog, by design (see below).
@@ -200,6 +203,36 @@ tools/set_bundle_bit.py    MacBinary Finder-flags fixup (see below)
   `DirCreate`) aren't defined here - `dnr.c`/`download.c`/`prefs_dlg.c`
   define the couple of values needed locally and use `FSpDirCreate`
   instead of `DirCreate`.
+- **Live FTP Browse downloads all failed, with no way to reach a real
+  file.** Reported after real use: every Get attempt against a live entry
+  came back "Couldn't download (error -23015)" (`openFailed`). Root cause,
+  found by reproducing directly rather than guessing: the real server's
+  root listing (`apps`, `manuals`, `games`) is all directories, and `RETR`
+  against a directory gets a non-150/125 reply from the server, which
+  `FTP_Retrieve` (`ftp.c`) correctly reports as `openFailed` - but there
+  was no way to navigate into any of those directories in the first place,
+  so no live file was ever reachable. Fixed by adding real navigation:
+  double-clicking a live entry (`app.c`'s `LiveNavigateInto`) appends its
+  bare name to a tracked current path (`gLivePath`) and re-issues `NLST`
+  there; Connection > Go Up a Level (`LiveNavigateUp`) strips the last
+  path component. Downloads from within a navigated subdirectory need the
+  full path too (`ResolveLiveDownloadPath` joins `gLivePath` + the entry's
+  bare name) since `Download_Fetch` always opens a brand new control
+  connection at the login's default directory rather than continuing the
+  browse session's `CWD` state. Verified end-to-end in the emulator:
+  navigated into `apps`, downloaded a real file, confirmed it landed in
+  the Garden Downloads folder.
+- **Sidebar category selection wasn't visible.** The sidebar's selected
+  row used a light-blue accent color fill (`Theme_FillSelectAccent`) to
+  show selection, which turned out indistinguishable from the plain white
+  background on a black & white/grayscale display - every emulator
+  screenshot taken while building this showed no color at all, which is
+  also why `results_view.c`'s row selection was already written to use
+  plain invert instead. `sidebar.c` just hadn't followed that same
+  reasoning through. Fixed by switching the sidebar to `Theme_HighlightRow`
+  (invert), same as the results list, and removing the now-unused
+  `Theme_FillSelectAccent` helper entirely rather than leaving a
+  second, worse selection style around to accidentally pick up again.
 
 ## Known limitations
 
@@ -255,32 +288,40 @@ Override the toolchain path with `make RETRO68=/other/path`.
 
 ## Running it
 
-Not yet run in an emulator as part of building this - the plan going in
-was explicit about that: I can compile-check against the real toolchain
-from this environment, but not drive a GUI emulator, so treat this build
-as compiled-and-verified-correct-by-the-compiler, not
-verified-to-actually-work-on-screen yet.
+Verified in a real Basilisk II emulator (Quadra ROM, System 7, real
+MacTCP + `slirp` NAT networking) - not just compiled-and-hoped-for. Both
+Mini vMac and Basilisk II work; Basilisk II is what this was actually
+tested in:
+
+**Basilisk II**: boot System 7, drag `build/Garden.img` onto the emulator
+window (or mount via its config) to attach it as a floppy, open it, copy
+`Garden` to a hard disk (or just run it from the floppy), double-click to
+run.
 
 **Mini vMac** (per mac-system7-c's README, already set up on this machine,
 Mac II variant with a ROM already in place at
-`~/Library/Preferences/Gryphel/mnvm_rom/vMac.ROM`): boot System 7, drag
-`build/Garden.img` onto the emulator window to mount it as a floppy, copy
-`Garden` off, double-click to run.
+`~/Library/Preferences/Gryphel/mnvm_rom/vMac.ROM`): same idea - drag
+`build/Garden.img` onto the emulator window to mount it, copy `Garden`
+off, double-click to run.
 
-**Basilisk II** is the other option on this machine (was in use for
-another project while this was built) - same idea: mount `Garden.img` and
-copy the app off, or use whatever shared-folder/disk-image setup that
-environment already has.
+Confirmed working end-to-end:
+1. App launches and draws its chrome correctly (toolbar/sidebar/results
+   list/status bar, sidebar selection highlight visible and tracking
+   clicks).
+2. Browsing all 8 categories, search, and pagination all work fully
+   offline.
+3. **Connect** (Connection menu, or selecting Live FTP Browse) reaches the
+   real server - real MacTCP DNR hostname resolution, real login, real
+   `PASV` data connection, all confirmed against the live server (this
+   exercised, and caught real bugs in, `dnr.c` + `net.c` - see Gotchas).
+4. **Live FTP Browse navigation**: double-clicking a directory entry
+   (`apps`, `manuals`, `games` at the real server's root) descends into
+   it and lists real contents; Connection > Go Up a Level backs out
+   correctly; the menu item is enabled/disabled based on current depth.
+5. A real download (a live file inside `apps`) completed and landed in a
+   "Garden Downloads" folder, auto-created next to the app.
 
-Things especially worth checking on first real run, roughly in the order
-they'd surface:
-1. Does the app launch and draw its chrome correctly (toolbar/sidebar/
-   results list/status bar, the sprout icon in Finder)?
-2. Does browsing categories, searching, and paging work (all offline, no
-   network needed for this part)?
-3. Does **Connect** (Connection menu, or selecting Live FTP Browse)
-   actually reach the server - this exercises `dnr.c` + `net.c`, the
-   highest-risk, least-tested code in the app.
-4. Does a real download complete and land in "Garden Downloads" next to
-   the app, with a sane type/creator so Finder doesn't show it as a plain
-   document?
+Not yet exercised in the emulator: the bundled catalog's placeholder
+download paths (expected to fail - see "What's real vs. sample data"),
+Preferences editing/persistence, and a full 200+-item live directory's
+higher page numbers (only page 1 of the `apps` listing was paged through).

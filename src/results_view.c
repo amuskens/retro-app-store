@@ -39,7 +39,7 @@ static void GetItem(short i, const char **title, const char **desc,
 {
     if (gMode == kModeLive) {
         *title = gLiveNames[i];
-        *desc = "File on the live FTP server - exact name, real download.";
+        *desc = "Live server entry - Get to download, or double-click if it's a folder.";
         *size = gLiveSizes[i];
         *sizeKnown = gLiveSizeKnown[i];
         *remotePath = gLiveNames[i];
@@ -228,7 +228,8 @@ void ResultsView_Draw(const Rect *bounds)
     }
 }
 
-Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when, DownloadRequest *outReq)
+Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when,
+                           DownloadRequest *outReq, ResultsActivation *outActivation)
 {
     short count = ItemCount();
     short start = (short)(gPage * kPageSize);
@@ -258,6 +259,7 @@ Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when, Down
             strncpy(outReq->remotePath, remotePath, sizeof(outReq->remotePath) - 1);
             outReq->remotePath[sizeof(outReq->remotePath) - 1] = 0;
             outReq->isLiveFile = (Boolean)(gMode == kModeLive);
+            *outActivation = kResultsActivationGet;
             return true;
         }
 
@@ -271,6 +273,7 @@ Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when, Down
             strncpy(outReq->remotePath, remotePath, sizeof(outReq->remotePath) - 1);
             outReq->remotePath[sizeof(outReq->remotePath) - 1] = 0;
             outReq->isLiveFile = (Boolean)(gMode == kModeLive);
+            *outActivation = kResultsActivationDoubleClick;
             gLastClickRow = -1;
             return true;
         }

@@ -95,6 +95,7 @@ resource 'MENU' (132, preload) {
         "Connect", noIcon, noKey, noMark, plain;
         "Disconnect", noIcon, noKey, noMark, plain;
         "Refresh Listing", noIcon, "R", noMark, plain;
+        "Go Up a Level", noIcon, noKey, noMark, plain;
     }
 };
 

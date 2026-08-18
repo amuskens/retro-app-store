@@ -31,7 +31,7 @@ enum { iCut = 1, iCopy = 2, iPaste = 3, iClear = 4 };
    trailing Live FTP Browse row. */
 #define kGoCategoryFirst 1
 #define kGoLiveBrowse    10
-enum { iConnect = 1, iDisconnect = 2, iRefreshListing = 3 };
+enum { iConnect = 1, iDisconnect = 2, iRefreshListing = 3, iGoUpLevel = 4 };
 
 #define kZoomDocProc 8 /* zoomDocProc - a Rez-only named constant in this toolchain's headers, not exposed to C */
 #define kInfoAlertID 129
@@ -45,6 +45,13 @@ static char gStatusText[256] = "Not connected - choose Connection > Connect to r
 static Rect gSizeLimits;
 static GardenPrefs gPrefs;
 static FtpSession gBrowseSession;
+/* Current Live FTP Browse directory, root-relative, no leading/trailing
+   slash, empty = server root - navigated by double-clicking a row (see
+   ResultsActivation) or Connection > Go Up a Level. Live listings turned
+   out to be all-folders at the root against the real server (confirmed in
+   testing), so without this, Live FTP Browse could list folder names but
+   never actually reach a downloadable file at all. */
+static char gLivePath[200] = "";
 
 static void ToolboxInit(void);
 static void SetupMenus(void);
@@ -61,6 +68,9 @@ static void BeginDownload(const DownloadRequest *req);
 static void DoConnect(void);
 static void DoDisconnect(void);
 static void DoRefreshListing(void);
+static void LiveNavigateInto(const char *name);
+static void LiveNavigateUp(void);
+static void ResolveLiveDownloadPath(DownloadRequest *req);
 static void HandleMenuChoice(long menuChoice);
 static void HandleAppleMenu(short item);
 static void HandleFileMenu(short item);
@@ -209,6 +219,8 @@ static void OnCategorySelected(short sel)
         RedrawResultsAndStatus();
         if (!gEverFetchedLive) {
             gEverFetchedLive = true; /* only auto-fetch the first time - Refresh Listing covers the rest */
+            strncpy(gLivePath, gPrefs.basePath, sizeof(gLivePath) - 1);
+            gLivePath[sizeof(gLivePath) - 1] = 0;
             DoRefreshListing();
         }
     } else {
@@ -286,11 +298,16 @@ static void DoDisconnect(void)
     RedrawStatusOnly();
 }
 
-/* Fetches a real, live NLST at gPrefs.basePath into ResultsView's Live FTP
+/* Fetches a real, live NLST at gLivePath into ResultsView's Live FTP
    Browse listing - names only; sizes are deliberately left unknown here
    (shown as "unknown" until the user actually downloads something) rather
    than issuing a SIZE call per listed file, which would turn browsing a
-   big directory into one round trip per entry. */
+   big directory into one round trip per entry.
+
+   Live listings can't be assumed to be files - the real server's root
+   turned out to be all folders (apps/manuals/games) when this was tested,
+   so entries here are just as likely to be folders to navigate into
+   (double-click) as files to download (Get) - see ResultsActivation. */
 static void DoRefreshListing(void)
 {
     static char names[kMaxLiveFetch][64];
@@ -306,19 +323,71 @@ static void DoRefreshListing(void)
 
     ProgressDlg_Show("Fetching file listing\xc9");
     cancel = ProgressDlg_CancelFlag();
-    count = FTP_ListNames(&gBrowseSession, gPrefs.basePath, names, kMaxLiveFetch,
+    count = FTP_ListNames(&gBrowseSession, gLivePath, names, kMaxLiveFetch,
                            ProgressDlg_GiveTime, cancel);
     ProgressDlg_Hide();
 
     for (i = 0; i < count; i++) { sizes[i] = 0; sizeKnown[i] = false; }
     ResultsView_ShowLiveListing(names, sizes, sizeKnown, count);
 
-    if (count > 0)
-        sprintf(gStatusText, "Connected to Macintosh Garden - %d files listed.", count);
-    else
-        strcpy(gStatusText, "Connected, but the listing came back empty - check the base path in Preferences.");
+    {
+        const char *pathLabel = (gLivePath[0] != 0) ? gLivePath : "/";
+        if (count > 0)
+            sprintf(gStatusText, "Connected - %.100s - %d item%s listed.",
+                    pathLabel, count, (count == 1) ? "" : "s");
+        else
+            sprintf(gStatusText, "Connected - %.100s - empty, or not readable.", pathLabel);
+    }
 
     RedrawResultsAndStatus();
+}
+
+/* Appends name to the current live path and refreshes - used when a
+   double-click on a Live FTP Browse row turns out to be a folder rather
+   than something downloadable. */
+static void LiveNavigateInto(const char *name)
+{
+    char newPath[sizeof(gLivePath)];
+
+    if (gLivePath[0] == 0) {
+        strncpy(newPath, name, sizeof(newPath) - 1);
+        newPath[sizeof(newPath) - 1] = 0;
+    } else {
+        sprintf(newPath, "%.90s/%.90s", gLivePath, name);
+    }
+    strcpy(gLivePath, newPath);
+
+    ResultsView_EnterLiveMode();
+    DoRefreshListing();
+}
+
+/* Connection > Go Up a Level - strips the last path component. */
+static void LiveNavigateUp(void)
+{
+    char *slash = strrchr(gLivePath, '/');
+    if (slash != NULL) *slash = 0;
+    else gLivePath[0] = 0;
+
+    ResultsView_EnterLiveMode();
+    DoRefreshListing();
+}
+
+/* A live entry's remotePath is just its bare name (see
+   ResultsView_ShowLiveListing) - if we've navigated into a subdirectory,
+   the actual FTP path needed for SIZE/RETR is gLivePath + "/" + that name,
+   since Download_Fetch always starts a brand new control connection (at
+   the login's default directory), not a continuation of the browse
+   session's CWD state. A no-op for catalog entries or a live entry at the
+   root. */
+static void ResolveLiveDownloadPath(DownloadRequest *req)
+{
+    char full[sizeof(req->remotePath)];
+
+    if (!req->isLiveFile || gLivePath[0] == 0) return;
+
+    sprintf(full, "%.100s/%.100s", gLivePath, req->remotePath);
+    strncpy(req->remotePath, full, sizeof(req->remotePath) - 1);
+    req->remotePath[sizeof(req->remotePath) - 1] = 0;
 }
 
 static void HandleContentClick(WindowPtr w, Point local, unsigned long when)
@@ -344,8 +413,15 @@ static void HandleContentClick(WindowPtr w, Point local, unsigned long when)
     }
     if (PtInRect(local, &rs)) {
         DownloadRequest req;
-        if (ResultsView_Click(&rs, local, when, &req))
-            BeginDownload(&req);
+        ResultsActivation activation;
+        if (ResultsView_Click(&rs, local, when, &req, &activation)) {
+            if (activation == kResultsActivationDoubleClick && ResultsView_IsLiveMode()) {
+                LiveNavigateInto(req.remotePath); /* bare name; might be a file, might be a folder */
+            } else {
+                ResolveLiveDownloadPath(&req);
+                BeginDownload(&req);
+            }
+        }
         return;
     }
 }
@@ -364,10 +440,12 @@ static void HandleFileMenu(short item)
             PrefsDlg_Run(&gPrefs);
             break;
         case iGetSelected:
-            if (ResultsView_GetSelected(&req))
+            if (ResultsView_GetSelected(&req)) {
+                ResolveLiveDownloadPath(&req);
                 BeginDownload(&req);
-            else
+            } else {
                 ShowMessage("Select an item in the list first, then choose Get Selected Item (or just click its Get button).");
+            }
             break;
         case iShowDownloads:
             ShowMessage("Downloaded files are saved in a \xd2Garden Downloads\xd3 folder, created next to the application.");
@@ -414,6 +492,7 @@ static void HandleConnectionMenu(short item)
         case iConnect:        DoConnect(); break;
         case iDisconnect:     DoDisconnect(); break;
         case iRefreshListing: DoRefreshListing(); break;
+        case iGoUpLevel:      if (gLivePath[0] != 0) LiveNavigateUp(); break;
     }
 }
 
@@ -435,6 +514,8 @@ static void AdjustMenus(void)
             EnableItem(connMenu, iConnect);
             DisableItem(connMenu, iDisconnect);
         }
+        if (gLivePath[0] != 0) EnableItem(connMenu, iGoUpLevel);
+        else DisableItem(connMenu, iGoUpLevel);
     }
 }
 

@@ -41,12 +41,9 @@ void Theme_FillChromeBand(const Rect *r);
 void Theme_DrawDivider(short x1, short y1, short x2, short y2);
 
 /* Selection highlight for a row - standard invert, guaranteed legible on
-   any display depth (color and B&W alike) rather than a color-only tint. */
+   any display depth (color and B&W alike) rather than a color-only tint.
+   Used for both the sidebar and the results list, for this reason. */
 void Theme_HighlightRow(const Rect *r);
-
-/* Accent-color fill used for sidebar row selection, where text/icon need to
-   stay legible on top rather than inverting. */
-void Theme_FillSelectAccent(const Rect *r);
 
 /* Small filled oval status indicator (connected = green, not = gray). */
 void Theme_DrawStatusLED(const Rect *r, Boolean connected);

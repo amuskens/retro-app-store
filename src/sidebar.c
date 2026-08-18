@@ -44,12 +44,7 @@ static void DrawRow(const Rect *bounds, short index)
     const char *title = isLive ? "Live FTP Browse" : gCategories[index].title;
 
     RowRect(bounds, index, &row);
-
-    if (index == gSelected) {
-        Theme_FillSelectAccent(&row);
-    } else {
-        EraseRect(&row);
-    }
+    EraseRect(&row);
 
     if (isLive) {
         Theme_DrawDivider(row.left, row.top, row.right, row.top);
@@ -64,6 +59,15 @@ static void DrawRow(const Rect *bounds, short index)
         Theme_SetGeneva(10, isLive ? italic : normal);
         DrawCStringInRect(title, &textR);
     }
+
+    /* Invert, not a color fill: a light accent tint (originally used here)
+       turned out to be indistinguishable from the plain white background
+       when actually tested on a display running in black & white - the
+       exact reason results_view.c's row selection already used invert
+       instead of Theme_FillSelectAccent, a distinction this row drawing
+       hadn't followed through on. Invert is guaranteed visible at any
+       color depth, so it goes last, over everything already drawn. */
+    if (index == gSelected) Theme_HighlightRow(&row);
 }
 
 void Sidebar_Draw(const Rect *bounds)

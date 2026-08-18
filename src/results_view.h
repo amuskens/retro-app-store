@@ -38,12 +38,26 @@ void ResultsView_EnterLiveMode(void);
 
 void ResultsView_Draw(const Rect *bounds);
 
+typedef enum {
+    kResultsActivationGet = 0,    /* the row's Get button */
+    kResultsActivationDoubleClick /* double-clicked the row itself */
+} ResultsActivation;
+
 /* pt and when are window-local point / event tick count (from
    EventRecord.where/when) - used for click hit-testing and double-click
-   detection. Returns true and fills *outReq if the click should trigger a
-   download (Get button, or a double-click on a row); otherwise just
-   updates selection/redraws in place and returns false. */
-Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when, DownloadRequest *outReq);
+   detection. Returns true and fills *outReq/*outActivation if the click
+   should trigger something (Get button, or a double-click on a row);
+   otherwise just updates selection/redraws in place and returns false.
+
+   The Get button always means "download this". A double-click means
+   "download" in catalog/search mode, but in live mode the caller should
+   treat it as "try navigating into this as a folder" instead - live
+   listings are frequently all-folders (see README), so a plain download
+   attempt on a double-click there would just fail against something the
+   user was trying to browse into, not fetch. outActivation is only
+   meaningful when this returns true. */
+Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when,
+                           DownloadRequest *outReq, ResultsActivation *outActivation);
 
 /* Fills *outReq from whatever row is currently selected (returns false,
    *outReq untouched, if nothing is selected) - used by the File menu's

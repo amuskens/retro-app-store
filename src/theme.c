@@ -63,13 +63,6 @@ void Theme_HighlightRow(const Rect *r)
     InvertRect(r);
 }
 
-void Theme_FillSelectAccent(const Rect *r)
-{
-    SetRGB(&kThemeSelectFill);
-    PaintRect(r);
-    ForeColor(blackColor);
-}
-
 void Theme_DrawStatusLED(const Rect *r, Boolean connected)
 {
     SetRGB(connected ? &kThemeLedOn : &kThemeLedOff);
