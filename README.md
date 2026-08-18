@@ -233,9 +233,14 @@ tools/
   build_catalog.py           JSON -> loadable "Garden Catalog" binary
   catalog_source.json         editable source for the bundled catalog -
                                see "The loadable catalog"
-dist/Garden.bin            plain MacBinary copy of the app, produced by
-                             `make` - the artifact to upload to an FTP
-                             server for other classic Macs to fetch
+  wrap_macbinary.py           wraps an arbitrary file (the floppy image)
+                               in a from-scratch MacBinary header - for
+                               things outside Rez's own MacBinary writer
+dist/
+  Garden.bin                 plain MacBinary copy of the app by itself
+  Garden.img.bin              the whole floppy (app + catalog), MacBinary-
+                               wrapped so Finder recognizes it as a real
+                               DiskCopy image on download - see Build
 ```
 
 ## Gotchas found building this
@@ -479,6 +484,24 @@ dist/Garden.bin            plain MacBinary copy of the app, produced by
   work"): downloaded a `.sit` file, and Finder's Get Info reported "Kind:
   StuffIt Expander™ document" - confirming a double-click would actually
   route to the real, installed StuffIt Expander in that test environment.
+- **Wrapping the floppy image for FTP needed a real, from-scratch
+  MacBinary encoder, not guesswork.** `dist/Garden.bin` (just the app)
+  already came for free - Rez's own MacBinary writer produces it as a
+  normal build byproduct. A disk image doesn't go through Rez at all, and
+  has no resource fork of its own for that writer to carry, so
+  `tools/wrap_macbinary.py` builds a MacBinary header from scratch
+  instead. Rather than reconstruct the format from a general spec (real
+  risk of a subtly-wrong field, same lesson as the MacTCP structs), the
+  header layout and CRC come directly from Retro68's own
+  `ResourceFiles/ResourceFile.cc::writeMacBinary` - the exact code that
+  already produces `Garden.bin` and that `hcopy -m`/StuffIt Expander
+  already know how to read, so there's no second, possibly-incompatible
+  implementation of the same format to go wrong. Verified two ways before
+  trusting it: `hcopy -m` (a real, independent MacBinary reader, not
+  written by me) decoded a wrapped `Garden.img` back out with the correct
+  `rohd`/`dCpy` type/creator and the exact original size, and a byte-for-
+  byte `cmp` against the original confirmed the extracted data fork
+  matches exactly - not just "the header looks right."
 
 ## Known limitations
 
@@ -546,11 +569,22 @@ floppy image with both on it. Output lands in `build/`:
 - `Garden.APPL` / `Garden.dsk` - Retro68's own raw-resource-fork app and
   800K disk image byproducts.
 
-`make` also copies `Garden.bin` to **`dist/Garden.bin`**, outside `build/`
-(so `make clean` doesn't take it with it) - that's the artifact meant for
-uploading to an FTP server for other classic Macs to fetch, in the same
-MacBinary format every real file on the actual Macintosh Garden mirror
-uses. `make distclean` removes both `build/` and `dist/`.
+`make` also produces two files in **`dist/`**, outside `build/` (so `make
+clean` doesn't take them with it) - both meant for uploading to an FTP
+server for other classic Macs to fetch, in the same MacBinary format
+every real file on the actual Macintosh Garden mirror uses:
+
+- `Garden.bin` - just the app, copied straight from `build/`.
+- `Garden.img.bin` - the **whole floppy** (app + catalog together),
+  MacBinary-wrapped by `tools/wrap_macbinary.py` with DiskCopy's own
+  type/creator (`rohd`/`dCpy`) so Finder recognizes the expanded result as
+  a real disk image, ready to mount with DiskCopy, rather than a generic
+  unopenable file. This is the one to hand someone who wants everything
+  in a single download - see the Gotchas entry on how it's built and
+  verified, since a disk image needs its own from-scratch MacBinary
+  wrapper (it has no resource fork of its own for Rez's writer to carry).
+
+`make distclean` removes both `build/` and `dist/`.
 
 Override the toolchain path with `make RETRO68=/other/path`.
 
@@ -625,6 +659,10 @@ Confirmed working end-to-end:
     Expander™ document" - a double-click would route to a real installed
     copy of StuffIt Expander in that test environment, not show up as a
     generic unopenable file.
+13. **`dist/Garden.img.bin`** (verified with real host-side tooling rather
+    than in the emulator): `hcopy -m` decoded it back to the exact
+    original `Garden.img` bytes (confirmed with `cmp`), with type/creator
+    correctly read back as `rohd`/`dCpy`.
 
 Not yet exercised in the emulator: `Catalog_Load`'s reject-a-corrupt-file
 alert path (see Known Limitations), and a full 200+-item live directory's

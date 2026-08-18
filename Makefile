@@ -43,6 +43,17 @@ all: configure
 	@# always reflects the last build, not a stale snapshot.
 	mkdir -p $(DIST_DIR)
 	cp $(BUILD_DIR)/$(APP_NAME).bin $(DIST_DIR)/$(APP_NAME).bin
+	@# Same idea, but for the whole floppy (app + catalog together) rather
+	@# than just the bare app - a disk image has no resource fork of its
+	@# own to carry, so this can't reuse Rez's MacBinary writer the app
+	@# itself goes through; tools/wrap_macbinary.py builds one from
+	@# scratch instead, verified byte-for-byte round-trip through hcopy -m
+	@# against a real independent MacBinary reader before being trusted
+	@# here. rohd/dCpy (DiskCopy's own type/creator - see download.c's
+	@# GuessTypeCreator) means Finder recognizes the expanded result as a
+	@# real disk image, ready to mount with DiskCopy, not a generic file.
+	python3 tools/wrap_macbinary.py $(IMG) $(DIST_DIR)/$(APP_NAME).img.bin \
+		--type rohd --creator dCpy --name "$(APP_NAME).img"
 
 configure:
 	cmake -S . -B $(BUILD_DIR) -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN_FILE)
