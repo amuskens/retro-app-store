@@ -6,7 +6,6 @@
 const RGBColor kThemeChromeFill = { 0xCCCC, 0xD9D9, 0xEEEE };
 const RGBColor kThemeChromeEdge = { 0x8888, 0x9999, 0xAAAA };
 const RGBColor kThemeDivider    = { 0xCCCC, 0xCCCC, 0xCCCC };
-const RGBColor kThemeSelectFill = { 0x9999, 0xCCCC, 0xFFFF };
 const RGBColor kThemeLedOn      = { 0x2222, 0xBBBB, 0x2222 };
 const RGBColor kThemeLedOff     = { 0x9999, 0x9999, 0x9999 };
 const RGBColor kThemeDescGray   = { 0x5555, 0x5555, 0x5555 };
@@ -106,12 +105,24 @@ void Theme_DrawProgressBar(const Rect *r, short permilleFilled, Boolean knownTot
     FrameRect(r);
     InsetRect(&inner, 1, 1);
 
-    SetRGB(&kThemeSelectFill);
     if (knownTotal) {
+        PenState saved;
         short fillW = (short)(((long)(inner.right - inner.left) * permilleFilled) / 1000);
         Rect fillRect = inner;
         fillRect.right = (short)(fillRect.left + fillW);
+
+        /* Same fix as Theme_HighlightRow's selection fill: a plain RGB
+           PaintRect (the old approach here - a light pastel blue accent
+           color) rounds to white on a 1-bit or grayscale display, so the
+           bar looked permanently empty on real hardware even while
+           genuinely filling, since white-on-white is indistinguishable.
+           hilite PenMode blends with the real OS highlight color on a
+           color display and degrades to plain invert on anything else,
+           guaranteed visible either way. */
+        GetPenState(&saved);
+        PenMode(hilite);
         PaintRect(&fillRect);
+        SetPenState(&saved);
     }
     ForeColor(blackColor);
 }

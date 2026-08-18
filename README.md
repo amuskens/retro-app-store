@@ -405,6 +405,30 @@ dist/
   sessions happened to always be in B&W): selecting a row now shows a
   real yellow tint (the test system's configured highlight color) with
   the row's text/icon still legible on top, not a solid overpaint.
+- **The same light-blue-accent-invisible-on-B&W bug as above, missed in
+  one more place: the download progress bar appeared permanently white
+  on real hardware, never showing any fill even while a download was
+  actively progressing.** `Theme_DrawProgressBar` was never updated when
+  `Theme_HighlightRow` got the `hilite` fix above - it still painted its
+  fill with a plain `SetRGB(&kThemeSelectFill)` (the same light pastel
+  blue, `{0x99,0xCC,0xFF}`), which rounds to white on a 1-bit/grayscale
+  display, exactly like the old sidebar bug. The frame border still drew
+  fine (plain `FrameRect`, unaffected), so the bar looked like an
+  empty outline the whole time rather than an obviously broken/missing
+  control - easy to miss since it's a "the bar just isn't updating"
+  report rather than a crash. Fixed the same way: `GetPenState` /
+  `PenMode(hilite)` / `PaintRect` / `SetPenState` for the fill portion.
+  `kThemeSelectFill` is now unused anywhere in the app (same fate as
+  `Theme_FillSelectAccent` above) and was deleted rather than left dead.
+  Not independently re-verified in the emulator against a real download
+  in forced black & white mode (the emulator's guest normally runs in
+  color, which is why this didn't surface there in the first place, and
+  switching the guest's display depth via its Monitors control panel
+  didn't turn up an actual Monitors panel in the test disk's Control
+  Panels folder in a reasonable amount of digging) - confirmed by direct
+  code inspection and the exact matching precedent above, but the real
+  hardware this was reported on is the natural place to do the final
+  visual confirmation.
 - **A hung Connect couldn't be canceled - "Stop" appeared to do nothing.**
   Reported after real use, and reproduced for real (not just read into
   existence): pointing Preferences at a real but unresponsive address

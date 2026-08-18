@@ -12,7 +12,6 @@
 extern const RGBColor kThemeChromeFill;   /* toolbar/sidebar band background */
 extern const RGBColor kThemeChromeEdge;   /* border under/right of chrome bands */
 extern const RGBColor kThemeDivider;      /* thin row/section divider lines */
-extern const RGBColor kThemeSelectFill;   /* accent fill - sidebar selection, progress bar */
 extern const RGBColor kThemeLedOn;        /* status LED - connected */
 extern const RGBColor kThemeLedOff;       /* status LED - not connected */
 extern const RGBColor kThemeDescGray;     /* secondary/description text */
@@ -57,7 +56,11 @@ void Theme_DrawPillButton(const Rect *r, const char *label, Boolean pressed);
 /* Simple horizontal progress bar, 0..1000 permille filled (permille rather
    than a float - this toolchain's target has no FPU and classic Mac C
    float support is best avoided in a UI redraw path). knownTotal false
-   draws an indeterminate barber-pole-free placeholder (just the frame). */
+   draws an indeterminate barber-pole-free placeholder (just the frame).
+   The fill uses the same hilite-PenMode technique as Theme_HighlightRow,
+   guaranteed legible on any display depth - a plain RGB fill (the
+   original approach here) rounds to white on a 1-bit/grayscale display,
+   which made the bar look permanently empty on real hardware. */
 void Theme_DrawProgressBar(const Rect *r, short permilleFilled, Boolean knownTotal);
 
 #endif
