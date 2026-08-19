@@ -144,7 +144,11 @@ static void CreateMainWindow(void)
     LayoutBrowser(gWindow, &tb, &sb, &rs, &st);
     Toolbar_Layout(&tb, &st);
 
-    ResultsView_ShowCategory(0);
+    /* All, not Featured - a search typed right after launch (before ever
+       touching the sidebar) should cover the whole library, not silently
+       come back empty just because Featured's small curated subset
+       doesn't happen to contain the term. See kAllCategoryIndex/catalog.h. */
+    ResultsView_ShowCategory(kAllCategoryIndex);
 }
 
 static void LayoutBrowser(WindowPtr w, Rect *toolbarR, Rect *sidebarR, Rect *resultsR, Rect *statusR)

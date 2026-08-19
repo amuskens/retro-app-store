@@ -19,7 +19,7 @@
 #define kFilterFooterHeight 86
 #define kFilterPillHeight   18
 
-static short gSelected = 0;
+static short gSelected = kAllCategoryIndex; /* matches app.c's startup ResultsView_ShowCategory(kAllCategoryIndex) */
 
 /* gSelected (and everything this module hands back to callers) is the
    *semantic* selection value - kAllCategoryIndex, a real category index,

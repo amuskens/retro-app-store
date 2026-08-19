@@ -20,14 +20,16 @@ resource 'SIZE' (-1) {
     reserved,
     reserved,
     reserved,
-    2048 * 1024, /* preferred - NOTE: this was previously bumped to 5000K
+    2500 * 1024, /* preferred - NOTE: this was previously bumped to 5000K
                      after real IIcx hardware hit mFulErr (-41, "not enough
                      room in the heap zone") on every download while
                      connected via Open Transport (OT's MacTCP-compat layer
                      has a real, well-known heavier memory footprint than
-                     native MacTCP). Lowered back to 2048K on request; if
-                     downloads over OT start failing with -41 again on real
-                     hardware, this is the first thing to re-check. */
+                     native MacTCP). Lowered to 2500K on request - some
+                     headroom above the plain 2048K default, but well below
+                     the confirmed-working 5000K; if downloads over OT
+                     start failing with -41 again on real hardware, this is
+                     the first thing to re-check. */
     1536 * 1024       /* minimum - the catalog's fixed-capacity entry array
                           (kMaxCatalogEntries in catalog.h) accounts for a
                           real chunk of this; also bumped up from 768K for
