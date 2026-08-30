@@ -4,6 +4,8 @@
 #include <Events.h>
 #include <Menus.h>
 #include <Dialogs.h>
+#include <AppleEvents.h>
+#include <OSUtils.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -39,6 +41,14 @@ enum { iConnect = 1, iDisconnect = 2, iRefreshListing = 3, iGoUpLevel = 4 };
 #define kInfoAlertID 129
 #define kMaxLiveFetch 200 /* live listing page size cap - see DoRefreshListing */
 
+/* Same floor/ceiling GrowWindow already enforces via gSizeLimits below,
+   named so ComputeScreenFitBounds can share them. */
+#define kMinWindowWidth  420
+#define kMinWindowHeight 260
+#define kMaxWindowWidth  900
+#define kMaxWindowHeight 780
+#define kScreenMargin    8 /* breathing room from the screen/gray-region edges */
+
 static WindowPtr gWindow;
 static Boolean gDone = false;
 static Boolean gConnected = false;
@@ -65,6 +75,7 @@ static char gLivePath[200] = "";
 static Boolean gInBackground = false;
 
 Boolean App_InBackground(void) { return gInBackground; }
+Boolean App_IsQuitting(void) { return gDone; }
 
 void App_HandleOSEvent(const EventRecord *event)
 {
@@ -100,6 +111,7 @@ static void HandleEditMenu(short item);
 static void HandleGoMenu(short item);
 static void HandleConnectionMenu(short item);
 static void AdjustMenus(void);
+static void InstallAppleEventHandlers(void);
 
 static void ToolboxInit(void)
 {
@@ -110,6 +122,74 @@ static void ToolboxInit(void)
     TEInit();
     InitDialogs(NULL);
     InitCursor();
+}
+
+/* The 4 "required" Core Suite Apple Events every System 7+ app is
+   expected to handle (Inside Macintosh's own App-readiness checklist) -
+   Garden doesn't support opening/printing documents, so those two are
+   pure no-ops, but they still have to be installed or a Finder/System
+   feature that assumes every app answers them (e.g. drag-launching a
+   document to a running app, or - the real-world case that surfaced this
+   - Shut Down/Restart, which sends kAEQuitApplication to every running
+   app and waits for a reply before actually proceeding) gets silent
+   failures instead. Confirmed as a real, deterministic gap, not
+   theoretical: nothing anywhere in this app installed any Apple Event
+   handler, and the main event loop didn't even have a case for
+   kHighLevelEvent, so an incoming Quit AppleEvent was received into the
+   event record by WaitNextEvent and then just as silently discarded by
+   the switch statement's implicit default - no reply ever sent back to
+   whoever asked. */
+static pascal OSErr HandleOpenAppAE(const AppleEvent *evt, AppleEvent *reply, int32_t refcon)
+{
+    (void)evt; (void)reply; (void)refcon;
+    return noErr;
+}
+
+static pascal OSErr HandleOpenDocsAE(const AppleEvent *evt, AppleEvent *reply, int32_t refcon)
+{
+    (void)evt; (void)reply; (void)refcon;
+    return noErr;
+}
+
+static pascal OSErr HandlePrintDocsAE(const AppleEvent *evt, AppleEvent *reply, int32_t refcon)
+{
+    (void)evt; (void)reply; (void)refcon;
+    return noErr;
+}
+
+/* Same cleanup the File > Quit menu item and the window's close box
+   already both do (see HandleFileMenu/inGoAway) - Shut Down/Restart/Log
+   Out and an explicit Finder "Quit" all arrive here instead of through
+   the menu, so this needs the identical disconnect-before-exit behavior,
+   not a bare gDone = true.
+
+   Unlike the menu item, this can also fire while a download is active -
+   the menu can't be reached mid-transfer (progress_dlg.c's own event
+   loop owns input then, and never dispatches MenuSelect), but this
+   AppleEvent can arrive there too now that progress_dlg.c also calls
+   AEProcessAppleEvent. Setting gDone here wouldn't unwind anything by
+   itself in that case (we'd be many stack frames deep inside
+   Download_Fetch), so this also sets the progress dialog's cancel flag -
+   always safe even when nothing is downloading right now, since
+   ProgressDlg_Show resets it on every new transfer - which drives the
+   same, already-safe cancel path Download_Fetch's Stop button uses (see
+   FTP_Disconnect/Net_Abort) to unwind promptly instead of finishing the
+   transfer before ever noticing gDone below. */
+static pascal OSErr HandleQuitAE(const AppleEvent *evt, AppleEvent *reply, int32_t refcon)
+{
+    (void)evt; (void)reply; (void)refcon;
+    *ProgressDlg_CancelFlag() = true;
+    if (gConnected) DoDisconnect();
+    gDone = true;
+    return noErr;
+}
+
+static void InstallAppleEventHandlers(void)
+{
+    AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, NewAEEventHandlerUPP(HandleOpenAppAE), 0, false);
+    AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, NewAEEventHandlerUPP(HandleOpenDocsAE), 0, false);
+    AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments, NewAEEventHandlerUPP(HandlePrintDocsAE), 0, false);
+    AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, NewAEEventHandlerUPP(HandleQuitAE), 0, false);
 }
 
 static void SetupMenus(void)
@@ -124,21 +204,80 @@ static void SetupMenus(void)
     DrawMenuBar();
 }
 
+/* NewWindow's boundsRect is the CONTENT rect only - the Window Manager
+   draws the title bar itself ABOVE bounds.top, not inside it. Confirmed
+   by testing: without reserving this separately, a window positioned
+   right at the menu bar's own bottom edge got its title bar drawn
+   started that same amount *above* bounds.top, extending back up into
+   the menu bar and getting visibly clipped by it. 20 is the standard
+   classic Mac title bar height (kZoomDocProc's plain non-tabbed style,
+   the only kind this app uses). */
+#define kWindowTitleBarHeight 20
+
+/* Fits a preferred w x h window inside the current screen's usable area -
+   explicitly below the menu bar (GetMBarHeight(), not assumed - confirmed
+   by testing that this toolchain's gray region does NOT already exclude
+   it here, unlike real Mac OS's documented behavior, so relying on the
+   gray region alone for that clipped the window's title bar right under
+   the menu bar) and further inset by the gray region's own bounding box
+   on top of that, which on real hardware/systems that have one active
+   also shrinks for the Control Strip - taking the tighter of the two on
+   each edge means either signal being conservative is enough to keep the
+   window off both. Also the fix for a small physical screen: a Mac
+   Plus/SE's 512x342 display (~322px tall after the menu bar) is much
+   smaller than this app's own preferred 560x460, which would otherwise
+   land the window mostly off-screen - this shrinks to fit instead, down
+   to kMinWindowWidth/Height, and never grows past preferW/preferH on a
+   bigger screen. */
+static void ComputeScreenFitBounds(short preferW, short preferH, Rect *outBounds)
+{
+    Rect avail = qd.screenBits.bounds;
+    Rect gray = (**LMGetGrayRgn()).rgnBBox;
+    short availW, availH, w, h;
+
+    avail.top = (short)(avail.top + GetMBarHeight());
+    if (gray.left > avail.left) avail.left = gray.left;
+    if (gray.top > avail.top) avail.top = gray.top;
+    if (gray.right < avail.right) avail.right = gray.right;
+    if (gray.bottom < avail.bottom) avail.bottom = gray.bottom;
+
+    /* From here on, avail.top is where the window's CONTENT (not title
+       bar) may start - the title bar occupies the kWindowTitleBarHeight
+       px immediately above it, already-reserved. */
+    avail.top = (short)(avail.top + kWindowTitleBarHeight);
+
+    availW = (short)(avail.right - avail.left);
+    availH = (short)(avail.bottom - avail.top);
+    w = preferW;
+    h = preferH;
+
+    if (w > availW - kScreenMargin * 2) w = (short)(availW - kScreenMargin * 2);
+    if (h > availH - kScreenMargin * 2) h = (short)(availH - kScreenMargin * 2);
+    if (w < kMinWindowWidth) w = kMinWindowWidth;
+    if (h < kMinWindowHeight) h = kMinWindowHeight;
+
+    outBounds->left = (short)(avail.left + (availW - w) / 2);
+    outBounds->top = (short)(avail.top + (availH - h) / 2);
+    outBounds->right = (short)(outBounds->left + w);
+    outBounds->bottom = (short)(outBounds->top + h);
+}
+
 static void CreateMainWindow(void)
 {
     Rect bounds;
     Rect tb, sb, rs, st;
 
-    /* Height bumped 380->460 along with kResultRowHeight's 40->52 (see
-       theme.h) - keeps roughly the same number of result rows visible by
-       default now that rows are taller (fitting an optional second
-       description line) rather than showing noticeably fewer at launch. */
-    SetRect(&bounds, 40, 60, 40 + 560, 60 + 460);
+    /* Preferred size 560x460 (height along with kResultRowHeight's 40->52
+       in theme.h - keeps roughly the same number of result rows visible
+       by default now that rows are taller, fitting an optional second
+       description line, rather than showing noticeably fewer at launch),
+       shrunk to actually fit the screen - see ComputeScreenFitBounds. */
+    ComputeScreenFitBounds(560, 460, &bounds);
     gWindow = NewWindow(NULL, &bounds, "\pMacintosh Garden", true,
                          kZoomDocProc, (WindowPtr)-1L, true, 0);
     SetPort(gWindow);
 
-    SetRect(&gSizeLimits, 420, 260, 900, 780);
+    SetRect(&gSizeLimits, kMinWindowWidth, kMinWindowHeight, kMaxWindowWidth, kMaxWindowHeight);
 
     Toolbar_Init(gWindow);
     LayoutBrowser(gWindow, &tb, &sb, &rs, &st);
@@ -174,6 +313,14 @@ static void LayoutBrowser(WindowPtr w, Rect *toolbarR, Rect *sidebarR, Rect *res
     resultsR->right = port.right;
     resultsR->top = toolbarR->bottom;
     resultsR->bottom = statusR->top;
+
+    /* Only ever as many full rows as actually fit - see
+       ResultsView_SetPageSize's own comment for why a short results area
+       must never draw a partial row bleeding into statusR below. A no-op
+       when unchanged, so calling this on every layout pass (not just real
+       resizes - LayoutBrowser also runs on every content click, just for
+       hit-testing) is cheap. */
+    ResultsView_SetPageSize((short)((resultsR->bottom - resultsR->top) / kResultRowHeight));
 }
 
 static void DrawContent(WindowPtr w)
@@ -221,6 +368,26 @@ static void RedrawResultsAndStatus(void)
     DrawControls(gWindow);
 }
 
+/* Shared by both StopAlert calls below (the About box and this generic
+   message alert) - without it, a Quit AppleEvent arriving while either is
+   up would be silently dropped, the same gap the main loop/progress
+   dialog/Preferences all had (see app.h's App_IsQuitting comment). Unlike
+   Preferences' own loop, StopAlert's internal one only cares about button
+   clicks, not gDone, so this also auto-dismisses by reporting the OK
+   click itself (item 1 in both this app's ALRT/DITL pairs) once quitting
+   is detected, rather than leaving the alert sitting there waiting for a
+   click that isn't coming. */
+static pascal Boolean AlertQuitFilter(DialogPtr dlg, EventRecord *evt, short *itemHit)
+{
+    (void)dlg;
+    if (evt->what == kHighLevelEvent) {
+        AEProcessAppleEvent(evt);
+        if (gDone) *itemHit = 1; /* OK - both ALRT/DITL 128 and 129 have it as item 1 */
+        return true;
+    }
+    return false;
+}
+
 /* Generic message alert - ALRT/DITL 129 in main.r, a single OK button and
    a "^0"-substituted StaticText, same idiom mac-system7-c's Fail()/Warn()
    use. */
@@ -229,7 +396,44 @@ static void ShowMessage(const char *msg)
     Str255 s;
     CToPascal(msg, s);
     ParamText(s, "\p", "\p", "\p");
-    StopAlert(kInfoAlertID, NULL);
+    StopAlert(kInfoAlertID, NewModalFilterUPP(AlertQuitFilter));
+}
+
+#define kBriefMessageTicks 180 /* ~3 seconds at 60 ticks/sec */
+static unsigned long gBriefMessageShownAt = 0;
+
+/* Same filter as AlertQuitFilter (dispatches AppleEvents so a Quit arriving
+   while this is up isn't dropped) plus a second condition: auto-dismiss
+   once kBriefMessageTicks have passed, same as if OK had been clicked.
+   ModalDialog calls a filter proc on every event it processes internally,
+   including idle nullEvents at its own polling rate, so this fires
+   regularly on its own without needing any real input. */
+static pascal Boolean BriefMessageFilter(DialogPtr dlg, EventRecord *evt, short *itemHit)
+{
+    (void)dlg;
+    if (evt->what == kHighLevelEvent) AEProcessAppleEvent(evt);
+    if (gDone || (TickCount() - gBriefMessageShownAt) >= kBriefMessageTicks) {
+        *itemHit = 1; /* OK - item 1 in ALRT/DITL 129, same as ShowMessage */
+        return true;
+    }
+    return false;
+}
+
+/* Download-completion messages (success or failure alike) use this
+   instead of ShowMessage: a Note icon, not Stop, and it goes away on its
+   own after a few seconds rather than sitting there demanding a click.
+   Explicit request, not a style nitpick - downloads can now finish while
+   the user is off in another application entirely (see BeginDownload's
+   async note), so an alert styled like an error and requiring an
+   explicit dismissal is a bad fit for something that just happened
+   quietly in the background, whether it succeeded or not. */
+static void ShowBriefMessage(const char *msg)
+{
+    Str255 s;
+    CToPascal(msg, s);
+    ParamText(s, "\p", "\p", "\p");
+    gBriefMessageShownAt = TickCount();
+    NoteAlert(kInfoAlertID, NewModalFilterUPP(BriefMessageFilter));
 }
 
 static void PerformSearch(void)
@@ -379,14 +583,14 @@ static void BeginDownload(const DownloadRequest *req)
     if (err == noErr) {
         char msg[300];
         sprintf(msg, "\xd2%.200s\xd3 was saved in the Garden Downloads folder, next to the application.", req->title);
-        ShowMessage(msg);
+        ShowBriefMessage(msg);
     } else if (err == userCanceledErr) {
         /* the user asked to stop - no need to alert them about their own action */
     } else {
         char msg[400];
         sprintf(msg, "Couldn't download \xd2%.150s\xd3 (error %d). If this keeps happening, try Live FTP Browse instead, which downloads exactly what it just listed.",
                 req->title, (int)err);
-        ShowMessage(msg);
+        ShowBriefMessage(msg);
     }
 }
 
@@ -564,7 +768,7 @@ static void HandleContentClick(WindowPtr w, Point local, unsigned long when)
 
 static void HandleAppleMenu(short item)
 {
-    if (item == iAbout) StopAlert(128, NULL);
+    if (item == iAbout) StopAlert(128, NewModalFilterUPP(AlertQuitFilter));
 }
 
 static void HandleFileMenu(short item)
@@ -677,6 +881,7 @@ void RunApp(void)
     EventRecord event;
 
     ToolboxInit();
+    InstallAppleEventHandlers();
     Prefs_Load(&gPrefs);
     if (Catalog_Load() == kCatalogLoadRejected)
         ShowMessage("The \xd2Garden Catalog\xd3 file next to this application couldn\xd5t be read, so the built-in catalog is being used instead. Check that it wasn\xd5t corrupted in transfer, or remove it to use the built-in catalog on purpose.");
@@ -746,6 +951,24 @@ void RunApp(void)
                             if (TrackBox(which, event.where, part)) {
                                 SetPort(which);
                                 ZoomWindow(which, part, true);
+                                if (part == inZoomOut) {
+                                    /* Growing to the "standard" (larger)
+                                       state - ZoomWindow's own guess at
+                                       that size can still cover the menu
+                                       bar/Control Strip on some setups, so
+                                       clamp it back to the same
+                                       gray-region-fit bounds the launch
+                                       window uses whenever it overshoots. */
+                                    Rect fit;
+                                    short curW = (short)(which->portRect.right - which->portRect.left);
+                                    short curH = (short)(which->portRect.bottom - which->portRect.top);
+                                    ComputeScreenFitBounds(kMaxWindowWidth, kMaxWindowHeight, &fit);
+                                    if (curW > fit.right - fit.left || curH > fit.bottom - fit.top) {
+                                        MoveWindow(which, fit.left, fit.top, false);
+                                        SizeWindow(which, (short)(fit.right - fit.left),
+                                                   (short)(fit.bottom - fit.top), true);
+                                    }
+                                }
                                 RelayoutAndRedraw(which);
                             }
                             break;
@@ -788,7 +1011,12 @@ void RunApp(void)
                 case osEvt:
                     App_HandleOSEvent(&event);
                     break;
+                case kHighLevelEvent:
+                    AEProcessAppleEvent(&event);
+                    break;
             }
         }
     }
+
+    FTP_Shutdown();
 }

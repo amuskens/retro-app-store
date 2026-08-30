@@ -1,11 +1,26 @@
 #include <string.h>
 #include <Devices.h>
 #include <Memory.h>
+#include <OSUtils.h>
 
 #include "net.h"
 
 #define kRcvBufferSize 8192
 #define kDefaultTimeoutSecs 20
+/* TCPActiveOpen's own ulpTimeoutValue/ulpTimeoutAction below *should*
+   already bound how long a connect attempt can take, but verified live
+   against a real silently-unreachable address (exactly what a genuinely
+   dropped/dead network connection looks like) that it doesn't reliably
+   fire - even after 70+ real seconds, the wait never resolved on its
+   own. Most likely explanation: ulpTimeoutValue governs the TCP-level
+   SYN retransmission/handshake timeout once a packet is actually on the
+   wire, not an earlier routing/address-resolution stall, which this
+   failure mode seems to get stuck in instead - below the layer that
+   field can bound at all. Net_Open's own client-side watchdog (see
+   kConnectWatchdogTicks below) is the safety net that guarantees a
+   connect attempt can never hang the app indefinitely regardless of
+   why MacTCP's own timeout mechanism didn't cover it. */
+#define kConnectWatchdogTicks (45UL * 60UL) /* ~45s at 60 ticks/sec - generous headroom above kDefaultTimeoutSecs so MacTCP's own timeout normally wins first when it does fire */
 
 static short gDriverRefNum = 0;
 static Boolean gDriverOpen = false;
@@ -27,6 +42,49 @@ static OSErr DoControlCall(TCPiopb *pb, GiveTimeProc giveTime, Boolean *cancel)
         if (giveTime != NULL) giveTime();
     }
     return pb->ioResult;
+}
+
+/* Like DoControlCall, plus a client-side deadline - used only for
+   TCPActiveOpen (see Net_Open and kConnectWatchdogTicks above). Bailing
+   out early here on either cancel or the deadline is safe for the exact
+   reason DoControlCall's own bailing-out-on-cancel already is (see its
+   comment): the caller is expected to follow up with Net_Abort, which
+   always waits for its own TCPAbort+TCPRelease to really finish before
+   returning - that's what actually tears the stream down at the driver
+   level, so nothing is left that could ever complete into this pb again
+   afterward, whichever way this returned early. */
+static OSErr DoControlCallWithDeadline(TCPiopb *pb, GiveTimeProc giveTime, Boolean *cancel,
+                                        unsigned long deadlineTicks)
+{
+    pb->ioCompletion = NULL;
+    pb->ioResult = inProgress;
+    PBControlAsync((ParmBlkPtr)pb);
+
+    while (pb->ioResult == inProgress) {
+        if (cancel != NULL && *cancel) return userCanceledErr;
+        if (TickCount() >= deadlineTicks) return commandTimeout;
+        if (giveTime != NULL) giveTime();
+    }
+    return pb->ioResult;
+}
+
+/* Like DoControlCall, but never bails out early on cancel: pb is often a
+   caller's stack local (Net_Close/Net_Abort's own conn/pb locals, or a
+   caller's whole NetConnection), so letting it go out of scope while
+   MacTCP still thinks it owns the address would mean a completion write
+   into freed stack space later. cancel is irrelevant to a call whose
+   entire job is "this is ending, now clean up" - giveTime is what
+   actually matters, so the UI keeps redrawing/responding while this
+   finishes rather than freezing. */
+static void DoAbortCall(TCPiopb *pb, GiveTimeProc giveTime)
+{
+    pb->ioCompletion = NULL;
+    pb->ioResult = inProgress;
+    PBControlAsync((ParmBlkPtr)pb);
+
+    while (pb->ioResult == inProgress) {
+        if (giveTime != NULL) giveTime();
+    }
 }
 
 OSErr Net_Init(void)
@@ -85,7 +143,7 @@ OSErr Net_Open(NetConnection *conn, ip_addr remoteHost, tcp_port remotePort,
     conn->pb.csParam.open.localHost = 0;
     conn->pb.csParam.open.localPort = 0;
 
-    err = DoControlCall(&conn->pb, giveTime, cancel);
+    err = DoControlCallWithDeadline(&conn->pb, giveTime, cancel, TickCount() + kConnectWatchdogTicks);
     if (err != noErr) {
         Net_Abort(conn, giveTime);
         return err;
@@ -135,10 +193,12 @@ OSErr Net_Receive(NetConnection *conn, void *buf, unsigned short bufLen, unsigne
     return err;
 }
 
-OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime, Boolean *cancel)
+OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime)
 {
     OSErr err;
 
+    /* DoAbortCall, not DoControlCall - see the "no cancel parameter"
+       comment on this function in net.h. */
     memset(&conn->pb, 0, sizeof(conn->pb));
     conn->pb.ioCRefNum = gDriverRefNum;
     conn->pb.csCode = TCPClose;
@@ -146,13 +206,14 @@ OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime, Boolean *cancel)
     conn->pb.csParam.close.ulpTimeoutValue = kDefaultTimeoutSecs;
     conn->pb.csParam.close.ulpTimeoutAction = 1;
     conn->pb.csParam.close.validityFlags = 0xC0;
-    err = DoControlCall(&conn->pb, giveTime, cancel);
+    DoAbortCall(&conn->pb, giveTime);
+    err = conn->pb.ioResult;
 
     memset(&conn->pb, 0, sizeof(conn->pb));
     conn->pb.ioCRefNum = gDriverRefNum;
     conn->pb.csCode = TCPRelease;
     conn->pb.tcpStream = conn->stream;
-    DoControlCall(&conn->pb, giveTime, cancel);
+    DoAbortCall(&conn->pb, giveTime);
 
     if (conn->rcvBuffer != NULL) {
         DisposePtr(conn->rcvBuffer);
@@ -160,25 +221,6 @@ OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime, Boolean *cancel)
     }
     conn->stream = 0;
     return err;
-}
-
-/* Like DoControlCall, but never bails out early on cancel: pb is a
-   stack local here (not the persistent conn->pb the rest of this file
-   uses), so letting it go out of scope while MacTCP still thinks it owns
-   the address would mean a completion write into freed stack space
-   later. cancel is irrelevant to a call whose entire job is "the user
-   already canceled, now clean up" - giveTime is what actually matters,
-   so the UI keeps redrawing/responding while this finishes rather than
-   freezing. */
-static void DoAbortCall(TCPiopb *pb, GiveTimeProc giveTime)
-{
-    pb->ioCompletion = NULL;
-    pb->ioResult = inProgress;
-    PBControlAsync((ParmBlkPtr)pb);
-
-    while (pb->ioResult == inProgress) {
-        if (giveTime != NULL) giveTime();
-    }
 }
 
 void Net_Abort(NetConnection *conn, GiveTimeProc giveTime)

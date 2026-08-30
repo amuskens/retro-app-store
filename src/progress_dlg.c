@@ -5,6 +5,7 @@
 #include <Fonts.h>
 #include <Events.h>
 #include <Menus.h>
+#include <AppleEvents.h>
 
 #include "progress_dlg.h"
 #include "theme.h"
@@ -173,9 +174,31 @@ void ProgressDlg_GiveTime(void)
                         if (TrackControl(ctl, local, NULL) != 0) gCancel = true;
                     }
                 } else if (part == inDrag) {
-                    DragWindow(which, event.where, NULL);
+                    /* NULL here technically compiles but this ROM doesn't
+                       null-check it, silently producing a zero-size drag
+                       region (the same real bug already found and fixed
+                       for the main window - see app.c) - same fix here. */
+                    Rect dragBounds = qd.screenBits.bounds;
+                    InsetRect(&dragBounds, 4, 4);
+                    DragWindow(which, event.where, &dragBounds);
                 } else if (part == inMenuBar) {
-                    HiliteMenu(0); /* menus stay visible but inert during a transfer */
+                    /* Let MenuSelect actually track the click, rather than
+                       just un-highlighting - this is what lets the
+                       built-in Application menu (rightmost, switch to a
+                       different running app) work correctly, since that
+                       switch happens *inside* MenuSelect's own tracking
+                       loop, not as a command dispatched from its result
+                       afterward. Garden's own menus (File/Edit/Go/
+                       Connection) still don't do anything during a
+                       transfer - the result is deliberately discarded -
+                       only the Application menu's switch has any real
+                       effect, and needs no result to be discarded since
+                       it already happened by the time MenuSelect returns.
+                       Without this, a download with no other app window
+                       already visible on screen had no way to switch away
+                       at all - the whole point of running it async. */
+                    (void)MenuSelect(event.where);
+                    HiliteMenu(0);
                 }
                 break;
             }
@@ -200,6 +223,17 @@ void ProgressDlg_GiveTime(void)
                    of the main one, so it has to track background state
                    itself rather than relying on RunApp's loop to notice. */
                 App_HandleOSEvent(&event);
+                break;
+            case kHighLevelEvent:
+                /* Without this, a Quit AppleEvent (Shut Down/Restart, or
+                   the Finder's own Quit) arriving while a download is in
+                   flight would be silently dropped right here, the same
+                   gap RunApp's own loop had - this dialog pumps its own
+                   events instead of the main loop's while a transfer is
+                   active, so it has to dispatch AppleEvents itself too or
+                   the app's Quit handler (app.c) never gets a chance to
+                   run until the transfer finishes on its own. */
+                AEProcessAppleEvent(&event);
                 break;
         }
     }

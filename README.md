@@ -16,14 +16,29 @@ part of it is drawing from live data.
 
 - Custom-drawn browser window: toolbar (search), left sidebar (an **All**
   row + 8 categories + Live FTP Browse + Year/CPU/System filter pills),
-  paginated results list (10/page), status bar (connection LED + page
-  indicator). Fully draggable and resizable (see Gotchas - dragging in
-  particular didn't actually work for a while). Row selection (sidebar and
-  results list alike) uses Color QuickDraw's `hilite` pen mode, so it picks
-  up whatever highlight color the user has set in the Color control panel
-  on a color display, and degrades automatically to plain invert on a
-  1-bit one - not a hand-picked app color either way.
-- **396-entry bundled catalog**, loadable from an external file so it can
+  paginated results list (10/page, fewer on a shorter window - see below),
+  status bar (connection LED + page indicator). Fully draggable and
+  resizable (see Gotchas - dragging in particular didn't actually work for
+  a while). Row selection (sidebar and results list alike) uses Color
+  QuickDraw's `hilite` pen mode, so it picks up whatever highlight color
+  the user has set in the Color control panel on a color display, and
+  degrades automatically to plain invert on a 1-bit one - not a hand-picked
+  app color either way.
+- **Launches at a screen-aware size**, not a fixed pixel offset - fits a
+  preferred 560x460 within the screen's actual usable area (below the menu
+  bar, and further inset by the Control Strip's reserved space on a real
+  system that has one active), shrinking down to a 420x260 floor on a
+  small physical screen (a Mac Plus/SE's 512x342 display, tested directly,
+  previously would have put most of the window off-screen). The zoom box
+  clamps the same way, so growing to "fill the screen" can't cover the
+  menu bar or Control Strip either. The results list's page size follows
+  suit - narrower windows show fewer, complete rows per page rather than a
+  partial row bleeding into the status bar's Page/Prev/Next controls below
+  it (also belt-and-suspenders clipped, so this can't regress silently).
+- **2,445-entry bundled catalog** (real historical Mac software, deliberately
+  including multiple distinct versions of the same product as separate
+  entries, hard-coded in alphabetical order by title - see "What's real
+  vs. sample data" below), loadable from an external file so it can
   be updated without recompiling the app - see "The loadable catalog"
   below.
 - Results rows can show an optional **second description line** - a short
@@ -71,47 +86,43 @@ connecting - see Gotchas below, which also covers where the older
 "unsorted flat dump" assumption this section used to lead with came from
 and why it turned out to be only half right).
 
-- **`catalog_data.c`'s 396 entries are real historical Mac software, and
-  (as of this catalog's last update) every entry's `remotePath`/size were
-  cross-checked against a real, full directory listing of the live
-  server** - fetched directly over FTP from the host shell (`curl
-  ftp://...`), not guessed, and verified to exist *verbatim* in that
-  listing before being written into the catalog (a small script checked
-  all of them programmatically - zero typos reached the actual file). A
-  later pass added 30 of these specifically to cover early/classic
-  versions of major creative and productivity titles (Adobe Photoshop
-  0.63 through 5.02, SuperPaint, Aldus/Adobe PageMaker, MORE, Microsoft
-  Word, Excel, and PowerPoint) - see the Gotchas entry on real per-file
-  hardware notes for how their `hwNote` data was sourced and sanity-
-  checked.
+- **`catalog_data.c`'s 2,445 entries are real historical Mac software, and
+  every entry's `remotePath`/size are copied verbatim from a real, full
+  directory listing of the live server** - fetched directly over FTP from
+  the host shell (`curl ftp://...`, ~40,600 real files under `/apps/` and
+  ~19,600 under `/games/`), not guessed. The catalog grew from 396 to this
+  size in one batch: 8 parallel research passes each took a real slice of
+  that listing and picked out recognizable classic-Mac titles from it
+  (explicitly including multiple distinct versions of the same product as
+  separate entries, not just one "current" version each), cross-checking
+  each chosen entry's exact filename/size against its own source slice
+  before including it - the same "verified present in a real listing,
+  never invented" discipline the original 396 already followed, just
+  applied at 8x the scale in parallel. The merge step deduped by
+  `remotePath` (real file identity) and then by exact title, so the same
+  file or release never appears twice.
   `year`/`arch` are curatorial best-effort (release year, 68k/PPC/Fat
-  support) rather than independently verified per entry the way the
-  download path is - treat those two fields as a useful guide for the
+  support) rather than independently verified per entry the way
+  `remotePath` is - treat those two fields as a useful guide for the
   Year/CPU filters, not a certified database. **`minSystem`** (the System
-  filter's data) is a step more rigorous than year/arch, though still not
-  in the same league as `remotePath`: it's scraped from Macintosh Garden's
-  own per-title pages (the "For System X.x - Y.y" line each download
-  lists), not estimated from release year or genre. **344 of 396 entries
-  (87%) have a real, page-sourced value; the other 52 are honestly left at
-  0/"unknown"** where no confidently-matching page or no stated
-  requirement could be found - not guessed to fill the gap, same "leave it
-  honestly blank rather than invent a plausible-sounding value" policy as
-  the old `UNVERIFIED` marker below. Unknown entries fall into the System
-  filter's "System 6" bucket (0 counts as "< 70" there) rather than a
-  separate "unknown" option - worth knowing if a System 6 search turns up
-  more results than expected. An earlier pass over a
-  smaller (79-entry) version of this catalog left 5 titles that couldn't
+  filter's data) is real, page-sourced knowledge for the original
+  hand-curated entries but best-effort for the bulk of the newer ones
+  (unlike the earlier, smaller catalog rounds, this batch's scale made a
+  dedicated per-title page-scraping pass impractical) - entries left at
+  0/"unknown" fall into the System filter's "System 6" bucket (0 counts as
+  "< 70" there) rather than a separate "unknown" option, worth knowing if
+  a System 6 search turns up more results than expected. Verified doesn't
+  mean permanent, though - it's a community mirror, and file layouts drift
+  over time (this repo's own research already turned up more than one
+  historical hostname for the mirror itself) - so this is "confirmed
+  present as of last update," not a standing guarantee. An earlier,
+  smaller pass over this catalog (79 entries) left 5 titles that couldn't
   be matched marked `UNVERIFIED` with an invented placeholder path rather
-  than a real one; the 367-entry catalog replaced that set entirely with
-  titles chosen specifically because a real match existed, so none of the
-  current entries carry that marker - if you add your own via
-  `catalog_source.json`, nothing stops you from doing the same (an
-  unmatched entry just won't download - Live FTP Browse is always the
-  fallback of record regardless). Verified doesn't mean permanent, though -
-  it's a community mirror, and file layouts drift over time (this repo's
-  own research already turned up more than one historical hostname for
-  the mirror itself) - so this is "confirmed present as of last update,"
-  not a standing guarantee.
+  than a real one - none of the current entries carry that marker, since
+  every round since has only added titles chosen specifically because a
+  real match existed; if you add your own via `catalog_source.json`,
+  nothing stops you from doing the same (an unmatched entry just won't
+  download - Live FTP Browse is always the fallback of record regardless).
 - **Live FTP Browse** is still the reliable fallback of record: a genuine
   `NLST` against the configured host/path, showing actual current
   filenames, and downloading exactly what it just listed, so it's correct
@@ -125,16 +136,23 @@ and why it turned out to be only half right).
 
 ## The loadable catalog
 
-`catalog_data.c`'s 396 entries are compiled in, but they're a **fallback**,
-not the only source - Garden looks for a file named exactly `Garden
-Catalog` next to the application at startup (`catalog_load.c`, found the
-same way `download.c` finds where to put "Garden Downloads": the Process
-Manager, not a hardcoded path) and loads its entries from there instead
-if it exists and passes validation. `make` builds and ships one by
-default (from `tools/catalog_source.json`, the same 396 entries as the
-compiled-in fallback, so day-one behavior is identical either way) - the
-point isn't that the file is normally different, it's that **updating the
-catalog doesn't require rebuilding the app at all**:
+`catalog_data.c`'s 2,445 entries are compiled in, but they're a
+**fallback**, not the only source - Garden looks for a file named exactly
+`Garden Catalog` next to the application at startup (`catalog_load.c`,
+found the same way `download.c` finds where to put "Garden Downloads": the
+Process Manager, not a hardcoded path) and loads its entries from there
+instead if it exists and passes validation. `make` still builds one by
+default (from `tools/catalog_source.json`, the same entries as the
+compiled-in fallback) - just no longer onto the floppy image itself (see
+Build below: at this catalog's current size, the two together no longer
+fit a standard 1.44MB floppy with any real headroom, and don't need to,
+since the compiled-in fallback already carries the same full catalog).
+Drag `build/Garden Catalog` in separately (a shared folder, a second disk
+image, however files already reach your test setup) if you want to
+exercise the load-from-file path specifically, or to ship a customized
+catalog of your own. The point of this mechanism isn't that the file is
+normally different from the fallback, it's that **updating the catalog
+doesn't require rebuilding the app at all**:
 
 1. Edit `tools/catalog_source.json` (or write your own from scratch - see
    the format below) on any modern machine. No toolchain needed.
@@ -163,7 +181,7 @@ bumped 1->2 when `minSystem` was added, so an old-format file gets
 rejected cleanly (falls back to the compiled-in catalog) instead of being
 misread field-by-field.
 
-**JSON source format** (see `tools/catalog_source.json` for 396 real
+**JSON source format** (see `tools/catalog_source.json` for 2,445 real
 examples): a `version` field plus an `entries` array of objects with
 `category` (one of the 8 real category names, spelled exactly as in the
 sidebar), `title`, `year`, `arch` (`"68k"`, `"ppc"`, or `"fat"`),
@@ -180,8 +198,8 @@ are updatable without one.
 **`catalog_data.c` (the compiled-in fallback) is generated, not hand-
 written** - `tools/generate_catalog_data.py` reads the same
 `catalog_source.json` and emits the C struct literals, so the two catalog
-paths can't quietly drift apart the way hand-transcribing 396 entries
-into C would risk. Editing the catalog now means: edit the JSON, run
+paths can't quietly drift apart the way hand-transcribing thousands of
+entries into C would risk. Editing the catalog now means: edit the JSON, run
 `generate_catalog_data.py` (recompiled-in path) and/or `build_catalog.py`
 (loadable-file path), depending on which you're updating.
 
@@ -237,6 +255,78 @@ completion routine either (this app never installs one - see
 `mactcp_low.h`'s comment on why that's a deliberate simplification, not an
 oversight).
 
+**Every connection is properly torn down before Garden quits or a download
+is stopped**, specifically so a still-open TCP stream can't make the real
+OS's own "Shut Down" hang waiting on it (see `net.h`'s `Net_Close` comment
+for the real bug this fixes, not just a defensive measure): canceling a
+download used to leave its control connection's `TCPClose`/`TCPRelease`
+abandoned mid-flight (a stack-safety bug in `Net_Close`'s old cancel
+handling - it bailed out early on a cancel flag while an async call was
+still targeting a caller-owned, often stack-allocated parameter block,
+exactly the hazard `Net_Abort` was already written to avoid). `Net_Close`
+no longer takes a cancel flag at all and always waits for real completion;
+a canceled download now goes straight to `Net_Abort` (hard, local, no
+server round-trip) instead of attempting a graceful close, which is both
+the safe fix and the snappier one - "Stop" no longer risks waiting on the
+connection's own close timeout. `dnr.c`'s `DNR_Resolve` had the identical
+bug in its own cancel handling (bailing out of the wait for the DNR code
+resource's async callback, which still fires later into the same
+now-defunct stack slot) - fixed the same way. Quit (File > Quit and the
+window's close box alike) already disconnected the Live FTP Browse session
+if one was open; that part didn't need fixing, just confirming. The DNR
+resolver's own code resource is now explicitly released at the very end of
+`RunApp` too (`FTP_Shutdown`/`DNR_Close`) - unlike the MacTCP driver
+itself, which the OS's own Device Manager closes as part of a real Shut
+Down regardless of what any app did, the resolver's loaded code resource
+was purely this app's own responsibility and was never being released at
+all.
+
+**Garden now actually answers Shut Down/Restart, which turned out to be
+the real, primary cause of the felt "hang"** - not a timeout being waited
+out, but Shut Down not proceeding *at all* while Garden was still running,
+full stop. Two things were both true and both had to be fixed together:
+1. Nothing in the app ever installed an Apple Event handler, and the main
+   event loop (plus `progress_dlg.c`'s own separate one, plus
+   `prefs_dlg.c`'s `ModalDialog`, plus both `StopAlert` calls) had no case
+   for `kHighLevelEvent` at all - an incoming `kAEQuitApplication` (which
+   Shut Down/Restart sends to every running app and waits on a reply from)
+   was received into the event record and then silently discarded by every
+   one of these loops, never reaching any handler, never replied to.
+2. Independently of that, `main.r`'s `SIZE` resource declared
+   `notHighLevelEventAware` - Retro68's own project-template default,
+   honest at the time since the app genuinely had no Apple Event handling,
+   but it also tells the OS not to bother routing high-level events to
+   this app at all. Installing handlers without also flipping this to
+   `isHighLevelEventAware` would have left the fix inert.
+
+Fixed: `app.c` installs handlers for the 4 required Core Suite events
+(`kAEOpenApplication`/`kAEOpenDocuments`/`kAEPrintDocuments` as no-ops,
+`kAEQuitApplication` doing the same disconnect-then-exit `DoDisconnect`/
+`gDone` cleanup the Quit menu item and close box already did) via
+`AEInstallEventHandler`, and every event loop in the app now has a
+`kHighLevelEvent` case that calls `AEProcessAppleEvent`. Because the Quit
+AppleEvent can now arrive *while a download is in flight* (something the
+plain Quit menu item could never do, since it's unreachable from inside
+`progress_dlg.c`'s own event pump), the Quit handler also sets the
+progress dialog's cancel flag unconditionally - safe even when nothing's
+downloading (`ProgressDlg_Show` resets it on every new transfer) - so an
+active transfer unwinds immediately via the same safe cancel path Stop
+already used, rather than the app sitting on `gDone = true` deep inside
+`Download_Fetch` until the transfer finishes on its own. Preferences'
+modal loop gained the same `kHighLevelEvent` dispatch plus an explicit
+`App_IsQuitting()` check after each `ModalDialog` call (its own `for(;;)`
+loop only cared about OK/Cancel, so dispatching the AppleEvent alone
+wouldn't have unstuck it) to discard any edits and exit rather than
+sitting there waiting for a click that isn't coming.
+
+**Verified live, and directly worth the emphasis**: launched Garden,
+switched to the Finder *without quitting it* (Application menu), chose
+Special > Shut Down - completed cleanly, no "could not quit" alert, no
+hang. Rebooted the same disk image afterward and got no "this computer may
+not have been shut down properly" dialog, with the Finder even restoring
+its exact prior window layout - the real, hard signal of a clean shutdown,
+not just an absence of an error message.
+
 **This is the one part of the app I could compile-check against the real
 Retro68 toolchain but could not execute** - there's no MacTCP driver to
 exercise from this sandbox. Every struct layout and API call was verified
@@ -244,6 +334,63 @@ against real reference sources rather than guessed, and it compiles clean,
 but the actual "does it successfully talk to a real MacTCP INIT" question
 needs a real emulator run. If Connect hangs or crashes in testing, this is
 where to look first.
+
+**Downloads run truly in the background - the user can switch to another
+application while one is in progress**, not just while the UI stays
+responsive. This mostly already worked mechanically (the whole `giveTime`/
+`WaitNextEvent` architecture is cooperative-multitasking-friendly by
+design), but `progress_dlg.c`'s own event loop had one real gap:
+`inMenuBar` clicks only called `HiliteMenu(0)`, never `MenuSelect` - so the
+Application menu (the normal, and often *only*, way to switch to another
+running app, especially with no other app window already visible on
+screen) never got a chance to run its switch, which happens *inside*
+`MenuSelect`'s own tracking loop. Fixed by calling `MenuSelect(event.where)`
+and discarding its result (Garden's own File/Edit/Go/Connection menus
+still don't do anything mid-transfer - only the Application menu's switch,
+which needs no result to be discarded since it already happened, has any
+real effect). Verified live two ways: clicking a directly-visible window
+of another running app while a download's progress window was up already
+worked; the Application menu itself, before this fix, didn't even open.
+Also fixed the same NULL-drag-constraint bug already found and fixed for
+the main window (see Gotchas) in the progress window's own drag handling -
+a straight copy-paste of the same bug.
+
+**A download's completion message (success or failure alike) is brief and
+non-alarming**, not a modal alert demanding a click - `ShowBriefMessage`
+(app.c) uses a Note-styled alert (this app's own ALRT/DITL never actually
+draws an icon either way, so the real fix is behavioral, not visual) with
+a custom modal filter that auto-dismisses it after ~3 seconds via
+`TickCount()`, while still letting an explicit OK click dismiss it
+immediately. Explicit request, not a style nitpick: now that downloads can
+finish while the user is off in another application, a message styled
+like an error and requiring acknowledgement is a bad fit for something
+that just happened quietly in the background - success or failure alike.
+
+**A stuck connection now fails gracefully instead of hanging indefinitely
+- verified live, not just reasoned about, and this surfaced a real gap
+neither Garden's own code nor MacTCP's documented behavior would have
+predicted.** `TCPActiveOpen`'s own `ulpTimeoutValue`/`ulpTimeoutAction`
+fields (set on every connect attempt) are documented to bound how long a
+connect may take before MacTCP gives up on its own - but tested live
+against a real silently-unreachable address (`192.0.2.1`, a reserved
+TEST-NET-1 address that a network simply drops rather than actively
+rejecting - exactly what a genuinely dead/dropped connection looks like),
+the wait never resolved on its own even after 70+ real seconds. Most
+likely explanation: that field bounds the TCP-level SYN retransmission/
+handshake once a packet is actually on the wire, not an earlier routing/
+address-resolution stall, which this failure mode seems to get stuck in
+instead - a layer below what that field can reach. Rather than trust an
+undocumented corner of MacTCP's behavior (or spend more time root-causing
+a failure mode that might be specific to this test environment's virtual
+networking), `Net_Open` now also enforces its own client-side watchdog
+(`net.c`, `kConnectWatchdogTicks`, ~45s - generous headroom above the
+20s `ulpTimeoutValue` so MacTCP's own timeout normally wins first when it
+does fire) that forces the connection down via the same safe `Net_Abort`
+path already used for Stop/Quit if it's ever exceeded. Verified live: the
+exact same stuck-connect repro that hung for 70+ seconds unassisted now
+fails cleanly and the app is fully responsive again well within the
+watchdog's own bound, with the (now non-alarming, auto-dismissing)
+failure message shown and no further action needed from the user.
 
 ## Structure
 
@@ -258,7 +405,7 @@ src/
   prefs_dlg.c/h            Preferences dialog + prefs file load/save
   catalog.c/h              filter/search over the active catalog,
                             year/CPU/System filter state
-  catalog_data.c            compiled-in fallback catalog (396 entries) -
+  catalog_data.c            compiled-in fallback catalog (2,445 entries) -
                               generated, not hand-written, see
                               tools/generate_catalog_data.py
   catalog_load.c             loads "Garden Catalog" next to the app if
@@ -713,14 +860,6 @@ dist/
   grew 40->52 and the default window height 380->460 to fit it without
   the app needing a CatalogEntry struct field or a binary format bump.
 
-- **Doesn't handle the Quit Apple Event**, so it can't cooperate with a
-  system-wide Special > Shut Down / Restart (found during real emulator
-  testing: Shut Down reported "the application 'Garden' could not quit"
-  until it was quit manually first). Quitting Garden directly (File > Quit
-  or Cmd-Q) always worked correctly. Fixing this means installing a handler
-  for `kAEQuitApplication` via `AEInstallEventHandler` and checking for
-  `kHighLevelEvent` in the main event loop - straightforward, just not done
-  in this pass.
 - **68k only.** This toolchain was deliberately built `--no-ppc` (System 7
   is fundamentally the 68k-Mac era). Adding PPC is a toolchain rebuild +
   re-pointing `CMAKE_TOOLCHAIN_FILE`, not a code change.
@@ -762,18 +901,23 @@ make
 ```
 
 Configures CMake against the m68k Retro68 toolchain, builds, packs
-`tools/catalog_source.json` into a loadable catalog file, then assembles a
-floppy image with both on it. Output lands in `build/`:
+`tools/catalog_source.json` into a standalone loadable catalog file, then
+assembles a floppy image with just the app on it. Output lands in `build/`:
 
-- `Garden.img` - a 1.44 MB HFS floppy image with the app **and** a
-  `Garden Catalog` file already copied on, ready to mount (built via the
-  toolchain's bundled `hfsutils`) - the default build's catalog comes from
-  the loadable-file path, not the compiled-in fallback, on purpose (see
-  "The loadable catalog"), so that path is exercised on every build, not
-  just when a user opts into it later.
+- `Garden.img` - a 1.44 MB HFS floppy image with just the app copied on,
+  ready to mount (built via the toolchain's bundled `hfsutils`). **Not**
+  the `Garden Catalog` file too, as of the catalog's expansion to 2,445
+  entries - the two together (~640KB catalog + a ~750KB app) no longer fit
+  a standard floppy with any real headroom, and don't need to: the app's
+  compiled-in fallback (`catalog_data.c`) already carries the identical
+  full catalog, so day-one behavior on this image is the same either way.
+  Drag `build/Garden Catalog` on separately (a shared folder, a second
+  disk image) if you specifically want to exercise the load-from-file path
+  or test your own customized catalog - see "The loadable catalog".
 - `Garden.bin` - the MacBinary-encoded app by itself.
 - `Garden Catalog` - the loadable catalog file, standalone (plain data
-  fork, no MacBinary needed - see "The loadable catalog" for the format).
+  fork, no MacBinary needed - see "The loadable catalog" for the format) -
+  still built every time, just not bundled onto `Garden.img` anymore.
 - `Garden.APPL` / `Garden.dsk` - Retro68's own raw-resource-fork app and
   800K disk image byproducts.
 
@@ -783,17 +927,20 @@ server for other classic Macs to fetch, in the same MacBinary format
 every real file on the actual Macintosh Garden mirror uses:
 
 - `Garden.bin` - just the app, copied straight from `build/`.
-- `Garden.img.bin` - the **whole floppy** (app + catalog together), first
-  wrapped in a real DiskCopy 4.2 header by `tools/make_diskcopy42.py`
+- `Garden.img.bin` - the **whole floppy** (just the app now, per above),
+  first wrapped in a real DiskCopy 4.2 header by `tools/make_diskcopy42.py`
   (needed for DiskCopy's own "Mount Image" to accept it - a bare raw HFS
-  image isn't enough, see Gotchas), then MacBinary-wrapped by
-  `tools/wrap_macbinary.py` with type/creator `dImg`/`ddsk` so Finder
-  recognizes the expanded result as a real disk image, ready to mount with
-  DiskCopy, rather than a generic unopenable file. This is the one to hand
-  someone who wants everything in a single download - see the Gotchas
-  entry on how it's built and verified, since a disk image needs its own
-  from-scratch MacBinary wrapper (it has no resource fork of its own for
-  Rez's writer to carry).
+  image isn't enough, see Gotchas; also why the floppy can't simply be
+  resized bigger to fit the catalog file too - DC42 only has real,
+  verified encoding/format bytes for the 3 standard floppy sizes,
+  400K/800K/1.44MB, not arbitrary larger "disk" sizes), then
+  MacBinary-wrapped by `tools/wrap_macbinary.py` with type/creator
+  `dImg`/`ddsk` so Finder recognizes the expanded result as a real disk
+  image, ready to mount with DiskCopy, rather than a generic unopenable
+  file. This is the one to hand someone who wants the app in a single
+  download - see the Gotchas entry on how it's built and verified, since a
+  disk image needs its own from-scratch MacBinary wrapper (it has no
+  resource fork of its own for Rez's writer to carry).
 
 `make distclean` removes both `build/` and `dist/`.
 

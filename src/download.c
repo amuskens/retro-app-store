@@ -199,7 +199,19 @@ OSErr Download_Fetch(const char *host, tcp_port port, const char *user, const ch
     err = FTP_Retrieve(&session, remotePath, HandleChunk, &ctx, giveTime, cancel);
     if (err == noErr) err = ctx.writeErr;
 
-    FTP_Disconnect(&session, giveTime, cancel);
+    {
+        /* Any failure here - a timeout, a dropped connection, a real
+           protocol error, or the user canceling (which itself surfaces
+           as a non-noErr err from FTP_Retrieve) - means this connection
+           has already proven itself unreliable. Always hard-abort the
+           disconnect in that case rather than attempting a graceful QUIT
+           that could itself sit waiting on the same unresponsive remote
+           for its own close timeout - "the download failed" shouldn't
+           then also take another 20 seconds to actually let go. Only a
+           fully successful transfer gets the polite goodbye. */
+        Boolean disconnectHard = (Boolean)(err != noErr);
+        FTP_Disconnect(&session, giveTime, &disconnectHard);
+    }
     FSClose(refNum);
 
     if (err != noErr) FSpDelete(&spec); /* don't leave a partial/corrupt file behind */

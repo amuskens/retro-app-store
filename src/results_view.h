@@ -19,6 +19,16 @@ typedef struct {
 void ResultsView_ShowCategory(short categoryIndex);
 void ResultsView_ShowSearch(const char *query);
 
+/* Caps how many rows are drawn/paginated per page - clamped to [1, 10].
+   app.c calls this on every layout pass with however many full
+   kResultRowHeight rows actually fit in the current results area, so a
+   short window (or a small physical screen) shows fewer, complete rows
+   per page rather than a truncated row bleeding into the status bar
+   below. A no-op when rows matches the current page size, so calling it
+   on every ordinary redraw (not just real resizes) is cheap and doesn't
+   reset scroll/selection state for no reason. */
+void ResultsView_SetPageSize(short rows);
+
 /* Re-applies whatever category or search is currently showing, picking up
    a Year/CPU filter change made since - see catalog.h. No-op in live
    mode. */

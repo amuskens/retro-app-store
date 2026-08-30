@@ -7,7 +7,7 @@
 
 typedef enum { kModeCategory, kModeSearch, kModeLive } ResultsMode;
 
-#define kPageSize 10
+#define kMaxPageSize 10
 /* ~0.5s at 60 ticks/sec, same convention used for double-click detection
    elsewhere in this codebase (see mac-system7-c) - GetDblTime() isn't
    available for this target. */
@@ -15,6 +15,14 @@ typedef enum { kModeCategory, kModeSearch, kModeLive } ResultsMode;
 
 static ResultsMode gMode = kModeCategory;
 static short gCategory = 0;
+
+/* How many rows actually get drawn/paginated per page - defaults to the
+   max (10), but app.c narrows this via ResultsView_SetPageSize whenever
+   the results area is too short to fit that many rows cleanly (a small
+   screen, or just a short window), so the list never draws a row that
+   spills past the bottom of its own area into the status bar's Page/Prev/
+   Next controls below it - see LayoutBrowser in app.c. */
+static short gPageSize = kMaxPageSize;
 
 static short gIndices[kMaxFilterResults]; /* catalog.c indices, category/search modes */
 static short gIndexCount = 0;
@@ -271,8 +279,19 @@ void ResultsView_EnterLiveMode(void)
 void ResultsView_Draw(const Rect *bounds)
 {
     short count = ItemCount();
-    short start = (short)(gPage * kPageSize);
+    short start = (short)(gPage * gPageSize);
     short slot;
+    RgnHandle savedClip;
+    Rect clipR = *bounds; /* ClipRect wants a non-const Rect* in this toolchain's headers */
+
+    /* Belt-and-suspenders: gPageSize is already sized (by app.c, via
+       ResultsView_SetPageSize) to never draw more rows than fit within
+       bounds, but clip anyway so a short window can never show a row
+       spilling into the status bar's Page/Prev/Next controls below,
+       regardless of how gPageSize was computed. */
+    savedClip = NewRgn();
+    GetClip(savedClip);
+    ClipRect(&clipR);
 
     EraseRect(bounds);
 
@@ -287,21 +306,23 @@ void ResultsView_Draw(const Rect *bounds)
                 : "No items match your search.",
             &msgR);
         Theme_SetBlack();
-        return;
+    } else {
+        for (slot = 0; slot < gPageSize; slot++) {
+            short idx = (short)(start + slot);
+            if (idx >= count) break;
+            DrawItemRow(bounds, slot, idx, (Boolean)(slot == gSelectedRow));
+        }
     }
 
-    for (slot = 0; slot < kPageSize; slot++) {
-        short idx = (short)(start + slot);
-        if (idx >= count) break;
-        DrawItemRow(bounds, slot, idx, (Boolean)(slot == gSelectedRow));
-    }
+    SetClip(savedClip);
+    DisposeRgn(savedClip);
 }
 
 Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when,
                            DownloadRequest *outReq, ResultsActivation *outActivation)
 {
     short count = ItemCount();
-    short start = (short)(gPage * kPageSize);
+    short start = (short)(gPage * gPageSize);
     short slot;
     Rect row, getBtn;
 
@@ -309,7 +330,7 @@ Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when,
     if (pt.v < bounds->top || pt.v >= bounds->bottom) return false;
 
     slot = (short)((pt.v - bounds->top) / kResultRowHeight);
-    if (slot < 0 || slot >= kPageSize) return false;
+    if (slot < 0 || slot >= gPageSize) return false;
 
     {
         short absIdx = (short)(start + slot);
@@ -350,7 +371,7 @@ Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when,
         if (slot != gSelectedRow) {
             short old = gSelectedRow;
             gSelectedRow = slot;
-            if (old >= 0 && old < kPageSize) {
+            if (old >= 0 && old < gPageSize) {
                 short oldAbs = (short)(start + old);
                 if (oldAbs < count) DrawItemRow(bounds, old, oldAbs, false);
             }
@@ -365,7 +386,7 @@ Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when,
 
 Boolean ResultsView_GetSelected(DownloadRequest *outReq)
 {
-    short start = (short)(gPage * kPageSize);
+    short start = (short)(gPage * gPageSize);
     short absIdx;
     const char *title, *desc, *remotePath;
     unsigned long size;
@@ -387,8 +408,23 @@ Boolean ResultsView_GetSelected(DownloadRequest *outReq)
 short ResultsView_PageCount(void)
 {
     short count = ItemCount();
-    short pages = (short)((count + kPageSize - 1) / kPageSize);
+    short pages = (short)((count + gPageSize - 1) / gPageSize);
     return (pages < 1) ? 1 : pages;
+}
+
+void ResultsView_SetPageSize(short rows)
+{
+    short pageCount;
+
+    if (rows > kMaxPageSize) rows = kMaxPageSize;
+    if (rows < 1) rows = 1;
+    if (rows == gPageSize) return; /* no-op guard - app.c calls this on every layout pass, not just real resizes */
+    gPageSize = rows;
+
+    pageCount = ResultsView_PageCount();
+    if (gPage >= pageCount) gPage = (short)(pageCount - 1);
+    if (gPage < 0) gPage = 0;
+    gSelectedRow = -1;
 }
 
 short ResultsView_CurrentPage(void)

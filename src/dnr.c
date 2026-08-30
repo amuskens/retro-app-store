@@ -269,11 +269,26 @@ OSErr DNR_Resolve(const char *hostName, ip_addr *outAddr, GiveTimeProc giveTime,
                here unconditionally on noErr too would hang forever, since
                an immediate noErr means it was answered synchronously
                (e.g. a cache hit) and the callback may never fire at all -
-               matching the reference exactly on this point. */
+               matching the reference exactly on this point.
+
+               Real bug fixed here, found while auditing for the same
+               stack-safety hazard net.c's Net_Abort/Net_Close already had
+               to be written around: this used to return userCanceledErr
+               immediately on cancel, abandoning the wait - but `state` is
+               a stack-local ResolveState, and the DNR code resource's
+               callback (ResolveCallback) still fires later, writing into
+               it, regardless of what the caller does. Bailing out early
+               let it write into a stack slot that no longer belonged to
+               this call by the time it fired. Now this always waits for
+               the real completion (giveTime-only, cancel-blind, same
+               pattern as DoAbortCall) and only reports the cancellation
+               to the caller afterward - safe either way. */
+            Boolean wasCanceled = false;
             while (!state.done) {
-                if (cancel != NULL && *cancel) return userCanceledErr;
+                if (cancel != NULL && *cancel) wasCanceled = true;
                 if (giveTime != NULL) giveTime();
             }
+            if (wasCanceled) return userCanceledErr;
         } else if (err != noErr) {
             return err; /* a real, immediate failure */
         }

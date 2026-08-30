@@ -3,9 +3,11 @@
 #include <stdlib.h>
 #include <Dialogs.h>
 #include <Files.h>
+#include <AppleEvents.h>
 
 #include "prefs_dlg.h"
 #include "native.h"
+#include "app.h"
 
 /* Not defined in this toolchain's Multiverse.h (FindFolder here just takes
    the raw vRefNum/Boolean) - same real, stable values used in dnr.c. */
@@ -134,6 +136,20 @@ OSErr Prefs_Save(const GardenPrefs *prefs)
     return err;
 }
 
+/* Without this, a Quit AppleEvent (Shut Down/Restart/Finder Quit)
+   arriving while Preferences is open would be silently dropped - a plain
+   ModalDialog(NULL, ...) never dispatches AppleEvents at all, the same
+   gap RunApp's own loop and progress_dlg.c's both had (see app.c). */
+static pascal Boolean PrefsModalFilter(DialogPtr dlg, EventRecord *evt, short *itemHit)
+{
+    (void)dlg; (void)itemHit;
+    if (evt->what == kHighLevelEvent) {
+        AEProcessAppleEvent(evt);
+        return true;
+    }
+    return false;
+}
+
 Boolean PrefsDlg_Run(GardenPrefs *prefs)
 {
     DialogPtr dlg;
@@ -144,6 +160,7 @@ Boolean PrefsDlg_Run(GardenPrefs *prefs)
     Str255 s;
     GardenPrefs work = *prefs;
     char portStr[16];
+    ModalFilterUPP filterUPP = NewModalFilterUPP(PrefsModalFilter);
 
     dlg = GetNewDialog(kPrefsDialogID, NULL, (WindowPtr)-1L);
     if (dlg == NULL) return false;
@@ -168,8 +185,9 @@ Boolean PrefsDlg_Run(GardenPrefs *prefs)
     SelectDialogItemText(dlg, iPrefsHostField, 0, 32767);
 
     for (;;) {
-        ModalDialog(NULL, &itemHit);
+        ModalDialog(filterUPP, &itemHit);
         if (itemHit == iPrefsOK || itemHit == iPrefsCancel) break;
+        if (App_IsQuitting()) { itemHit = iPrefsCancel; break; } /* quitting mid-dialog - discard edits, don't hang here waiting for OK/Cancel that's never coming */
     }
 
     if (itemHit == iPrefsOK) {

@@ -61,7 +61,7 @@ ARCH_CODES = {"68k": 0, "ppc": 1, "fat": 2}
 TITLE_SIZE = 48
 DESC_SIZE = 110
 PATH_SIZE = 100
-MAX_ENTRIES = 600  # kMaxCatalogEntries in catalog.h
+MAX_ENTRIES = 2500  # kMaxCatalogEntries in catalog.h
 
 MAGIC = b"GCAT"
 VERSION = 2  # bumped from 1 when minSystem was added - see catalog_load.c

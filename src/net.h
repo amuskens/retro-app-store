@@ -43,8 +43,24 @@ OSErr Net_Receive(NetConnection *conn, void *buf, unsigned short bufLen, unsigne
 /* Graceful TCPClose (waits for the remote FIN) then TCPRelease. Releases
    conn's buffer either way, even if the graceful close times out - a
    close that failed to be graceful still needs its stream released, or
-   the buffer leaks until the driver itself is torn down. */
-OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime, Boolean *cancel);
+   the buffer leaks until the driver itself is torn down.
+
+   No cancel parameter, deliberately - same reasoning as Net_Abort below:
+   conn is frequently a caller's local stack variable (e.g. each download's
+   own per-transfer session), and bailing out early on a cancel flag while
+   TCPClose/TCPRelease are still pending would let MacTCP write into that
+   stack slot after the caller has already returned. This used to take a
+   cancel flag and check it via the same polling helper Net_Open/Net_Send/
+   Net_Receive use - real bug, found by working backwards from a "Shut
+   Down hangs" report: canceling a download left its control connection's
+   TCPClose/TCPRelease abandoned mid-flight, so the stream never actually
+   finished tearing down in MacTCP's own table, and the OS's own shutdown
+   sequence hung later waiting on it. Callers that already know the user
+   canceled should call Net_Abort instead (see FTP_Disconnect) - not just
+   for this safety reason but because a graceful close can itself take up
+   to the connection's own close timeout if the remote doesn't respond,
+   which "the user already asked to stop" shouldn't have to wait through. */
+OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime);
 
 /* Forceful TCPAbort + TCPRelease, for error/cancel cleanup paths, where
    the point is to tear the stream down without waiting on a graceful FIN

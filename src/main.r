@@ -13,7 +13,20 @@ resource 'SIZE' (-1) {
     dontGetFrontClicks,
     ignoreChildDiedEvents,
     is32BitCompatible,
-    notHighLevelEventAware,
+    isHighLevelEventAware, /* was notHighLevelEventAware (Retro68's own
+                               template default - this app started with
+                               zero Apple Event handling, so it was
+                               honest at the time). Now that app.c installs
+                               real handlers for the 4 required Core Suite
+                               events (including kAEQuitApplication), this
+                               has to flip too, or the OS has no reason to
+                               believe this app can answer a Quit
+                               AppleEvent in the first place and may not
+                               even bother sending Shut Down/Restart's one -
+                               the actual root cause behind Shut Down not
+                               completing while this app is still running,
+                               not just a missing handler on this app's own
+                               side. */
     onlyLocalHLEvents,
     notStationeryAware,
     dontUseTextEditServices,

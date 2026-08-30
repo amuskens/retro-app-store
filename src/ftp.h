@@ -43,4 +43,13 @@ OSErr FTP_Retrieve(FtpSession *session, const char *remotePath,
                     FtpChunkProc onChunk, void *userData,
                     GiveTimeProc giveTime, Boolean *cancel);
 
+/* Releases the DNR resolver code resource (dnr.c's DNR_Open lazily loads
+   it on first hostname lookup and never released it - a real, if minor,
+   gap: unlike the MacTCP driver itself, which the OS's own Device
+   Manager closes as part of a real Shut Down regardless of what any app
+   did, the resolver's loaded code resource and its internal state are
+   purely this app's own responsibility to release, nothing else knows to
+   do it. Call once, right before the app actually quits - see RunApp). */
+void FTP_Shutdown(void);
+
 #endif

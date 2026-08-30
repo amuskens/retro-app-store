@@ -62,7 +62,7 @@ extern const short kCategoryCount;
    actually came from - both end up in the same shape here. */
 extern CatalogEntry gCatalogEntries[];
 extern short gCatalogEntryCount;
-#define kMaxCatalogEntries 600
+#define kMaxCatalogEntries 2500 /* bumped from 600 for the real catalog expansion (2445 real, deduped, verified entries survived - see README) - tools/build_catalog.py's MAX_ENTRIES has to agree */
 
 /* The compiled-in fallback data, always present regardless of whether a
    loadable catalog file was found - see catalog_data.c. */
@@ -93,7 +93,7 @@ CatalogLoadResult Catalog_Load(void);
 #define kAllCategoryIndex ((short)-1)
 #define kLiveBrowseRowIndex kCategoryCount
 
-#define kMaxFilterResults 256
+#define kMaxFilterResults kMaxCatalogEntries /* the "All" category/a broad search can match every entry in a ~1500-item catalog - this has to be able to hold all of them, not truncate silently */
 
 typedef enum {
     kYearFilterAny = 0,

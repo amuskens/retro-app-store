@@ -19,18 +19,21 @@ all: configure
 	@# a permanently-missing bit.
 	python3 tools/set_bundle_bit.py $(BUILD_DIR)/$(APP_NAME).bin
 	@# The loadable catalog (see catalog_load.c) - built from the same
-	@# JSON source a user would edit to update their own catalog. Shipping
-	@# it on the floppy by default means the load-from-file path is what
-	@# actually runs day one, not just an opt-in a user has to set up
-	@# themselves - the compiled-in catalog_data.c stays as the fallback
-	@# for whenever this file is missing or fails validation.
+	@# JSON source a user would edit to update their own catalog. Still
+	@# built every time (useful on its own - drag it in via a shared
+	@# folder to test the load-from-file path, or ship a customized one
+	@# separately) but NOT copied onto the floppy image below anymore:
+	@# the catalog expansion to 2445 real entries (~640KB) plus the app
+	@# itself no longer both fit on a standard 1.44MB floppy with any
+	@# real headroom (was down to ~20KB free) - and it doesn't need to,
+	@# since catalog_data.c (the compiled-in fallback, always present
+	@# regardless of this file) already carries the same full catalog.
 	python3 tools/build_catalog.py --input tools/catalog_source.json --output "$(CATALOG_FILE)"
 	rm -f $(IMG)
 	dd if=/dev/zero of=$(IMG) bs=1024 count=$(IMG_BLOCKS) status=none
 	$(RETRO68)/bin/hformat -l "$(APP_NAME)" $(IMG)
 	$(RETRO68)/bin/hmount $(IMG)
 	$(RETRO68)/bin/hcopy -m $(BUILD_DIR)/$(APP_NAME).bin :$(APP_NAME)
-	$(RETRO68)/bin/hcopy "$(CATALOG_FILE)" ":$(CATALOG_NAME)"
 	$(RETRO68)/bin/humount
 	@# A plain MacBinary copy of the app, in its own folder outside build/
 	@# (which `make clean` wipes) - this is the artifact to upload to an

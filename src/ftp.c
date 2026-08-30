@@ -137,8 +137,19 @@ OSErr FTP_Connect(FtpSession *s, const char *hostName, tcp_port port,
 void FTP_Disconnect(FtpSession *s, GiveTimeProc giveTime, Boolean *cancel)
 {
     if (!s->connected) return;
-    SendCommand(s, "QUIT", giveTime, cancel); /* best-effort - closing regardless */
-    Net_Close(&s->control, giveTime, cancel);
+
+    if (cancel != NULL && *cancel) {
+        /* The user already asked to stop - a graceful QUIT+TCPClose can
+           still take up to the control connection's own close timeout if
+           the remote doesn't answer, which "Stop" shouldn't have to wait
+           through. Net_Abort is both faster and (unlike a plain
+           SendCommand/Net_Close here would be) already safe to call with
+           a stack-allocated connection regardless of cancel - see net.h. */
+        Net_Abort(&s->control, giveTime);
+    } else {
+        SendCommand(s, "QUIT", giveTime, cancel); /* best-effort - closing regardless */
+        Net_Close(&s->control, giveTime);
+    }
     s->connected = false;
 }
 
@@ -192,7 +203,7 @@ short FTP_ListNames(FtpSession *s, const char *remotePath, char outNames[][64], 
         count++;
     }
 
-    Net_Close(&data, giveTime, cancel);
+    Net_Close(&data, giveTime);
     ReadReply(s, &code, NULL, 0, giveTime, cancel); /* 226 transfer complete */
 
     return count;
@@ -226,8 +237,13 @@ OSErr FTP_Retrieve(FtpSession *s, const char *remotePath, FtpChunkProc onChunk, 
         if (got > 0 && onChunk != NULL) onChunk(userData, buf, got);
     }
 
-    Net_Close(&data, giveTime, cancel);
+    Net_Close(&data, giveTime);
     ReadReply(s, &code, NULL, 0, giveTime, cancel); /* 226 transfer complete - best-effort */
 
     return noErr;
+}
+
+void FTP_Shutdown(void)
+{
+    DNR_Close();
 }

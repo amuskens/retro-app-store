@@ -18,4 +18,13 @@ void RunApp(void);
 Boolean App_InBackground(void);
 void App_HandleOSEvent(const EventRecord *event);
 
+/* True once something (the Quit menu item, the window's close box, or a
+   Quit AppleEvent - Shut Down/Restart/an explicit Finder Quit) has asked
+   Garden to exit. RunApp's own loop already exits on this by itself, but
+   a modal loop running outside it (Preferences' ModalDialog) has its own
+   exit condition and needs to check this explicitly after dispatching a
+   kHighLevelEvent, or setting gDone alone wouldn't unstick it - see
+   prefs_dlg.c. */
+Boolean App_IsQuitting(void);
+
 #endif
