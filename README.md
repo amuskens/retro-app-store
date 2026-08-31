@@ -1146,23 +1146,27 @@ Confirmed working end-to-end:
     Preferences help text ever since they were written - visible in the
     screenshots all along, never noticed.
 
-**Open issue, not yet root-caused: downloads intermittently land as
-0-byte files while the app reports success.** Found by checking the
-downloads folder on disk rather than trusting the completion alert - 6 of
-22 files from a test run were 0 bytes, including files the server serves
-correctly (verified independently with `curl`). It is intermittent rather
-than file-specific: the same entry downloaded correctly on one attempt
-and came back empty on the next, and one "successful" 854K download
-finished implausibly fast (under 2.5s) while another attempt sat in
-"Connecting..." for 10+ seconds. Two hypotheses were tested and both
-failed to explain it - an emulator HFS-cache flush artifact (reproduced
-after a confirmed-graceful guest shutdown, so no) and a missing
-transfer-length check (added, and it did not fire). `Download_Fetch` now
-at least rejects a zero-length transfer rather than reporting it as
-saved, so the failure is visible instead of silent, but the underlying
-cause is still open. Anyone picking this up should start by logging the
-actual FTP reply codes and `bytesSoFar` for a failing transfer - the
-progress dialog's own display is not enough to tell where it goes wrong.
+**Resolved: the intermittent 0-byte downloads were a durability bug, not
+a transfer bug.** Root-caused by controlled experiment after two earlier
+hypotheses failed. A byte-count probe showed the app receiving exactly
+the server's announced size (874,186 of 874,186 bytes, every FSWrite
+returning noErr) - and the file STILL landed as 0 bytes if the emulator
+was killed afterwards. The cause: `FSClose` only updates a file's
+catalog entry (where its length lives) in the File Manager's in-memory
+volume cache; the on-disk catalog is flushed lazily. `Download_Fetch`
+never called `FlushVol`, so a crash, power-off, or forced emulator kill
+after a perfectly successful download threw away the only copy of the
+file's length. Every "0-byte file" in earlier test rounds correlates
+with this - those sessions were repeatedly punctuated by forced emulator
+exits (the automation's `quit` timing out and force-killing, plus a few
+tool-timeout kills), which is also why it looked intermittent and
+file-independent. Proven both ways on the same build and the same kill:
+without `FlushVol` -> 0 bytes; with `FlushVol` -> intact file,
+byte-identical (`cmp`) to an independent `curl` fetch of the same URL.
+The fix is the classic Mac OS pattern for anything a user would hate to
+lose: write, close, `FlushVol`. The zero-length transfer guard from the
+previous round stays too - it covers genuinely empty transfers, which
+this was never about.
 
 Not yet exercised in the emulator: `Catalog_Load`'s reject-a-corrupt-file
 alert path (see Known Limitations), and a full 200+-item live directory's

@@ -277,5 +277,26 @@ OSErr Download_Fetch(const char *host, tcp_port port, const char *user, const ch
 
     if (err != noErr) FSpDelete(&spec); /* don't leave a partial/corrupt file behind */
 
+    /* Make the finished download durable before telling anyone it was
+       saved. Root cause of the intermittent zero-length downloads,
+       finally pinned down by a controlled experiment rather than
+       hypothesis: FSClose only updates the file's catalog entry (which
+       is where its length lives) in the File Manager's in-memory volume
+       cache - the on-disk catalog is written lazily, whenever the OS
+       next flushes. So a download could complete perfectly (confirmed:
+       byte count on the wire exactly matched the server's SIZE, every
+       FSWrite returned noErr, the success alert was truthful), and a
+       crash, power loss or forced emulator kill afterwards would still
+       leave a 0-length file on disk, because the only copy of its
+       length died with the cache. Reproduced on demand: download,
+       verify all bytes arrived, kill the emulator -> 0 bytes; with this
+       FlushVol, same sequence -> intact file. This is the classic,
+       documented Mac OS pattern for anything a user would be upset to
+       lose: write, close, FlushVol. The result is deliberately ignored
+       - the file itself is fine regardless; a failed flush just means
+       durability waits for the OS's own next flush, and there is no
+       better recovery available here than that anyway. */
+    if (err == noErr) FlushVol(NULL, vRefNum);
+
     return err;
 }
