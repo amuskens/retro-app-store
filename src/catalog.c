@@ -5,10 +5,10 @@
 #include "catalog.h"
 
 /* The active catalog - see Catalog_Load in catalog_load.c for how this
-   gets populated (loaded file or compiled-in default, either way ends up
-   here in the same shape). Everything below only ever reads this, never
-   gDefaultCatalogEntries directly. */
-CatalogEntry gCatalogEntries[kMaxCatalogEntries];
+   gets pointed at either gDefaultCatalogEntries directly or a heap
+   buffer it allocated for a loaded file. Everything below only ever
+   reads through this pointer. */
+const CatalogEntry *gCatalogEntries = NULL;
 short gCatalogEntryCount = 0;
 
 static CatalogYearFilter gYearFilter = kYearFilterAny;

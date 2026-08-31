@@ -33,22 +33,92 @@ resource 'SIZE' (-1) {
     reserved,
     reserved,
     reserved,
-    2500 * 1024, /* preferred - NOTE: this was previously bumped to 5000K
-                     after real IIcx hardware hit mFulErr (-41, "not enough
-                     room in the heap zone") on every download while
-                     connected via Open Transport (OT's MacTCP-compat layer
-                     has a real, well-known heavier memory footprint than
-                     native MacTCP). Lowered to 2500K on request - some
-                     headroom above the plain 2048K default, but well below
-                     the confirmed-working 5000K; if downloads over OT
-                     start failing with -41 again on real hardware, this is
-                     the first thing to re-check. */
-    1536 * 1024       /* minimum - the catalog's fixed-capacity entry array
-                          (kMaxCatalogEntries in catalog.h) accounts for a
-                          real chunk of this; also bumped up from 768K for
-                          some OT headroom on memory-constrained real
-                          hardware, though the confirmed fix was specifically
-                          the preferred size above, not this floor */
+    5750 * 1024, /* preferred - revised DOWN this round after the 6500K
+                     value above (set for the catalog's 2,445-entry
+                     expansion) was found, by live testing, to cause a
+                     worse regression than the problem it was meant to
+                     solve. Root cause traced (not just patched around):
+                     gCatalogEntries used to be a real, always-allocated
+                     `CatalogEntry[kMaxCatalogEntries]` static array
+                     (675,000 bytes, kMaxCatalogEntries=2500 *
+                     sizeof(CatalogEntry)=270, measured with the real m68k
+                     cross-compiler) that Catalog_Load() populated by
+                     *copying* the compiled-in gDefaultCatalogEntries
+                     (2,445 entries * 270 = 660,150 bytes) into - both
+                     existing simultaneously for what, in the common case
+                     (no custom "Garden Catalog" file), is the exact same
+                     data twice. Fixed properly this round: gCatalogEntries
+                     is now `const CatalogEntry *`, pointing directly at
+                     gDefaultCatalogEntries with no copy in the common
+                     case, and at a heap buffer sized to the actual loaded
+                     file's entry count (not kMaxCatalogEntries) only when
+                     a real file is loaded - see catalog.h/catalog.c/
+                     catalog_load.c.
+
+                     Two values were live-tested this round on the
+                     project's standard 8MB-RAM config, both by real
+                     measurement rather than by extrapolating an old
+                     hardware note or by arithmetic alone:
+
+                     5750K (5000K, an old note from a real IIcx's -41 Open
+                     Transport fix, plus one ~645K catalog copy) DID launch
+                     successfully (Process Manager granted it ~4,432K, per
+                     "About This Macintosh" - see below for why not the
+                     full 5750K), but Connect cleanly and reproducibly
+                     still failed with -23 (confirmed via the app's own
+                     "Live FTP Browse" row, which attempts a connection the
+                     moment it's selected - a more reliable repro than
+                     driving the Connection menu). "About This Macintosh"
+                     showed System Software (Open Transport plus this test
+                     system's extensions) alone using 3,639K, leaving only
+                     ~4,433K for applications - and since classic Mac OS
+                     grants a launching app *all* remaining free memory
+                     when its preferred size can't be met (not just its
+                     stated minimum), Garden claimed basically that entire
+                     remainder, driving "Largest Unused Block" to zero -
+                     real system-wide memory Open Transport itself needs
+                     room to grow into for a live connection (its own
+                     dynamic per-endpoint state), separate from Garden's
+                     own partition. Confirmed this is a genuine memory-
+                     total problem, not a Garden bug: the exact same build
+                     (5750K/2250K unchanged) connects immediately and
+                     downloaded 20 different real catalog items back to
+                     back with zero crashes/hangs at 16MB total RAM - a
+                     realistic figure for an Open Transport-era System 7.5
+                     Mac (8MB was more of a System 7.0/7.1-era MacTCP
+                     baseline before OT's own larger footprint). See the
+                     README for the resulting minimum-RAM note.
+
+                     3200K (2500K/1536K, the last values confirmed to work
+                     before this catalog round, plus the ~618K net catalog
+                     growth since - see the minimum value's comment) was
+                     tried next and made things *worse*: Garden's own
+                     startup hung completely (desktop responsive, guest
+                     clock still advancing, but Garden's window never
+                     appeared, for minutes) rather than failing gracefully
+                     - meaning this app's own real runtime footprint
+                     (code+globals+heap for window/control/TE setup,
+                     catalog filtering, etc.) needs more than 3200K to
+                     even finish launching, beyond what the old-baseline-
+                     plus-catalog-growth arithmetic accounted for (other
+                     feature work landed this session besides the catalog
+                     - AppleEvent handling, the sidebar/DNR fixes, etc. -
+                     which also cost some code+data footprint the old
+                     baseline never included). That arithmetic approach is
+                     evidently not reliable on its own here.
+
+                     Given a hang is a worse failure mode than a slow but
+                     graceful launch, this reverts to 5750K - the larger
+                     of the two live-tested values, confirmed to at least
+                     launch correctly - as the safe known-good number
+                     rather than continuing to guess smaller ones without
+                     a tighter test loop (e.g. bisecting) to pin down the
+                     real minimum. Revisit with that tighter loop before
+                     trying to shrink this further. */
+    2250 * 1024       /* minimum - same reasoning as preferred above: the
+                          old 1536K baseline (last confirmed to work before
+                          this catalog round) plus the same ~618K net
+                          catalog growth = ~2154K, rounded up to 2250K. */
 };
 
 resource 'MBAR' (128) {

@@ -163,23 +163,39 @@ static pascal OSErr HandlePrintDocsAE(const AppleEvent *evt, AppleEvent *reply, 
    the menu, so this needs the identical disconnect-before-exit behavior,
    not a bare gDone = true.
 
-   Unlike the menu item, this can also fire while a download is active -
-   the menu can't be reached mid-transfer (progress_dlg.c's own event
-   loop owns input then, and never dispatches MenuSelect), but this
-   AppleEvent can arrive there too now that progress_dlg.c also calls
-   AEProcessAppleEvent. Setting gDone here wouldn't unwind anything by
-   itself in that case (we'd be many stack frames deep inside
-   Download_Fetch), so this also sets the progress dialog's cancel flag -
-   always safe even when nothing is downloading right now, since
-   ProgressDlg_Show resets it on every new transfer - which drives the
-   same, already-safe cancel path Download_Fetch's Stop button uses (see
-   FTP_Disconnect/Net_Abort) to unwind promptly instead of finishing the
-   transfer before ever noticing gDone below. */
+   Unlike the menu item, this can also fire while a download OR a live
+   listing fetch is active - neither is reachable via the menu mid-
+   transfer (progress_dlg.c's own event loop owns input then, and never
+   dispatches MenuSelect), but this AppleEvent can arrive there too now
+   that progress_dlg.c also calls AEProcessAppleEvent, and DoRefreshListing
+   drives FTP_ListNames with that exact same giveTime. Setting gDone here
+   wouldn't unwind anything by itself in that case (we'd be many stack
+   frames deep inside Download_Fetch or FTP_ListNames), so this also sets
+   the progress dialog's cancel flag - always safe even when nothing is
+   in flight right now, since ProgressDlg_Show resets it on every new
+   transfer - which drives the same, already-safe cancel path
+   Download_Fetch's Stop button uses (see FTP_Disconnect/Net_Abort) to
+   unwind promptly instead of running to completion before ever noticing
+   gDone below.
+
+   Deliberately does NOT call DoDisconnect() here, unlike the Quit menu
+   item/close box - real bug, found by code review, not guessed: this can
+   run reentrantly, synchronously, from inside ProgressDlg_GiveTime, which
+   is itself being called from deep inside a pending Net_Send/Net_Receive
+   DoControlCall on gBrowseSession.control (e.g. FTP_ListNames mid-listing,
+   via SendCommand/ReadReply). Calling DoDisconnect() -> FTP_Disconnect
+   here would reuse that exact same still-in-flight NetConnection's pb for
+   a new TCPClose/QUIT call while MacTCP may still complete the ORIGINAL
+   pending one into that same memory later - the parameter-block-reentrancy
+   hazard, not the already-fixed stack-lifetime one. Setting the cancel
+   flag is enough to make that outer call unwind on its own (via its
+   existing, already-safe cancel/Net_Abort handling) by the time RunApp's
+   own loop notices gDone and exits - DoDisconnect() runs there instead,
+   once nothing else can possibly still be using gBrowseSession. */
 static pascal OSErr HandleQuitAE(const AppleEvent *evt, AppleEvent *reply, int32_t refcon)
 {
     (void)evt; (void)reply; (void)refcon;
     *ProgressDlg_CancelFlag() = true;
-    if (gConnected) DoDisconnect();
     gDone = true;
     return noErr;
 }
@@ -1018,5 +1034,15 @@ void RunApp(void)
         }
     }
 
+    /* Safe to do the real disconnect here unconditionally, even for a
+       Quit AppleEvent that fired reentrantly from inside an in-flight
+       FTP call on gBrowseSession (see HandleQuitAE) - by the time this
+       line runs, every such call has necessarily already returned all
+       the way back up to this frame, so nothing else can still be using
+       gBrowseSession. The Quit menu item and the window's close box
+       already call DoDisconnect() themselves before setting gDone (see
+       HandleFileMenu/inGoAway) - this is a no-op for them (gConnected
+       already false), it's specifically for the AppleEvent path. */
+    if (gConnected) DoDisconnect();
     FTP_Shutdown();
 }

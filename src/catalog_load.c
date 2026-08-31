@@ -1,5 +1,6 @@
 #include <string.h>
 #include <Files.h>
+#include <Memory.h>
 
 #include "catalog.h"
 #include "native.h"
@@ -36,14 +37,28 @@
 #define kHeaderDiskSize 8
 #define kEntryDiskSize (2 + 2 + 1 + 2 + kCatTitleLen + kCatDescLen + kCatPathLen + 4)
 
-static void CopyDefaults(void)
+/* The heap buffer behind gCatalogEntries when it's pointing at a loaded
+   file's data (NULL when using the compiled-in default directly - see
+   UseDefaults). Tracked here, not just left for the caller to manage,
+   so a load can safely replace an earlier one (freeing it first) -
+   Catalog_Load only actually runs once per launch today, but nothing
+   about this module should silently leak if that ever changes. */
+static CatalogEntry *gLoadedBuffer = NULL;
+
+/* Points gCatalogEntries directly at the compiled-in default array - no
+   copy, no allocation. This is the common case now (the floppy image no
+   longer bundles a separate "Garden Catalog" file - see the README), and
+   avoiding a copy here is exactly what keeps this app's static memory
+   footprint from including the same ~1.3MB of catalog data twice (real
+   bug, found live - see catalog.h's comment on gCatalogEntries). */
+static void UseDefaults(void)
 {
-    short i, n;
-    n = kDefaultCatalogEntryCount;
-    if (n > kMaxCatalogEntries) n = kMaxCatalogEntries;
-    for (i = 0; i < n; i++)
-        gCatalogEntries[i] = gDefaultCatalogEntries[i];
-    gCatalogEntryCount = n;
+    if (gLoadedBuffer != NULL) {
+        DisposePtr((Ptr)gLoadedBuffer);
+        gLoadedBuffer = NULL;
+    }
+    gCatalogEntries = gDefaultCatalogEntries;
+    gCatalogEntryCount = kDefaultCatalogEntryCount;
 }
 
 static unsigned short ReadU16(const unsigned char *buf)
@@ -82,20 +97,21 @@ CatalogLoadResult Catalog_Load(void)
     long got;
     short entryCount, i;
     unsigned char entryBuf[kEntryDiskSize];
+    CatalogEntry *buffer;
 
     if (Native_GetAppFolder(&vRefNum, &dirID) != noErr) {
-        CopyDefaults();
+        UseDefaults();
         return kCatalogLoadedDefault;
     }
 
     CToPascal(kCatalogFileName, pname);
     if (FSMakeFSSpec(vRefNum, dirID, pname, &spec) != noErr) {
-        CopyDefaults(); /* fnfErr - no catalog file - the ordinary case */
+        UseDefaults(); /* fnfErr - no catalog file - the ordinary case */
         return kCatalogLoadedDefault;
     }
 
     if (FSpOpenDF(&spec, fsRdPerm, &refNum) != noErr) {
-        CopyDefaults();
+        UseDefaults();
         return kCatalogLoadRejected; /* the FSSpec resolved, so something's odd - worth a note */
     }
 
@@ -104,14 +120,25 @@ CatalogLoadResult Catalog_Load(void)
     if (err != noErr || got != kHeaderDiskSize ||
         ReadU32(header) != kCatalogMagic || ReadU16(header + 4) != kCatalogVersion) {
         FSClose(refNum);
-        CopyDefaults();
+        UseDefaults();
         return kCatalogLoadRejected;
     }
 
     entryCount = (short)ReadU16(header + 6);
     if (entryCount <= 0 || entryCount > kMaxCatalogEntries) {
         FSClose(refNum);
-        CopyDefaults();
+        UseDefaults();
+        return kCatalogLoadRejected;
+    }
+
+    /* Sized to this file's own real entry count, not kMaxCatalogEntries -
+       that constant is now just a sanity ceiling (bounds how big a
+       claimed entry count is allowed to make this allocation), not a
+       fixed static array size - see catalog.h. */
+    buffer = (CatalogEntry *)NewPtr((Size)sizeof(CatalogEntry) * (Size)entryCount);
+    if (buffer == NULL) {
+        FSClose(refNum);
+        UseDefaults();
         return kCatalogLoadRejected;
     }
 
@@ -123,11 +150,12 @@ CatalogLoadResult Catalog_Load(void)
         err = FSRead(refNum, &got, entryBuf);
         if (err != noErr || got != kEntryDiskSize) {
             FSClose(refNum);
-            CopyDefaults();
+            DisposePtr((Ptr)buffer);
+            UseDefaults();
             return kCatalogLoadRejected;
         }
 
-        e = &gCatalogEntries[i];
+        e = &buffer[i];
         off = 0;
         e->category  = (short)ReadU16(entryBuf + off); off = (short)(off + 2);
         e->year      = (short)ReadU16(entryBuf + off); off = (short)(off + 2);
@@ -147,6 +175,10 @@ CatalogLoadResult Catalog_Load(void)
     }
 
     FSClose(refNum);
+
+    if (gLoadedBuffer != NULL) DisposePtr((Ptr)gLoadedBuffer);
+    gLoadedBuffer = buffer;
+    gCatalogEntries = buffer;
     gCatalogEntryCount = entryCount;
     return kCatalogLoadedFromFile;
 }

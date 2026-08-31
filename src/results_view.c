@@ -217,6 +217,7 @@ void ResultsView_ShowCategory(short categoryIndex)
     gIndexCount = Catalog_FilterByCategory(categoryIndex, gIndices, kMaxFilterResults);
     gPage = 0;
     gSelectedRow = -1;
+    gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
 }
 
 void ResultsView_ShowSearch(const char *query)
@@ -227,6 +228,7 @@ void ResultsView_ShowSearch(const char *query)
     gIndexCount = Catalog_Search(query, gCategory, gIndices, kMaxFilterResults);
     gPage = 0;
     gSelectedRow = -1;
+    gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
 }
 
 /* Re-runs whichever of category/search is currently active against the
@@ -246,6 +248,7 @@ void ResultsView_RefreshFilter(void)
     }
     gPage = 0;
     gSelectedRow = -1;
+    gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
 }
 
 void ResultsView_ShowLiveListing(char names[][64], const unsigned long sizes[],
@@ -262,6 +265,7 @@ void ResultsView_ShowLiveListing(char names[][64], const unsigned long sizes[],
     gMode = kModeLive;
     gPage = 0;
     gSelectedRow = -1;
+    gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
 }
 
 Boolean ResultsView_IsLiveMode(void)
@@ -274,6 +278,7 @@ void ResultsView_EnterLiveMode(void)
     gMode = kModeLive;
     gPage = 0;
     gSelectedRow = -1;
+    gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
 }
 
 void ResultsView_Draw(const Rect *bounds)
@@ -425,6 +430,7 @@ void ResultsView_SetPageSize(short rows)
     if (gPage >= pageCount) gPage = (short)(pageCount - 1);
     if (gPage < 0) gPage = 0;
     gSelectedRow = -1;
+    gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
 }
 
 short ResultsView_CurrentPage(void)
@@ -437,6 +443,7 @@ void ResultsView_NextPage(const Rect *bounds)
     if (gPage + 1 < ResultsView_PageCount()) {
         gPage++;
         gSelectedRow = -1;
+        gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
         ResultsView_Draw(bounds);
     }
 }
@@ -446,6 +453,7 @@ void ResultsView_PrevPage(const Rect *bounds)
     if (gPage > 0) {
         gPage--;
         gSelectedRow = -1;
+        gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
         ResultsView_Draw(bounds);
     }
 }

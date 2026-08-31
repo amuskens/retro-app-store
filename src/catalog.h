@@ -59,10 +59,32 @@ extern const short kCategoryCount;
    either a loadable "Garden Catalog" file next to the app or, failing
    that, the compiled-in gDefaultCatalogEntries (catalog_data.c). Nothing
    outside catalog.c/catalog_load.c should need to know which source it
-   actually came from - both end up in the same shape here. */
-extern CatalogEntry gCatalogEntries[];
+   actually came from - both end up in the same shape here.
+
+   A pointer, not a fixed-size array - real memory bug found and fixed by
+   live testing (not just inspection): this used to be a real, always-
+   allocated `CatalogEntry gCatalogEntries[kMaxCatalogEntries]` static
+   array, separate from and in addition to the compiled-in
+   gDefaultCatalogEntries, because Catalog_Load() populated it by copying
+   the default array in (or reading a file into it) rather than pointing
+   at the default directly. At this catalog's size (2,445 entries * 270
+   measured bytes each), that meant ~1.3MB of static data existing
+   simultaneously for what, in the common case (no custom "Garden
+   Catalog" file - the default since the floppy image stopped bundling
+   one), is the exact same data twice. Raising the app's SIZE resource to
+   account for that footprint (rather than fixing the footprint) was
+   verified LIVE to cause real Open Transport/TCP-IP initialization
+   failures on a realistic memory-constrained configuration (8MB total
+   RAM, matching what this whole project's own emulator testing has used
+   throughout) - a much worse failure mode (networking broken entirely)
+   than the problem being solved. Now this just points at
+   gDefaultCatalogEntries directly in the common case (no copy, no extra
+   allocation at all) and at a heap buffer sized to the actual loaded
+   file's real entry count (not kMaxCatalogEntries) in the file-loaded
+   case - see catalog_load.c. */
+extern const CatalogEntry *gCatalogEntries;
 extern short gCatalogEntryCount;
-#define kMaxCatalogEntries 2500 /* bumped from 600 for the real catalog expansion (2445 real, deduped, verified entries survived - see README) - tools/build_catalog.py's MAX_ENTRIES has to agree */
+#define kMaxCatalogEntries 2500 /* sanity cap on a *loaded file's* claimed entry count (bounds catalog_load.c's heap allocation against a corrupt/malicious file) - no longer a static array size, so raising this doesn't cost any memory by itself. tools/build_catalog.py's MAX_ENTRIES has to agree. */
 
 /* The compiled-in fallback data, always present regardless of whether a
    loadable catalog file was found - see catalog_data.c. */

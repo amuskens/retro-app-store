@@ -4,7 +4,7 @@
 #include "catalog.h"
 
 #define kHeaderHeight 22
-#define kRowHeight    24
+#define kRowHeight    24 /* comfortable default - see RowHeight() below for why this isn't used directly anymore */
 #define kTotalRows    (kCategoryCount + 2) /* +1 leading "All" row, +1 trailing Live FTP Browse row */
 
 /* Year/CPU/System filter pills, pinned to the bottom of the sidebar rather
@@ -61,12 +61,53 @@ static void FilterRects(const Rect *bounds, Rect *outYear, Rect *outArch, Rect *
     outSys->bottom = (short)(outSys->top + kFilterPillHeight);
 }
 
+/* Real bug found by code review, not guessed: this fixed kTotalRows (10)
+   * kRowHeight (24) + kHeaderHeight + kFilterFooterHeight (348px total)
+   comfortably exceeds the sidebar's actual height at this app's own
+   supported small sizes (204px at kMinWindowHeight=260; not much more at
+   the Mac Plus/SE screen size ComputeScreenFitBounds specifically
+   targets) - unlike the results list (which adapts its *page size* to
+   fit, see ResultsView_SetPageSize), the row *count* here can't shrink
+   (all categories always need to be individually reachable), so this
+   shrinks the row *height* instead, down to kMinRowHeight, rather than
+   let the fixed-height row list overdraw the pinned filter footer below
+   it - which it did, silently: FilterRects anchors purely off
+   bounds->bottom, oblivious to how many rows were drawn above it, so the
+   footer (and its pill buttons' click targets, checked *before* row
+   clicks in HandleContentClick) ended up drawn over, and stealing clicks
+   from, whichever rows didn't fit - the last several categories became
+   simultaneously invisible and unclickable. */
+static short RowHeight(const Rect *bounds)
+{
+    short footerTop = (short)(bounds->bottom - kFilterFooterHeight);
+    short rowsTop = (short)(bounds->top + kHeaderHeight);
+    short h = (short)((footerTop - rowsTop) / kTotalRows);
+    if (h > kRowHeight) h = kRowHeight;
+    /* Deliberately no minimum-height floor here - real bug, caught live
+       (not just by inspection): an earlier version of this clamped h up
+       to a 14px "still legible" floor, but floor division only
+       guarantees h*kTotalRows <= available for whatever h it actually
+       computed - clamping h *up* after the fact breaks that guarantee
+       and reintroduces exactly the overflow-past-the-footer bug this
+       function exists to prevent, just for fewer rows (confirmed live at
+       this app's own kMinWindowHeight: 96px available / 10 rows = 9.6,
+       floored to 9 - fine - but the old 14px clamp forced 140px of rows
+       into that same 96px, and the last one or two silently vanished
+       under the footer instead of overflowing visibly). A window this
+       small already means visually tiny rows are the honest outcome, not
+       a bug to hide - correctly positioned and clickable beats legible
+       but wrong. */
+    if (h < 1) h = 1; /* only reachable if the sidebar is shorter than kTotalRows px, which nothing in this app's own size limits allows - a pure defensive floor against a zero/negative row height, not a "still usable" target */
+    return h;
+}
+
 static void RowRect(const Rect *bounds, short index, Rect *out)
 {
+    short rh = RowHeight(bounds);
     out->left = bounds->left;
     out->right = bounds->right;
-    out->top = (short)(bounds->top + kHeaderHeight + index * kRowHeight);
-    out->bottom = (short)(out->top + kRowHeight);
+    out->top = (short)(bounds->top + kHeaderHeight + index * rh);
+    out->bottom = (short)(out->top + rh);
 }
 
 /* A small generic marker to the left of each row - a filled dot for
@@ -143,8 +184,21 @@ void Sidebar_Draw(const Rect *bounds)
     }
     Theme_DrawDivider(bounds->left, header.bottom, bounds->right, header.bottom);
 
-    for (i = 0; i < kTotalRows; i++)
-        DrawRow(bounds, i);
+    /* RowHeight() already sizes rows to fit exactly above the footer, but
+       clip anyway (same belt-and-suspenders as results_view.c's own row
+       list) so a future change to either can't silently reintroduce the
+       overdraw-onto-the-footer bug this was written to fix. */
+    {
+        RgnHandle savedClip = NewRgn();
+        Rect rowsClip = *bounds;
+        rowsClip.bottom = (short)(bounds->bottom - kFilterFooterHeight);
+        GetClip(savedClip);
+        ClipRect(&rowsClip);
+        for (i = 0; i < kTotalRows; i++)
+            DrawRow(bounds, i);
+        SetClip(savedClip);
+        DisposeRgn(savedClip);
+    }
 
     {
         Rect yearR, archR, sysR;

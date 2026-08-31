@@ -14,6 +14,18 @@
 #define kOnSystemDisk (-1)
 #define kDontCreateFolder false
 
+/* Same reasoning and same value as net.c's kConnectWatchdogTicks: a real
+   MacTCP timeout mechanism (TCPActiveOpen's ulpTimeoutValue there) was
+   confirmed live not to reliably bound a stuck operation, so DNR
+   resolution gets the identical client-side safety net for the same
+   class of failure - a hostname lookup that's hung against an
+   unresponsive/unreachable name server has no other bound at all
+   otherwise. Not independently reproduced live the way the TCPActiveOpen
+   case was (see net.c) - added by inspection/code review as a real gap
+   in the same family, not a guess about whether it actually fires in
+   practice. */
+#define kResolveWatchdogTicks (45UL * 60UL)
+
 /* The resolver's own return-block layout - verified against Apple's
    original DNR.c (via antscode/MacTCPHelper, a Retro68 port of it). The
    SInt8 filler is deliberate, not padding I added: cname[255] leaves the
@@ -63,8 +75,15 @@ typedef OSErr (*StrToAddrProcPtr)(unsigned long selector, char *hostName, struct
 static Handle gDNRHandle = NULL;
 static ProcPtr gDNRProc = NULL;
 
+/* hi lives inside this struct (not as DNR_Resolve's own stack local)
+   specifically so the whole thing can be heap-allocated - see the
+   watchdog comment in DNR_Resolve below for why plain stack storage
+   isn't safe once an early bail-out on a deadline is possible, the same
+   way it already wasn't safe for a plain early bail on cancel (fixed
+   previously - see the history comment below). */
 typedef struct {
     Boolean done;
+    struct hostInfo hi;
 } ResolveState;
 
 /* Sets a per-call done flag via userDataPtr, rather than polling hi's own
@@ -244,11 +263,18 @@ static Boolean TryParseDottedIP(const char *s, ip_addr *out)
         reference, this is retried at most once more before giving up. */
 OSErr DNR_Resolve(const char *hostName, ip_addr *outAddr, GiveTimeProc giveTime, Boolean *cancel)
 {
-    struct hostInfo hi;
+    /* Heap-allocated, not a stack local - both this struct's `done` flag
+       and the `hi` inside it (see ResolveState's own comment) have to
+       survive even if this function returns before the DNR callback
+       actually fires, which is now possible (kResolveWatchdogTicks below),
+       not just when cancel does. A stack local stopped being safe the
+       moment ANY early return became possible while the callback might
+       still come later - already fixed once for cancel (see the history
+       below), and the same fix has to cover the new watchdog case too. */
+    ResolveState *state;
     StrToAddrProcPtr strToAddrProc;
     OSErr err;
     short attempt;
-    ResolveState state;
 
     if (TryParseDottedIP(hostName, outAddr)) return noErr;
 
@@ -257,15 +283,19 @@ OSErr DNR_Resolve(const char *hostName, ip_addr *outAddr, GiveTimeProc giveTime,
         if (err != noErr) return err;
     }
 
+    state = (ResolveState *)NewPtr(sizeof(ResolveState));
+    if (state == NULL) return memFullErr;
+
     strToAddrProc = (StrToAddrProcPtr)gDNRProc;
 
     for (attempt = 0; attempt < 2; attempt++) {
-        state.done = false;
-        err = strToAddrProc(kSelStrToAddr, (char *)hostName, &hi, ResolveCallback, (Ptr)&state);
+        unsigned long deadline = TickCount() + kResolveWatchdogTicks;
+        state->done = false;
+        err = strToAddrProc(kSelStrToAddr, (char *)hostName, &state->hi, ResolveCallback, (Ptr)state);
 
         if (err == cacheFault) {
             /* Not cached - a real query is running asynchronously; the
-               callback (and nothing else) will set state.done. Waiting
+               callback (and nothing else) will set state->done. Waiting
                here unconditionally on noErr too would hang forever, since
                an immediate noErr means it was answered synchronously
                (e.g. a cache hit) and the callback may never fire at all -
@@ -274,30 +304,56 @@ OSErr DNR_Resolve(const char *hostName, ip_addr *outAddr, GiveTimeProc giveTime,
                Real bug fixed here, found while auditing for the same
                stack-safety hazard net.c's Net_Abort/Net_Close already had
                to be written around: this used to return userCanceledErr
-               immediately on cancel, abandoning the wait - but `state` is
-               a stack-local ResolveState, and the DNR code resource's
+               immediately on cancel, abandoning the wait - but `state` was
+               a stack-local ResolveState then, and the DNR code resource's
                callback (ResolveCallback) still fires later, writing into
                it, regardless of what the caller does. Bailing out early
                let it write into a stack slot that no longer belonged to
-               this call by the time it fired. Now this always waits for
-               the real completion (giveTime-only, cancel-blind, same
-               pattern as DoAbortCall) and only reports the cancellation
-               to the caller afterward - safe either way. */
+               this call by the time it fired. This still waits for the
+               real completion on a cancel (giveTime-only, cancel-blind,
+               same pattern as DoAbortCall) and only reports the
+               cancellation to the caller afterward.
+
+               Second real gap, found by code review, not reproduced live
+               the way net.c's matching TCPActiveOpen case was: nothing
+               here bounded a DNR resolution that never completes at all
+               (an unresponsive/unreachable name server, the same class of
+               failure net.c's own comment describes for TCPActiveOpen).
+               kResolveWatchdogTicks is that bound - and *unlike* cancel,
+               this genuinely cannot wait for the real completion first,
+               since the whole point is "this may never actually
+               complete." Now that state is heap-allocated rather than a
+               stack local, bailing out here is safe either way: on a
+               real timeout, this deliberately leaks the block (the
+               callback may still fire into it at some arbitrary later
+               point - freeing it first would just reintroduce the exact
+               hazard being fixed) rather than risk that write landing in
+               memory reused for something else. Should be rare - it only
+               happens when DNR resolution itself is stuck, at which point
+               something is already badly wrong on the guest. */
             Boolean wasCanceled = false;
-            while (!state.done) {
+            for (;;) {
+                if (state->done) break;
                 if (cancel != NULL && *cancel) wasCanceled = true;
+                if (TickCount() >= deadline) return commandTimeout; /* leaks state - see above */
                 if (giveTime != NULL) giveTime();
             }
-            if (wasCanceled) return userCanceledErr;
+            if (wasCanceled) { DisposePtr((Ptr)state); return userCanceledErr; }
         } else if (err != noErr) {
+            DisposePtr((Ptr)state);
             return err; /* a real, immediate failure */
         }
 
-        if (hi.rtnCode != cacheFault) break; /* real answer or real error - done */
+        if (state->hi.rtnCode != cacheFault) break; /* real answer or real error - done */
     }
 
-    if (hi.rtnCode != noErr) return (OSErr)hi.rtnCode;
+    if (state->hi.rtnCode != noErr) {
+        OSErr rtnCode = (OSErr)state->hi.rtnCode;
+        DisposePtr((Ptr)state);
+        return rtnCode;
+    }
 
-    *outAddr = hi.addr[0];
+    *outAddr = state->hi.addr[0];
+    DisposePtr((Ptr)state);
     return noErr;
 }

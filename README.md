@@ -1048,6 +1048,43 @@ Confirmed working end-to-end:
     2.1.3, After Dark 3.0, HyperCard 2.4.1, Fetch 3.0.3) - real filtering
     against real per-title data, not just an empty-list sanity check.
 
+16. **A dedicated code-review pass plus a real 20-download test** (this
+    round): fixed a Quit-time reentrancy bug (`HandleQuitAE` could call
+    `DoDisconnect` while a network parameter block was still in flight
+    mid-poll inside `FTP_ListNames`, now deferred to after the main event
+    loop exits), a sidebar overdraw bug at small window sizes (removing an
+    incorrectly-reintroduced minimum row-height clamp - see the `sidebar.c`
+    comment), a missing watchdog in `DNR_Resolve` (now matches `Net_Open`'s
+    existing deadline pattern), and `gLastClickRow` not resetting across
+    list switches (a false-double-click risk). Also found and fixed the
+    real root cause behind this round's biggest surprise: the catalog's
+    growth to 2,445 entries had been *doubly* stored in memory
+    (`gCatalogEntries` was a real always-allocated array, separately
+    populated by copying the compiled-in default array into it, rather
+    than pointing at it) - see the `catalog.h` comment. With that fixed,
+    ran a full live test: connected to the real server and downloaded 20
+    different catalog items back to back (sizes from 68K to 10.8MB), with
+    the app switched away to Finder mid-download at least once to confirm
+    downloads are genuinely non-blocking (progress advanced and the file
+    finished while Finder was frontmost) - all 20 landed correctly in
+    "Garden Downloads" with zero crashes or hangs. This surfaced a real,
+    separate finding worth its own note: **8MB of emulated RAM, this
+    project's own long-standing test baseline, is too tight for Open
+    Transport to actually open a connection once System Software's own
+    footprint (3,639K measured, extensions included) is subtracted from
+    it** - confirmed by "About This Macintosh" showing zero K free the
+    moment Garden launches, regardless of how small Garden's own `SIZE`
+    resource is (a smaller value than the current 5750K/2250K was tried
+    and made things *worse*, hanging Garden's own startup rather than
+    leaving more headroom - see the `main.r` comment). The same unmodified
+    build connects immediately and completed the entire 20-download test
+    with no issues at **16MB** - a realistic total for an Open
+    Transport-era System 7.5 Mac, since 8MB was more of a System
+    7.0/7.1-era MacTCP baseline before OT's own larger resident footprint
+    existed. Recommendation: configure emulator/VM test RAM to at least
+    16MB when exercising networking; 8MB remains fine for pure offline
+    catalog browsing.
+
 Not yet exercised in the emulator: `Catalog_Load`'s reject-a-corrupt-file
 alert path (see Known Limitations), and a full 200+-item live directory's
 higher page numbers (only page 1 of the `apps` listing was paged through).
