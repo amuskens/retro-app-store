@@ -140,11 +140,24 @@ OSErr Prefs_Save(const GardenPrefs *prefs)
    arriving while Preferences is open would be silently dropped - a plain
    ModalDialog(NULL, ...) never dispatches AppleEvents at all, the same
    gap RunApp's own loop and progress_dlg.c's both had (see app.c). */
+/* Returning true is the Dialog Manager's "I fully handled this event -
+   return *itemHit to the caller", so *itemHit MUST be written before
+   doing so. Real bug fixed here: this used to `(void)itemHit` and return
+   true anyway, leaving ModalDialog to hand PrefsDlg_Run's uninitialized
+   stack slot straight to its `itemHit == iPrefsOK` test. Any Apple Event
+   arriving while Preferences was open (Shut Down, a Finder drag-launch,
+   an AppleScript tell) could therefore land on whatever garbage was on
+   the stack - and if that happened to equal iPrefsOK, the dialog closed
+   and wrote half-edited preferences to disk, before the App_IsQuitting()
+   guard further down the loop ever got a look in. 0 is "no item hit",
+   which sends the loop around again, which is what actually wanted to
+   happen. */
 static pascal Boolean PrefsModalFilter(DialogPtr dlg, EventRecord *evt, short *itemHit)
 {
-    (void)dlg; (void)itemHit;
+    (void)dlg;
     if (evt->what == kHighLevelEvent) {
         AEProcessAppleEvent(evt);
+        *itemHit = 0;
         return true;
     }
     return false;
@@ -156,7 +169,7 @@ Boolean PrefsDlg_Run(GardenPrefs *prefs)
     short itemType;
     Handle itemH;
     Rect box;
-    short itemHit;
+    short itemHit = 0; /* see PrefsModalFilter - never read before ModalDialog writes it, but don't rely on that */
     Str255 s;
     GardenPrefs work = *prefs;
     char portStr[16];

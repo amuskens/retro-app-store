@@ -276,6 +276,17 @@ Boolean ResultsView_IsLiveMode(void)
 void ResultsView_EnterLiveMode(void)
 {
     gMode = kModeLive;
+    /* Drop any category scope on the way in. Search always queries the
+       catalog (there's nothing to search within a live listing), and
+       gCategory is what scopes it - leaving it pointing at whatever
+       category happened to be selected before meant that typing a search
+       while Live FTP Browse was highlighted silently searched only that
+       old category, with nothing on screen indicating it: pick "Dev
+       Tools", switch to Live FTP Browse, search "photoshop", get "No
+       items match your search" for a title that is plainly in the
+       catalog. Searching everything is the only defensible scope here,
+       since the sidebar is showing a row that isn't a category at all. */
+    gCategory = kAllCategoryIndex;
     gPage = 0;
     gSelectedRow = -1;
     gLastClickRow = -1; /* the row-slot-to-item mapping just changed - see the comment on this static above */
@@ -408,6 +419,11 @@ Boolean ResultsView_GetSelected(DownloadRequest *outReq)
     outReq->remotePath[sizeof(outReq->remotePath) - 1] = 0;
     outReq->isLiveFile = (Boolean)(gMode == kModeLive);
     return true;
+}
+
+short ResultsView_LiveCount(void)
+{
+    return gLiveCount;
 }
 
 short ResultsView_PageCount(void)

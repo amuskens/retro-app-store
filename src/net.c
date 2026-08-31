@@ -123,7 +123,26 @@ OSErr Net_Open(NetConnection *conn, ip_addr remoteHost, tcp_port remotePort,
     conn->pb.csParam.create.notifyProc = NULL;
     conn->pb.csParam.create.userDataPtr = NULL;
 
-    err = DoControlCall(&conn->pb, giveTime, cancel);
+    /* DoAbortCall, not DoControlCall: TCPCreate must never be abandoned
+       half-done. Real bug, found by review - bailing out of this one on
+       cancel did three bad things at once, all of them silent. (1) The
+       DisposePtr below handed the 8K block back to the heap while MacTCP
+       was still about to install it as the stream's permanent receive
+       buffer, so the driver would go on writing incoming packets into
+       memory the app had since reused. (2) conn->stream was never
+       assigned, and Net_Abort only releases when stream != 0, so the
+       stream TCPCreate did go on to create could never be released -
+       each cancelled connect permanently burned one of MacTCP's small
+       fixed pool of streams until reboot. (3) It left conn->pb pending on
+       what is often a caller's stack local (see OpenPassiveData/
+       FTP_Retrieve), the exact hazard DoAbortCall exists to prevent.
+       Nothing is lost by not honouring cancel here: TCPCreate is a local
+       bookkeeping call with no network round-trip, so it completes
+       promptly regardless. The TCPActiveOpen below - the part that can
+       actually block on a dead network - still honours cancel, and now
+       has a real stream to abort. */
+    DoAbortCall(&conn->pb, giveTime);
+    err = conn->pb.ioResult;
     if (err != noErr) {
         DisposePtr(conn->rcvBuffer);
         conn->rcvBuffer = NULL;

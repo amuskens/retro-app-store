@@ -398,7 +398,12 @@ static pascal Boolean AlertQuitFilter(DialogPtr dlg, EventRecord *evt, short *it
     (void)dlg;
     if (evt->what == kHighLevelEvent) {
         AEProcessAppleEvent(evt);
-        if (gDone) *itemHit = 1; /* OK - both ALRT/DITL 128 and 129 have it as item 1 */
+        /* Always write *itemHit before returning true - see the same fix
+           in prefs_dlg.c's PrefsModalFilter. Both of this app's alerts are
+           OK-only so a stray value would merely dismiss them rather than
+           pick a wrong button, but reading an uninitialised slot is not
+           something to leave standing on that reasoning alone. */
+        *itemHit = gDone ? 1 : 0; /* 1 = OK (item 1 in both ALRT/DITL 128 and 129); 0 = no item, keep waiting */
         return true;
     }
     return false;
@@ -566,10 +571,21 @@ static void OnCategorySelected(short sel)
         ResultsView_EnterLiveMode();
         RedrawResultsAndStatus();
         if (!gEverFetchedLive) {
-            gEverFetchedLive = true; /* only auto-fetch the first time - Refresh Listing covers the rest */
             strncpy(gLivePath, gPrefs.basePath, sizeof(gLivePath) - 1);
             gLivePath[sizeof(gLivePath) - 1] = 0;
             DoRefreshListing();
+            /* Latched only once a fetch has actually produced something -
+               real bug fixed here: this used to be set before the call,
+               so a first attempt that failed (no network yet, or a stale
+               host in Preferences - the likely state on a fresh install,
+               since DoRefreshListing gives up immediately when DoConnect
+               can't connect) still counted as "already fetched". The user
+               could then fix Preferences, connect successfully, and come
+               back to Live FTP Browse only to be shown "Not connected
+               yet" forever, with the status bar simultaneously reporting
+               a live connection - recoverable only by knowing to pick
+               Connection > Refresh Listing by hand. */
+            if (ResultsView_LiveCount() > 0) gEverFetchedLive = true;
         }
     } else {
         ResultsView_ShowCategory(sel);
@@ -698,7 +714,27 @@ static void LiveNavigateInto(const char *name)
         strncpy(newPath, name, sizeof(newPath) - 1);
         newPath[sizeof(newPath) - 1] = 0;
     } else {
-        sprintf(newPath, "%.90s/%.90s", gLivePath, name);
+        /* Built with the real remaining capacity rather than a fixed
+           "%.90s/%.90s" as before. That old precision was safe against
+           overflow but threw away anything past 90 characters of a path
+           this buffer has ~199 for - so once a few levels down the real
+           mirror's own layout (apps/Applications/Graphics_and_Sound/...
+           passes 90 characters quickly), each further descent silently
+           rebuilt the path from a copy cut off mid-component, the NLST
+           went to a directory that doesn't exist, and because the result
+           was stored back into gLivePath the user was then stranded:
+           Go Up a Level and every later download path were computed from
+           the corrupted string too. */
+        short pathLen = (short)strlen(gLivePath);
+        short cap = (short)(sizeof(newPath) - 1);
+        short n;
+        if (pathLen > cap) pathLen = cap;
+        BlockMove(gLivePath, newPath, pathLen);
+        if (pathLen < cap) newPath[pathLen++] = '/';
+        n = (short)strlen(name);
+        if (n > cap - pathLen) n = (short)(cap - pathLen);
+        if (n > 0) BlockMove((Ptr)name, newPath + pathLen, n);
+        newPath[pathLen + n] = 0;
     }
     strcpy(gLivePath, newPath);
 
@@ -730,7 +766,23 @@ static void ResolveLiveDownloadPath(DownloadRequest *req)
 
     if (!req->isLiveFile || gLivePath[0] == 0) return;
 
-    sprintf(full, "%.100s/%.100s", gLivePath, req->remotePath);
+    /* Same capacity-based join as LiveNavigateInto, and for the same
+       reason: the old "%.100s/%.100s" could cut the directory part at 100
+       characters, so a file listed from a deep directory would be
+       RETR'd from a *different*, truncated path than the one the user
+       actually saw listed. */
+    {
+        short pathLen = (short)strlen(gLivePath);
+        short cap = (short)(sizeof(full) - 1);
+        short n;
+        if (pathLen > cap) pathLen = cap;
+        BlockMove(gLivePath, full, pathLen);
+        if (pathLen < cap) full[pathLen++] = '/';
+        n = (short)strlen(req->remotePath);
+        if (n > cap - pathLen) n = (short)(cap - pathLen);
+        if (n > 0) BlockMove(req->remotePath, full + pathLen, n);
+        full[pathLen + n] = 0;
+    }
     strncpy(req->remotePath, full, sizeof(req->remotePath) - 1);
     req->remotePath[sizeof(req->remotePath) - 1] = 0;
 }

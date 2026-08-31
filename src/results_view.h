@@ -81,6 +81,11 @@ Boolean ResultsView_Click(const Rect *bounds, Point pt, unsigned long when,
 Boolean ResultsView_GetSelected(DownloadRequest *outReq);
 
 short ResultsView_PageCount(void);
+
+/* How many entries the last live listing actually produced (0 if none has
+   succeeded yet). app.c uses this to decide whether its one-shot
+   auto-fetch really happened, rather than assuming the attempt worked. */
+short ResultsView_LiveCount(void);
 short ResultsView_CurrentPage(void); /* 0-based */
 void ResultsView_NextPage(const Rect *bounds);
 void ResultsView_PrevPage(const Rect *bounds);

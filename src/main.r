@@ -81,9 +81,11 @@ resource 'SIZE' (-1) {
                           rather than Garden being greedy by re-testing at a
                           1100K partition - identical failure, so shrinking
                           Garden further does not buy it back. 4MB is fine
-                          for offline catalog use; downloading needs a
-                          roomier machine (8MB works for browsing, 16MB was
-                          what this project's live download testing used). */
+                          for offline catalog use; downloading needs 8MB,
+                          which was confirmed live with this partition size
+                          (Connect plus a full 10.8MB download) - note that
+                          8MB only became sufficient once this preferred
+                          size came down, for the reason described above. */
 };
 
 resource 'MBAR' (128) {
@@ -163,7 +165,7 @@ resource 'MENU' (132, preload) {
 };
 
 resource 'ALRT' (128) {
-    { 80, 80, 220, 420 },
+    { 80, 80, 250, 420 },
     128,
     {
         OK, visible, silent;
@@ -176,11 +178,18 @@ resource 'ALRT' (128) {
 
 resource 'DITL' (128) {
     {
-        { 110, 250, 130, 320 },
+        { 140, 250, 160, 320 },
         Button { enabled, "OK" };
 
-        { 10, 10, 100, 320 },
-        StaticText { enabled, "Macintosh Garden \xd0 a classic Mac client for browsing and downloading software over FTP. Prototype built with Retro68." };
+        /* One StaticText, not two, with real carriage returns (\0x0d - the
+           classic Mac line break, same convention the catalog's own hwNote
+           second line uses) rather than a separate DITL item for the
+           credit: the Dialog Manager can't give individual DITL items
+           their own font/style anyway, so a second item would buy nothing
+           and would renumber the list. Item 1 stays the OK button, which
+           is what the ALRT's stage entries above all point at. */
+        { 10, 10, 130, 320 },
+        StaticText { enabled, "Macintosh Garden \0xd0 a classic Mac client for browsing and downloading software over FTP. Prototype built with Retro68.\0x0d\0x0dCreated by Anders Muskens." };
     }
 };
 
@@ -250,6 +259,6 @@ resource 'DITL' (130) {
         EditText { enabled, "" };
 
         { 116, 16, 184, 384 },
-        StaticText { enabled, "Community FTP mirrors change hosts and login details over time \xd0 if Connect stops working, check macintoshgarden.org's forums for the current address." };
+        StaticText { enabled, "Community FTP mirrors change hosts and login details over time \0xd0 if Connect stops working, check macintoshgarden.org's forums for the current address." };
     }
 };

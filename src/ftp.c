@@ -203,6 +203,26 @@ short FTP_ListNames(FtpSession *s, const char *remotePath, char outNames[][64], 
         count++;
     }
 
+    /* net.h's LineReader contract is explicit that returning false covers
+       both a clean EOF and a real failure, and that lastErr is how you
+       tell them apart - this call site used to ignore it, which was two
+       real bugs in one. First, a listing cut short by a cancel, a
+       timeout, or a dropped connection was returned to the caller as an
+       authoritative count, so the browser would silently show a partial
+       directory as if it were the whole thing, with no error anywhere.
+       Second, and worse: a Net_Receive that bailed on cancel leaves a
+       TCPRcv still queued in data.pb, and Net_Close then memsets and
+       reuses that very block for its TCPClose - corrupting the Device
+       Manager's own queue linkage, on a NetConnection that is a stack
+       local about to go out of scope. Net_Abort is the correct teardown
+       for that case (its TCPAbort cancels the pending request at the
+       driver, and it works off its own local pb), which is exactly what
+       FTP_Retrieve already does on every one of its abnormal exits. */
+    if (lr.lastErr != noErr) {
+        Net_Abort(&data, giveTime);
+        return 0; /* ftp.h documents 0 as "failed" - honour that rather than report a truncated listing as complete */
+    }
+
     Net_Close(&data, giveTime);
     ReadReply(s, &code, NULL, 0, giveTime, cancel); /* 226 transfer complete */
 

@@ -1121,6 +1121,49 @@ Confirmed working end-to-end:
       record's authoritative `teLength` - latent rather than the cause of
       any observed failure, but it could append slack bytes to a query.
 
+18. **Second review pass - seven more real bugs found and fixed** (see the
+    commit for details): `Net_Open` could abandon a `TCPCreate` in flight
+    on cancel, freeing the receive buffer MacTCP was about to install and
+    permanently leaking one of its small pool of streams;
+    `FTP_ListNames` ignored `lastErr` (which `net.h` explicitly documents
+    as the way to tell clean EOF from failure), so a listing cut short by
+    a cancel or dropped connection was reported as complete, and its
+    `Net_Close` then reused a parameter block with a `TCPRcv` still
+    pending in it; `SanitizeName` truncated to HFS's 31 characters
+    *before* the extension was read, so any file with a long name lost
+    its `.sit`/`.img` and got the wrong type/creator; `PrefsModalFilter`
+    (and `AlertQuitFilter`) returned `true` without writing `*itemHit`,
+    handing the Dialog Manager an uninitialized stack slot that could
+    silently save half-edited preferences; `gEverFetchedLive` was latched
+    before the fetch that could fail, so one failed first attempt left
+    Live FTP Browse permanently empty; live paths were joined with a
+    fixed `%.90s` precision into a 200-byte buffer, corrupting navigation
+    past ~90 characters; and `ResultsView_EnterLiveMode` left `gCategory`
+    pointing at the previously-browsed category, so searching from live
+    mode silently searched only that category. Also fixed two malformed
+    Rez escapes (`\xd0` where Rez needs `\0xd0`) that had been printing a
+    literal "xd0" instead of an em-dash in the About box and the
+    Preferences help text ever since they were written - visible in the
+    screenshots all along, never noticed.
+
+**Open issue, not yet root-caused: downloads intermittently land as
+0-byte files while the app reports success.** Found by checking the
+downloads folder on disk rather than trusting the completion alert - 6 of
+22 files from a test run were 0 bytes, including files the server serves
+correctly (verified independently with `curl`). It is intermittent rather
+than file-specific: the same entry downloaded correctly on one attempt
+and came back empty on the next, and one "successful" 854K download
+finished implausibly fast (under 2.5s) while another attempt sat in
+"Connecting..." for 10+ seconds. Two hypotheses were tested and both
+failed to explain it - an emulator HFS-cache flush artifact (reproduced
+after a confirmed-graceful guest shutdown, so no) and a missing
+transfer-length check (added, and it did not fire). `Download_Fetch` now
+at least rejects a zero-length transfer rather than reporting it as
+saved, so the failure is visible instead of silent, but the underlying
+cause is still open. Anyone picking this up should start by logging the
+actual FTP reply codes and `bytesSoFar` for a failing transfer - the
+progress dialog's own display is not enough to tell where it goes wrong.
+
 Not yet exercised in the emulator: `Catalog_Load`'s reject-a-corrupt-file
 alert path (see Known Limitations), and a full 200+-item live directory's
 higher page numbers (only page 1 of the `apps` listing was paged through).
