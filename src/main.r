@@ -33,92 +33,57 @@ resource 'SIZE' (-1) {
     reserved,
     reserved,
     reserved,
-    5750 * 1024, /* preferred - revised DOWN this round after the 6500K
-                     value above (set for the catalog's 2,445-entry
-                     expansion) was found, by live testing, to cause a
-                     worse regression than the problem it was meant to
-                     solve. Root cause traced (not just patched around):
-                     gCatalogEntries used to be a real, always-allocated
-                     `CatalogEntry[kMaxCatalogEntries]` static array
-                     (675,000 bytes, kMaxCatalogEntries=2500 *
-                     sizeof(CatalogEntry)=270, measured with the real m68k
-                     cross-compiler) that Catalog_Load() populated by
-                     *copying* the compiled-in gDefaultCatalogEntries
-                     (2,445 entries * 270 = 660,150 bytes) into - both
-                     existing simultaneously for what, in the common case
-                     (no custom "Garden Catalog" file), is the exact same
-                     data twice. Fixed properly this round: gCatalogEntries
-                     is now `const CatalogEntry *`, pointing directly at
-                     gDefaultCatalogEntries with no copy in the common
-                     case, and at a heap buffer sized to the actual loaded
-                     file's entry count (not kMaxCatalogEntries) only when
-                     a real file is loaded - see catalog.h/catalog.c/
-                     catalog_load.c.
+    2048 * 1024, /* preferred - measured, not extrapolated. The app's real
+                     resident footprint is ~820K, from the actual m68k link:
+                     .text 100K + .data 664K (almost entirely the compiled-in
+                     2,445-entry catalog) + .bss 56K. Confirmed live rather
+                     than trusted: with this partition at 2048K, "About This
+                     Macintosh" showed ~830K in use after a deliberately
+                     heavy workout - a search scanning all 2,445 entries, a
+                     200-entry live FTP listing, and a 10.8MB download - i.e.
+                     ~1,218K still free. So 2048K is not a tight fit; it is
+                     roughly 2.5x the real peak, and the headroom is there
+                     for Memory Manager fragmentation, code segment loading
+                     and larger window sizes rather than because the app
+                     needs it.
 
-                     Two values were live-tested this round on the
-                     project's standard 8MB-RAM config, both by real
-                     measurement rather than by extrapolating an old
-                     hardware note or by arithmetic alone:
+                     Earlier values in this file's history (6500K, then
+                     5750K) were extrapolated from an old real-hardware note
+                     plus catalog-growth arithmetic, never measured, and were
+                     far larger than necessary - worse, an oversized
+                     preferred size actively hurts, because classic Mac OS
+                     grants a launching app all remaining free memory when
+                     preferred cannot be met, so Garden was swallowing the
+                     entire free pool and leaving Open Transport nothing to
+                     grow into for a live connection (the -23 openErr traced
+                     in the previous round). Measuring the real number and
+                     asking for a sane multiple of it fixes both problems at
+                     once. */
+    1024 * 1024       /* minimum - deliberately well below preferred, so the
+                          app degrades onto genuinely small machines instead
+                          of refusing to launch. Verified on a 4MB Mac (the
+                          smallest configuration tested): System 7.5.3 plus
+                          extensions takes 2,275K there, leaving ~1,650K, so
+                          a 2048K *minimum* would have made Garden simply
+                          refuse to open ("not enough memory to open Garden
+                          (2,048K needed, 1,656K available)" - reproduced
+                          exactly). With this 1024K floor it launches into
+                          whatever is actually free, and catalog browsing,
+                          category filtering, pagination and full-catalog
+                          search all work normally there - confirmed live at
+                          1400K on that 4MB machine.
 
-                     5750K (5000K, an old note from a real IIcx's -41 Open
-                     Transport fix, plus one ~645K catalog copy) DID launch
-                     successfully (Process Manager granted it ~4,432K, per
-                     "About This Macintosh" - see below for why not the
-                     full 5750K), but Connect cleanly and reproducibly
-                     still failed with -23 (confirmed via the app's own
-                     "Live FTP Browse" row, which attempts a connection the
-                     moment it's selected - a more reliable repro than
-                     driving the Connection menu). "About This Macintosh"
-                     showed System Software (Open Transport plus this test
-                     system's extensions) alone using 3,639K, leaving only
-                     ~4,433K for applications - and since classic Mac OS
-                     grants a launching app *all* remaining free memory
-                     when its preferred size can't be met (not just its
-                     stated minimum), Garden claimed basically that entire
-                     remainder, driving "Largest Unused Block" to zero -
-                     real system-wide memory Open Transport itself needs
-                     room to grow into for a live connection (its own
-                     dynamic per-endpoint state), separate from Garden's
-                     own partition. Confirmed this is a genuine memory-
-                     total problem, not a Garden bug: the exact same build
-                     (5750K/2250K unchanged) connects immediately and
-                     downloaded 20 different real catalog items back to
-                     back with zero crashes/hangs at 16MB total RAM - a
-                     realistic figure for an Open Transport-era System 7.5
-                     Mac (8MB was more of a System 7.0/7.1-era MacTCP
-                     baseline before OT's own larger footprint). See the
-                     README for the resulting minimum-RAM note.
-
-                     3200K (2500K/1536K, the last values confirmed to work
-                     before this catalog round, plus the ~618K net catalog
-                     growth since - see the minimum value's comment) was
-                     tried next and made things *worse*: Garden's own
-                     startup hung completely (desktop responsive, guest
-                     clock still advancing, but Garden's window never
-                     appeared, for minutes) rather than failing gracefully
-                     - meaning this app's own real runtime footprint
-                     (code+globals+heap for window/control/TE setup,
-                     catalog filtering, etc.) needs more than 3200K to
-                     even finish launching, beyond what the old-baseline-
-                     plus-catalog-growth arithmetic accounted for (other
-                     feature work landed this session besides the catalog
-                     - AppleEvent handling, the sidebar/DNR fixes, etc. -
-                     which also cost some code+data footprint the old
-                     baseline never included). That arithmetic approach is
-                     evidently not reliable on its own here.
-
-                     Given a hang is a worse failure mode than a slow but
-                     graceful launch, this reverts to 5750K - the larger
-                     of the two live-tested values, confirmed to at least
-                     launch correctly - as the safe known-good number
-                     rather than continuing to guess smaller ones without
-                     a tighter test loop (e.g. bisecting) to pin down the
-                     real minimum. Revisit with that tighter loop before
-                     trying to shrink this further. */
-    2250 * 1024       /* minimum - same reasoning as preferred above: the
-                          old 1536K baseline (last confirmed to work before
-                          this catalog round) plus the same ~618K net
-                          catalog growth = ~2154K, rounded up to 2250K. */
+                          What does NOT work on a 4MB machine is networking:
+                          Connect fails with a DNR error (-23044) because
+                          only ~276K is left system-wide once the System and
+                          Garden are loaded, and MacTCP's resolver needs more
+                          than that. Confirmed this is a system-total limit
+                          rather than Garden being greedy by re-testing at a
+                          1100K partition - identical failure, so shrinking
+                          Garden further does not buy it back. 4MB is fine
+                          for offline catalog use; downloading needs a
+                          roomier machine (8MB works for browsing, 16MB was
+                          what this project's live download testing used). */
 };
 
 resource 'MBAR' (128) {

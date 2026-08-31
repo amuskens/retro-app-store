@@ -1067,23 +1067,59 @@ Confirmed working end-to-end:
     the app switched away to Finder mid-download at least once to confirm
     downloads are genuinely non-blocking (progress advanced and the file
     finished while Finder was frontmost) - all 20 landed correctly in
-    "Garden Downloads" with zero crashes or hangs. This surfaced a real,
-    separate finding worth its own note: **8MB of emulated RAM, this
-    project's own long-standing test baseline, is too tight for Open
-    Transport to actually open a connection once System Software's own
-    footprint (3,639K measured, extensions included) is subtracted from
-    it** - confirmed by "About This Macintosh" showing zero K free the
-    moment Garden launches, regardless of how small Garden's own `SIZE`
-    resource is (a smaller value than the current 5750K/2250K was tried
-    and made things *worse*, hanging Garden's own startup rather than
-    leaving more headroom - see the `main.r` comment). The same unmodified
-    build connects immediately and completed the entire 20-download test
-    with no issues at **16MB** - a realistic total for an Open
-    Transport-era System 7.5 Mac, since 8MB was more of a System
-    7.0/7.1-era MacTCP baseline before OT's own larger resident footprint
-    existed. Recommendation: configure emulator/VM test RAM to at least
-    16MB when exercising networking; 8MB remains fine for pure offline
-    catalog browsing.
+    "Garden Downloads" with zero crashes or hangs. This round also
+    concluded that 8MB of RAM was too tight for Open Transport to open a
+    connection, and recommended 16MB - **both of which the next round
+    disproved; see entry 17.** The real problem was Garden's own
+    oversized memory partition crowding the system out, not the machine's
+    total RAM.
+
+17. **Memory-footprint audit - the app now runs in a 2MB partition, and on
+    a 4MB Mac** (follow-up to entry 16, prompted by wanting to support
+    smaller machines). Measured rather than estimated: the real resident
+    footprint is ~820K, straight from the m68k link (`.text` 100K +
+    `.data` 664K, almost all of it the compiled-in 2,445-entry catalog, +
+    `.bss` 56K). Confirmed live with "About This Macintosh" - after a
+    deliberately heavy workout (a search scanning all 2,445 entries, a
+    200-entry live FTP listing, and a 10.8MB download) Garden was using
+    ~830K of a 2048K partition, i.e. ~1,218K still free. The previous
+    5750K/2250K values were never measured, just extrapolated, and were
+    ~7x the real need.
+    - `SIZE` is now **2048K preferred / 1024K minimum**. The low minimum
+      is deliberate: classic Mac OS grants a launching app whatever is
+      actually free as long as that clears the minimum, so a low floor
+      lets Garden degrade onto small machines instead of refusing to open.
+    - **This fixed entry 16's -23 openErr at 8MB.** An oversized preferred
+      size actively hurts, because the Process Manager hands the app the
+      entire remaining free pool when preferred can't be met - so the old
+      5750K build swallowed everything and left Open Transport nothing to
+      grow into. With the 2048K partition, 8MB connects immediately and
+      completed a full 10.8MB download. **8MB is fine for networking; the
+      earlier "use 16MB" recommendation was wrong.**
+    - **On a 4MB Mac** (smallest configuration tested): System 7.5.3 plus
+      extensions takes 2,275K, leaving ~1,650K. Garden launches into that
+      (granted 1,685K) and catalog browsing, filtering, pagination and
+      full-catalog search all work normally. A 2048K *minimum* would have
+      blocked this outright - reproduced exactly: "not enough memory to
+      open Garden (2,048K needed, 1,656K available)". Networking does
+      **not** work at 4MB (Connect fails with DNR error -23044, only ~276K
+      left system-wide); re-tested with an 1100K partition to confirm this
+      is a system-total limit rather than Garden being greedy - identical
+      failure. So 4MB is usable for offline catalog browsing, 8MB+ for
+      downloading.
+    - Two real bugs found during this audit, both unrelated to memory:
+      **the Return key never worked for submitting a search** -
+      `Toolbar_HandleKey` fed the Return through to `TEKey` before
+      reporting "submit", so a carriage return was inserted into the field
+      and every Return-submitted query was actually `"<text>\r"`, matching
+      nothing, while clicking the Search button with identical text worked
+      fine. Confirmed by direct A/B on one build. This is the explanation
+      for the intermittent "search finds nothing" ghost that was written
+      off as non-reproducible in two earlier rounds. Also fixed
+      `Toolbar_GetSearchText` taking its length from `GetHandleSize` on
+      the TE text handle (a capacity, `>=` the real length) instead of the
+      record's authoritative `teLength` - latent rather than the cause of
+      any observed failure, but it could append slack bytes to a query.
 
 Not yet exercised in the emulator: `Catalog_Load`'s reject-a-corrupt-file
 alert path (see Known Limitations), and a full 200+-item live directory's

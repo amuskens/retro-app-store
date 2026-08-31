@@ -153,11 +153,27 @@ ToolbarHit Toolbar_Click(Point pt)
     return kToolbarHitNone;
 }
 
+/* Return/Enter mean "submit this search", so they must NOT also be fed to
+   TEKey - real bug, and the explanation for the intermittent "search finds
+   nothing" ghost that got written off as non-reproducible twice in earlier
+   test rounds. This used to call TEKey unconditionally and only then check
+   for the terminator, so pressing Return inserted a literal carriage
+   return into the field's text before the search ran: every
+   Return-submitted query was actually "<what you typed>\r", which
+   correctly matched nothing, while the identical text submitted by
+   clicking the Search button matched fine. That's exactly why it looked
+   random and why "clicking something else fixed it" - the two submit paths
+   genuinely behaved differently, and the CR then stayed in the field to
+   poison later searches too (press Return twice, get "\r\r").
+
+   Confirmed by direct A/B on one build: same text, button -> 4 pages of
+   matches, Return -> "No items match your search". */
 Boolean Toolbar_HandleKey(EventRecord *evt)
 {
     char key = (char)(evt->message & charCodeMask);
+    if (key == 0x0D || key == 0x03) return true; /* submit - deliberately not inserted */
     TEKey(key, gSearchTE);
-    return (Boolean)(key == 0x0D || key == 0x03);
+    return false;
 }
 
 void Toolbar_Idle(void)
@@ -165,10 +181,23 @@ void Toolbar_Idle(void)
     TEIdle(gSearchTE);
 }
 
+/* Length comes from the TE record's own teLength, not from
+   GetHandleSize(TEGetText(...)) as it used to. Those are not the same
+   number: TextEdit's text handle is a capacity, grown in chunks and not
+   necessarily shrunk back as characters are deleted, so GetHandleSize is
+   >= the real text length and only incidentally equal to it. When it's
+   larger, the slack bytes get copied in after the real text and the NUL
+   lands past them, handing Catalog_Search a query with trailing garbage.
+
+   Latent rather than the cause of any observed failure - the intermittent
+   "search finds nothing" bug that prompted this audit turned out to be the
+   Return-key CR insertion in Toolbar_HandleKey above, not this - but
+   teLength is the authoritative count every TE call maintains, so use it. */
 void Toolbar_GetSearchText(char *buf, short bufSize)
 {
     CharsHandle h = TEGetText(gSearchTE);
-    long len = GetHandleSize((Handle)h);
+    long len = (long)(**gSearchTE).teLength;
+    if (len < 0) len = 0;
     if (len >= bufSize) len = (long)(bufSize - 1);
     HLock((Handle)h);
     BlockMove(*h, buf, len);
