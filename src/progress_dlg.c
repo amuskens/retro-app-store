@@ -47,9 +47,26 @@ static void DrawProgress(void)
     InsetRect(&barR, 16, 0);
     barR.top = 44;
     barR.bottom = 60;
-    permille = (gTotalKnown && gTotalBytes > 0)
-                   ? (short)((gBytesSoFar * 1000UL) / gTotalBytes)
-                   : 0;
+    /* Divide the total down instead of multiplying the byte count up -
+       real bug, caught from a screenshot rather than review: the old
+       (gBytesSoFar * 1000UL) overflows 32 bits once ~4.29MB have
+       arrived, and since this bar deliberately never erases (it "only
+       ever grows"), the wrapped-small permille just stopped moving it -
+       every download larger than ~4.2MB showed a bar frozen at whatever
+       point it had reached when the multiply wrapped (~38% for a 10.8MB
+       file, measured), while the byte text underneath kept counting
+       up correctly. The divide-first form keeps every intermediate value
+       within range for any file size a 32-bit byte count can express;
+       the truncation in gTotalBytes/1000 costs at most ~0.1% accuracy,
+       which the 1000-clamp below already absorbs. The multiply-first
+       form is kept for totals under 1000 bytes (where divide-first
+       would divide by zero, and where it cannot overflow anyway). */
+    if (gTotalKnown && gTotalBytes >= 1000)
+        permille = (short)(gBytesSoFar / (gTotalBytes / 1000UL));
+    else if (gTotalKnown && gTotalBytes > 0)
+        permille = (short)((gBytesSoFar * 1000UL) / gTotalBytes);
+    else
+        permille = 0;
     if (permille > 1000) permille = 1000;
     Theme_DrawProgressBar(&barR, permille, gTotalKnown);
 
