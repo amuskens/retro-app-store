@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <Events.h>
 
 #include "ftp.h"
 #include "dnr.h"
@@ -8,6 +9,7 @@ static OSErr SendCommand(FtpSession *s, const char *cmd, GiveTimeProc giveTime, 
 {
     char line[560];
     short len;
+    OSErr err;
 
     strncpy(line, cmd, sizeof(line) - 3);
     line[sizeof(line) - 3] = 0;
@@ -15,7 +17,9 @@ static OSErr SendCommand(FtpSession *s, const char *cmd, GiveTimeProc giveTime, 
     line[len++] = '\r';
     line[len++] = '\n';
 
-    return Net_Send(&s->control, line, (unsigned short)len, giveTime, cancel);
+    err = Net_Send(&s->control, line, (unsigned short)len, giveTime, cancel);
+    if (err != noErr) s->broken = true;
+    return err;
 }
 
 /* Reads one (possibly multi-line, RFC 959 4.2) FTP reply from the control
@@ -30,6 +34,7 @@ static OSErr ReadReply(FtpSession *s, short *outCode, char *outMsg, short outMsg
 
     for (;;) {
         if (!LineReader_Next(&s->controlReader, line, sizeof(line), giveTime, cancel)) {
+            s->broken = true;
             return (s->controlReader.lastErr != noErr) ? s->controlReader.lastErr : connectionClosing;
         }
         if ((short)strlen(line) < 4) continue; /* blank/malformed line - ignore and keep reading */
@@ -138,8 +143,10 @@ void FTP_Disconnect(FtpSession *s, GiveTimeProc giveTime, Boolean *cancel)
 {
     if (!s->connected) return;
 
-    if (cancel != NULL && *cancel) {
-        /* The user already asked to stop - a graceful QUIT+TCPClose can
+    if (s->broken || (cancel != NULL && *cancel)) {
+        /* A failed or canceled call can leave a request pending on the
+           control stream's parameter block, which a QUIT/TCPClose would
+           then reuse - Net_Abort is the only safe teardown. The user already asked to stop - a graceful QUIT+TCPClose can
            still take up to the control connection's own close timeout if
            the remote doesn't answer, which "Stop" shouldn't have to wait
            through. Net_Abort is both faster and (unlike a plain
@@ -237,6 +244,7 @@ OSErr FTP_Retrieve(FtpSession *s, const char *remotePath, FtpChunkProc onChunk, 
     short code;
     char cmd[300];
     char buf[2048];
+    unsigned long lastYield = TickCount();
 
     err = OpenPassiveData(s, &data, giveTime, cancel);
     if (err != noErr) return err;
@@ -255,6 +263,17 @@ OSErr FTP_Retrieve(FtpSession *s, const char *remotePath, FtpChunkProc onChunk, 
         if (err == connectionClosing || err == connectionDoesntExist) { err = noErr; break; }
         if (err != noErr) { Net_Abort(&data, giveTime); return err; }
         if (got > 0 && onChunk != NULL) onChunk(userData, buf, got);
+
+        /* Net_Receive only yields while a request is still pending. On a
+           fast link data is usually already waiting, so it completes
+           instantly and this loop could spin through megabytes without
+           ever giving the UI a turn or noticing Stop - yield here at
+           least every couple of ticks regardless. */
+        if (cancel != NULL && *cancel) { Net_Abort(&data, giveTime); return userCanceledErr; }
+        if (giveTime != NULL && TickCount() - lastYield >= 2) {
+            giveTime();
+            lastYield = TickCount();
+        }
     }
 
     Net_Close(&data, giveTime);
@@ -265,5 +284,6 @@ OSErr FTP_Retrieve(FtpSession *s, const char *remotePath, FtpChunkProc onChunk, 
 
 void FTP_Shutdown(void)
 {
+    Net_AbortAll(NULL);
     DNR_Close();
 }

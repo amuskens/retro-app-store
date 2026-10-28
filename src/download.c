@@ -214,6 +214,15 @@ OSErr Download_Fetch(const char *host, tcp_port port, const char *user, const ch
 
     sizeKnown = FTP_GetSize(&session, remotePath, &size, giveTime, cancel);
     if (!sizeKnown) size = 0;
+    if (cancel != NULL && *cancel) {
+        /* Canceled during SIZE: FTP_GetSize just reports "unknown", but
+           the control connection still has that call's receive pending.
+           Go straight to the hard disconnect below. */
+        FTP_Disconnect(&session, giveTime, cancel);
+        FSClose(refNum);
+        FSpDelete(&spec);
+        return userCanceledErr;
+    }
 
     memset(&ctx, 0, sizeof(ctx));
     ctx.fileRefNum = refNum;

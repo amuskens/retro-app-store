@@ -44,7 +44,10 @@ enum { iConnect = 1, iDisconnect = 2, iRefreshListing = 3, iGoUpLevel = 4 };
 /* Same floor/ceiling GrowWindow already enforces via gSizeLimits below,
    named so ComputeScreenFitBounds can share them. */
 #define kMinWindowWidth  420
-#define kMinWindowHeight 260
+/* 320, not less: the sidebar needs 22 (header) + 86 (filter footer) + 10 rows
+   x 14px (smallest legible Geneva 10 row) plus the toolbar and status bar -
+   at 260 its rows were squeezed to 9px and overlapped each other. */
+#define kMinWindowHeight 320
 #define kMaxWindowWidth  900
 #define kMaxWindowHeight 780
 #define kScreenMargin    8 /* breathing room from the screen/gray-region edges */
@@ -339,6 +342,26 @@ static void LayoutBrowser(WindowPtr w, Rect *toolbarR, Rect *sidebarR, Rect *res
     ResultsView_SetPageSize((short)((resultsR->bottom - resultsR->top) / kResultRowHeight));
 }
 
+/* DrawGrowIcon draws more than the corner box: it also strokes a
+   full-height vertical line and a full-width horizontal line, 15px in
+   from the window's right and bottom edges - the scroll bar gutters it
+   assumes the window has. This app has no scroll bars, so those lines just
+   cut through the Search and Get buttons and the page arrows. Clipping to
+   the 15x15 corner leaves only the grow box itself. */
+static void DrawGrowCorner(WindowPtr w)
+{
+    RgnHandle saveClip = NewRgn();
+    Rect corner = w->portRect;
+
+    GetClip(saveClip);
+    corner.left = (short)(corner.right - 15);
+    corner.top = (short)(corner.bottom - 15);
+    ClipRect(&corner);
+    DrawGrowIcon(w);
+    SetClip(saveClip);
+    DisposeRgn(saveClip);
+}
+
 static void DrawContent(WindowPtr w)
 {
     Rect tb, sb, rs, st;
@@ -352,7 +375,7 @@ static void DrawContent(WindowPtr w)
     Toolbar_DrawStatus(&st, gConnected, gStatusText, ResultsView_CurrentPage(), ResultsView_PageCount());
 
     DrawControls(w);
-    DrawGrowIcon(w);
+    DrawGrowCorner(w);
 }
 
 static void RelayoutAndRedraw(WindowPtr w)
@@ -1073,7 +1096,7 @@ void RunApp(void)
                 case activateEvt: {
                     WindowPtr w = (WindowPtr)event.message;
                     SetPort(w);
-                    DrawGrowIcon(w);
+                    DrawGrowCorner(w);
                     break;
                 }
                 case osEvt:

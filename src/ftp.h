@@ -12,6 +12,7 @@ typedef struct {
     NetConnection control;
     LineReader controlReader;
     Boolean connected;
+    Boolean broken; /* a call on the control connection failed or was canceled - see FTP_Disconnect */
 } FtpSession;
 
 OSErr FTP_Connect(FtpSession *session, const char *hostName, tcp_port port,

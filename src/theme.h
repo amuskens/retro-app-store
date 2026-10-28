@@ -66,4 +66,7 @@ void Theme_DrawPillButton(const Rect *r, const char *label, Boolean pressed);
    which made the bar look permanently empty on real hardware. */
 void Theme_DrawProgressBar(const Rect *r, short permilleFilled, Boolean knownTotal);
 
+/* Call whenever the bar's area has been erased or a new transfer starts. */
+void Theme_ResetProgressBar(void);
+
 #endif

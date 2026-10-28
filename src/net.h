@@ -78,6 +78,12 @@ OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime);
    async request). */
 void Net_Abort(NetConnection *conn, GiveTimeProc giveTime);
 
+/* Aborts and releases every stream still open, for the app to call once
+   on its way out. Receive buffers are deliberately not freed: the heap
+   goes away with the application, and a buffer still queued with MacTCP
+   must not be disposed before its stream is gone anyway. */
+void Net_AbortAll(GiveTimeProc giveTime);
+
 /* Buffers Net_Receive output and splits it into CRLF- or LF-terminated
    text lines - FTP is a line-oriented protocol on both its control
    connection (multi-line reply parsing) and its NLST data connection (one

@@ -61,7 +61,7 @@ void Toolbar_Layout(const Rect *toolbarBounds, const Rect *statusBounds)
         Rect nr, pr;
 
         nr.top = y; nr.bottom = (short)(y + pbH);
-        nr.right = (short)(statusBounds->right - 8);
+        nr.right = (short)(statusBounds->right - 8 - 16); /* 16: the grow box's corner, see DrawGrowCorner in app.c */
         nr.left = (short)(nr.right - pbW);
         MoveControl(gNextBtn, nr.left, nr.top);
         SizeControl(gNextBtn, pbW, pbH);
@@ -109,8 +109,13 @@ void Toolbar_DrawStatus(const Rect *bounds, Boolean connected, const char *statu
     textR = *bounds;
     textR.left = (short)(ledR.right + 6);
     textR.right = (short)(bounds->left + 260);
+    if (textR.right > (**gPrevBtn).contrlRect.left - 8) textR.right = (short)((**gPrevBtn).contrlRect.left - 8);
     Theme_SetGeneva(9, normal);
-    DrawCStringInRect(statusText, &textR);
+    {
+        char fitted[200];
+        TruncateCStringToWidth(statusText, fitted, sizeof(fitted), (short)(textR.right - textR.left));
+        DrawCStringInRect(fitted, &textR);
+    }
 
     prevR = (**gPrevBtn).contrlRect;
     nextR = (**gNextBtn).contrlRect;

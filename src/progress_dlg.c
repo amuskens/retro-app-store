@@ -92,6 +92,7 @@ static void DrawContent(void)
     SetPort(gWindow);
     r = gWindow->portRect;
     EraseRect(&r);
+    Theme_ResetProgressBar();
 
     textR = r;
     InsetRect(&textR, 16, 0);

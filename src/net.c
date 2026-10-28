@@ -25,6 +25,31 @@
 static short gDriverRefNum = 0;
 static Boolean gDriverOpen = false;
 
+/* Every stream TCPCreate has handed out and nothing has released yet.
+   MacTCP does not reclaim an application's streams when the application
+   quits, so one that slips through a cleanup path stays allocated in the
+   driver, and Finder's Shut Down can then hang waiting on it. Net_AbortAll
+   sweeps whatever is left at exit. Only the StreamPtr is stored, never
+   the NetConnection: those are frequently stack locals. */
+#define kMaxTrackedStreams 16
+static StreamPtr gTrackedStreams[kMaxTrackedStreams];
+
+static void TrackStream(StreamPtr stream)
+{
+    short i;
+    for (i = 0; i < kMaxTrackedStreams; i++) {
+        if (gTrackedStreams[i] == 0) { gTrackedStreams[i] = stream; return; }
+    }
+}
+
+static void UntrackStream(StreamPtr stream)
+{
+    short i;
+    for (i = 0; i < kMaxTrackedStreams; i++) {
+        if (gTrackedStreams[i] == stream) gTrackedStreams[i] = 0;
+    }
+}
+
 /* Issues one MacTCP request asynchronously and polls its completion,
    yielding via giveTime each time around - see net.h's header comment for
    why this is the only pattern used here instead of a completion routine
@@ -149,6 +174,7 @@ OSErr Net_Open(NetConnection *conn, ip_addr remoteHost, tcp_port remotePort,
         return err;
     }
     conn->stream = conn->pb.tcpStream;
+    TrackStream(conn->stream);
 
     memset(&conn->pb, 0, sizeof(conn->pb));
     conn->pb.ioCRefNum = gDriverRefNum;
@@ -238,6 +264,7 @@ OSErr Net_Close(NetConnection *conn, GiveTimeProc giveTime)
         DisposePtr(conn->rcvBuffer);
         conn->rcvBuffer = NULL;
     }
+    UntrackStream(conn->stream);
     conn->stream = 0;
     return err;
 }
@@ -264,7 +291,34 @@ void Net_Abort(NetConnection *conn, GiveTimeProc giveTime)
         DisposePtr(conn->rcvBuffer);
         conn->rcvBuffer = NULL;
     }
+    UntrackStream(conn->stream);
     conn->stream = 0;
+}
+
+void Net_AbortAll(GiveTimeProc giveTime)
+{
+    TCPiopb pb;
+    short i;
+
+    if (!gDriverOpen) return;
+
+    for (i = 0; i < kMaxTrackedStreams; i++) {
+        StreamPtr stream = gTrackedStreams[i];
+        if (stream == 0) continue;
+        gTrackedStreams[i] = 0;
+
+        memset(&pb, 0, sizeof(pb));
+        pb.ioCRefNum = gDriverRefNum;
+        pb.csCode = TCPAbort;
+        pb.tcpStream = stream;
+        DoAbortCall(&pb, giveTime);
+
+        memset(&pb, 0, sizeof(pb));
+        pb.ioCRefNum = gDriverRefNum;
+        pb.csCode = TCPRelease;
+        pb.tcpStream = stream;
+        DoAbortCall(&pb, giveTime);
+    }
 }
 
 void LineReader_Init(LineReader *reader, NetConnection *conn)

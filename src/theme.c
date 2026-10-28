@@ -1,3 +1,4 @@
+#include <Events.h>
 #include <Fonts.h>
 
 #include "theme.h"
@@ -98,31 +99,64 @@ void Theme_DrawPillButton(const Rect *r, const char *label, Boolean pressed)
     DrawCString(label);
 }
 
+/* Width in pixels already painted inside the current bar. The fill uses
+   hilite PenMode, which XORs against what is underneath - repainting the
+   whole fill on every update (what this used to do) therefore flipped the
+   already-filled part back and forth, producing the broken striped bar.
+   Now only the newly covered slice is painted; the bar is erased and
+   restarted when it shrinks or Theme_ResetProgressBar is called (new
+   transfer, or the window was erased by an update). */
+static short gBarPaintedW = -1;
+
+void Theme_ResetProgressBar(void)
+{
+    gBarPaintedW = -1;
+}
+
+static void PaintHilite(const Rect *r)
+{
+    PenState saved;
+    GetPenState(&saved);
+    PenMode(hilite);
+    PaintRect(r);
+    SetPenState(&saved);
+}
+
 void Theme_DrawProgressBar(const Rect *r, short permilleFilled, Boolean knownTotal)
 {
     Rect inner = *r;
+    short innerW;
 
     FrameRect(r);
     InsetRect(&inner, 1, 1);
+    innerW = (short)(inner.right - inner.left);
 
     if (knownTotal) {
-        PenState saved;
-        short fillW = (short)(((long)(inner.right - inner.left) * permilleFilled) / 1000);
-        Rect fillRect = inner;
-        fillRect.right = (short)(fillRect.left + fillW);
+        short fillW = (short)(((long)innerW * permilleFilled) / 1000);
+        Rect slice = inner;
 
-        /* Same fix as Theme_HighlightRow's selection fill: a plain RGB
-           PaintRect (the old approach here - a light pastel blue accent
-           color) rounds to white on a 1-bit or grayscale display, so the
-           bar looked permanently empty on real hardware even while
-           genuinely filling, since white-on-white is indistinguishable.
-           hilite PenMode blends with the real OS highlight color on a
-           color display and degrades to plain invert on anything else,
-           guaranteed visible either way. */
-        GetPenState(&saved);
-        PenMode(hilite);
-        PaintRect(&fillRect);
-        SetPenState(&saved);
+        if (gBarPaintedW < 0 || fillW < gBarPaintedW) {
+            EraseRect(&inner);
+            gBarPaintedW = 0;
+        }
+        if (fillW > gBarPaintedW) {
+            slice.left = (short)(inner.left + gBarPaintedW);
+            slice.right = (short)(inner.left + fillW);
+            PaintHilite(&slice);
+            gBarPaintedW = fillW;
+        }
+    } else {
+        /* Unknown total: a block sweeping back and forth, rather than a
+           bar that can never fill. */
+        short blockW = 36, travel = (short)(innerW - blockW);
+        short pos = (short)((TickCount() / 2) % (2L * travel));
+        Rect block = inner;
+        if (pos > travel) pos = (short)(2 * travel - pos);
+        EraseRect(&inner);
+        block.left = (short)(inner.left + pos);
+        block.right = (short)(block.left + blockW);
+        PaintHilite(&block);
+        gBarPaintedW = -1;
     }
     ForeColor(blackColor);
 }
